@@ -124,6 +124,16 @@ namespace Populus.GroupManager
         public string Zone { get; private set; }
 
         /// <summary>
+        /// Gets the id of the map this group member is on
+        /// </summary>
+        public uint MapId { get; private set; }
+
+        /// <summary>
+        /// Gets the name of the map this group member is on
+        /// </summary>
+        public string MapName { get; private set; }
+
+        /// <summary>
         /// Gets the position of the group member
         /// </summary>
         public Coordinate Position { get; private set; }
@@ -200,6 +210,10 @@ namespace Populus.GroupManager
                 ZoneId = args.ZoneId.Value;
             if (!string.IsNullOrEmpty(args.Zone))
                 Zone = args.Zone;
+            if (args.MapId.HasValue)
+                MapId = args.MapId.Value;
+            if (!string.IsNullOrEmpty(args.MapName))
+                MapName = args.MapName;
             if (args.Position != null)
                 Position = args.Position;
             if (args.AuraIds != null)
