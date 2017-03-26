@@ -6,7 +6,7 @@ using static Populus.Core.World.Objects.Bot;
 
 namespace Populus.GroupManager
 {
-    public class GroupManager : IPlugin
+    public class GroupManager : PluginBase
     {
         #region Declarations
 
@@ -28,17 +28,17 @@ namespace Populus.GroupManager
         /// <summary>
         /// Plugin name
         /// </summary>
-        public string Name => "Group Manager";
+        public override string Name => "Group Manager";
 
         /// <summary>
         /// Plugin author
         /// </summary>
-        public string Author => "Kazadoom";
+        public override string Author => "Kazadoom";
 
         /// <summary>
         /// Plugin website
         /// </summary>
-        public string Website => "";
+        public override string Website => "";
 
         #endregion
 
@@ -56,7 +56,7 @@ namespace Populus.GroupManager
 
         #region Public Methods
 
-        public void Initialize()
+        public override void Initialize()
         {
             // TODO: Based on config value. This actually might not even belong in this plugin????
             // Accept an invite from anyone
@@ -131,12 +131,7 @@ namespace Populus.GroupManager
             Bot.GroupLeaderChange += groupLeaderChangeHandler;
         }
 
-        public void Tick(Bot bot)
-        {
-
-        }
-
-        public void Unload()
+        public override void Unload()
         {
             // Remove handlers to avoid memory leaks
             Bot.GroupLeaderChange -= groupLeaderChangeHandler;
