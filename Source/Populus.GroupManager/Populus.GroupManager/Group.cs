@@ -1,5 +1,7 @@
 ﻿using Populus.Core.Constants;
 using Populus.Core.Shared;
+using Populus.Core.World.Objects;
+using Populus.Core.World.Objects.Events;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,6 +20,7 @@ namespace Populus.GroupManager
         private WoWGuid mMasterLooterGuid = null;
         private LootMethod? mLootMethod = null;
         private ItemQualities? mLootThreshold = null;
+        private GroupType mGroupType;
 
         #endregion
 
@@ -31,6 +34,14 @@ namespace Populus.GroupManager
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets the number of members in the group
+        /// </summary>
+        public byte MemberCount
+        {
+            get { return (byte)mGroupMembers.Count; }
+        }
 
         /// <summary>
         /// Gets a list of all members in the group
@@ -80,14 +91,22 @@ namespace Populus.GroupManager
             get { return mLootThreshold; }
         }
 
+        /// <summary>
+        /// Gets the type of group this is
+        /// </summary>
+        public GroupType GroupType
+        {
+            get { return mGroupType; }
+        }
+
         #endregion
 
         #region Public Methods
 
         /// <summary>
-        /// Adds a group member
+        /// Adds or updates a group member
         /// </summary>
-        internal void AddGroupMember()
+        internal void AddOrUpdateGroupMember()
         {
             lock (mGroupMembersLock)
             {
@@ -118,6 +137,32 @@ namespace Populus.GroupManager
             var leader = mGroupMembers.ToList().Where(m => m.Name.ToLower() == leaderName.ToLower()).SingleOrDefault();
             if (leader != null)
                 mLeaderGuid = leader.Guid;
+        }
+
+        /// <summary>
+        /// Updates group data from the group list event args
+        /// </summary>
+        /// <param name="args"></param>
+        internal void UpdateFromGroupList(GroupListEventArgs args)
+        {
+            // Update group information
+            mLeaderGuid = args.LeaderGuid;
+            mGroupType = args.GroupType;
+            if (args.MasterLooterGuid != null) mMasterLooterGuid = args.MasterLooterGuid;
+            if (args.LootMethod.HasValue) mLootMethod = args.LootMethod.Value;
+            if (args.LootThreshold.HasValue) mLootThreshold = args.LootThreshold.Value;
+
+            // Add or update members
+            foreach (var memberData in args.GroupMembersData)
+            {
+                // Get member in the group if they exist
+                var member = Members.Where(m => m.Guid.GetOldGuid() == memberData.Guid.GetOldGuid()).SingleOrDefault();
+                if (member == null)
+                    member = new GroupMember();
+
+                // Update the group member
+                member.Update(memberData);
+            }
         }
 
         #endregion

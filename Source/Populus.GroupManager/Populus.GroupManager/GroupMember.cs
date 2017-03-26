@@ -39,49 +39,84 @@ namespace Populus.GroupManager
         public string Name { get; private set; }
 
         /// <summary>
+        /// Gets the group id/number that this group member belongs to (useful for raids with multiple groups)
+        /// </summary>
+        public int GroupId { get; private set; }
+
+        /// <summary>
         /// Gets whether or not this group member is online
         /// </summary>
         public bool IsOnline { get; private set; }
 
         /// <summary>
+        /// Gets whether or not this group member is PvP flagged
+        /// </summary>
+        public bool IsPvPFlagged { get; private set; }
+
+        /// <summary>
+        /// Gets whether or not this group member is dead
+        /// </summary>
+        public bool IsDead { get; private set; }
+
+        /// <summary>
+        /// Gets whether or not this group member is a ghost
+        /// </summary>
+        public bool IsGhost { get; private set; }
+
+        /// <summary>
+        /// Gets whether or not this group member is AFK
+        /// </summary>
+        public bool IsAFK { get; private set; }
+
+        /// <summary>
+        /// Gets whether or not this group member is DND
+        /// </summary>
+        public bool IsDND { get; private set; }
+
+        /// <summary>
+        /// Gets ehther or not the group members is an assistant
+        /// </summary>
+        public bool IsAssistant { get; private set; }
+
+        /// <summary>
         /// Gets the display/model id (pets only)
         /// </summary>
-        public ushort DisplayId { get; private set; }
+        public ushort? DisplayId { get; private set; }
 
         /// <summary>
         /// Gets the current health of the group member
         /// </summary>
-        public ushort CurrentHealth { get; private set; }
+        public ushort? CurrentHealth { get; private set; }
 
         /// <summary>
         /// Gets the maximum health of the group member
         /// </summary>
-        public ushort MaxHealth { get; private set; }
+        public ushort? MaxHealth { get; private set; }
 
         /// <summary>
         /// Gets the power type of the group member
         /// </summary>
-        public Powers PowerType { get; private set; }
+        public Powers? PowerType { get; private set; }
 
         /// <summary>
         /// Gets the current power level of the group member
         /// </summary>
-        public ushort CurrentPower { get; private set; }
+        public ushort? CurrentPower { get; private set; }
 
         /// <summary>
         /// Gets the maixmum power level of the group member
         /// </summary>
-        public ushort MaxPower { get; private set; }
+        public ushort? MaxPower { get; private set; }
 
         /// <summary>
         /// Gets the level of the group member
         /// </summary>
-        public ushort Level { get; private set; }
+        public ushort? Level { get; private set; }
 
         /// <summary>
         /// Gets the zone id of the group member
         /// </summary>
-        public ushort ZoneId { get; private set; }
+        public ushort? ZoneId { get; private set; }
 
         /// <summary>
         /// Gets the zone name of the group member
@@ -108,10 +143,30 @@ namespace Populus.GroupManager
         #region Public Methods
 
         /// <summary>
+        /// Updates the group membeer data from a group list event
+        /// </summary>
+        /// <param name="data"></param>
+        internal void Update(GroupListEventArgs.GroupMemberListData data)
+        {
+            Name = data.Name;
+            Guid = data.Guid;
+            GroupId = data.GroupId;
+            IsAssistant = data.IsAssistant;
+            
+            // Statuses
+            IsAFK = data.Status.HasFlag(GroupMemberStatus.MEMBER_STATUS_AFK);
+            IsDead = data.Status.HasFlag(GroupMemberStatus.MEMBER_STATUS_DEAD);
+            IsDND = data.Status.HasFlag(GroupMemberStatus.MEMBER_STATUS_DND);
+            IsGhost = data.Status.HasFlag(GroupMemberStatus.MEMBER_STATUS_GHOST);
+            IsOnline = data.Status.HasFlag(GroupMemberStatus.MEMBER_STATUS_ONLINE);
+            IsPvPFlagged = data.Status.HasFlag(GroupMemberStatus.MEMBER_STATUS_PVP);
+        }
+
+        /// <summary>
         /// Updates the group member data from an event
         /// </summary>
         /// <param name="args"></param>
-        public void Update(GroupMemberUpdateEventArgs args)
+        internal void Update(GroupMemberUpdateEventArgs args)
         {
             Guid = args.Guid;
             if (args.IsOnline.HasValue)
