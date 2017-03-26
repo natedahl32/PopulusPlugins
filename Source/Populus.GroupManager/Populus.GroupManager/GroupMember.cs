@@ -41,7 +41,7 @@ namespace Populus.GroupManager
         /// <summary>
         /// Gets the group id/number that this group member belongs to (useful for raids with multiple groups)
         /// </summary>
-        public int GroupId { get; private set; }
+        public byte? GroupId { get; private set; }
 
         /// <summary>
         /// Gets whether or not this group member is online
@@ -76,7 +76,7 @@ namespace Populus.GroupManager
         /// <summary>
         /// Gets ehther or not the group members is an assistant
         /// </summary>
-        public bool IsAssistant { get; private set; }
+        public bool? IsAssistant { get; private set; }
 
         /// <summary>
         /// Gets the display/model id (pets only)
@@ -143,6 +143,16 @@ namespace Populus.GroupManager
         #region Public Methods
 
         /// <summary>
+        /// Updates the group members position
+        /// </summary>
+        /// <param name="position"></param>
+        internal void UpdatePosition(Coordinate position)
+        {
+            if (position != null)
+                Position = position;
+        }
+
+        /// <summary>
         /// Updates the group membeer data from a group list event
         /// </summary>
         /// <param name="data"></param>
@@ -154,12 +164,15 @@ namespace Populus.GroupManager
             IsAssistant = data.IsAssistant;
             
             // Statuses
-            IsAFK = data.Status.HasFlag(GroupMemberStatus.MEMBER_STATUS_AFK);
-            IsDead = data.Status.HasFlag(GroupMemberStatus.MEMBER_STATUS_DEAD);
-            IsDND = data.Status.HasFlag(GroupMemberStatus.MEMBER_STATUS_DND);
-            IsGhost = data.Status.HasFlag(GroupMemberStatus.MEMBER_STATUS_GHOST);
-            IsOnline = data.Status.HasFlag(GroupMemberStatus.MEMBER_STATUS_ONLINE);
-            IsPvPFlagged = data.Status.HasFlag(GroupMemberStatus.MEMBER_STATUS_PVP);
+            if (data.Status.HasValue)
+            {
+                IsAFK = data.Status.Value.HasFlag(GroupMemberStatus.MEMBER_STATUS_AFK);
+                IsDead = data.Status.Value.HasFlag(GroupMemberStatus.MEMBER_STATUS_DEAD);
+                IsDND = data.Status.Value.HasFlag(GroupMemberStatus.MEMBER_STATUS_DND);
+                IsGhost = data.Status.Value.HasFlag(GroupMemberStatus.MEMBER_STATUS_GHOST);
+                IsOnline = data.Status.Value.HasFlag(GroupMemberStatus.MEMBER_STATUS_ONLINE);
+                IsPvPFlagged = data.Status.Value.HasFlag(GroupMemberStatus.MEMBER_STATUS_PVP);
+            }
         }
 
         /// <summary>
@@ -198,6 +211,11 @@ namespace Populus.GroupManager
                 if (mPet == null)
                     mPet = new GroupMember();
                 mPet.Guid = args.PetGuid;
+            }
+            else
+            {
+                // No pet
+                mPet = null;
             }
 
             // Only if we have a pet (we would know if we do at this point because we were passed guid)

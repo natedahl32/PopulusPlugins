@@ -91,6 +91,16 @@ namespace Populus.GroupManager
             return group;
         }
 
+        /// <summary>
+        /// Removes the group instance for this player. Note that we do not destroy the group because other players may still hold a reference to it
+        /// </summary>
+        /// <param name="guid"></param>
+        internal void RemoveGroupForPlayer(WoWGuid guid)
+        {
+            Group group = null;
+            mGroups.TryRemove(guid, out group);
+        }
+
         #endregion
     }
 }

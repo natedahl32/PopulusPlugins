@@ -1,6 +1,7 @@
 ﻿using Populus.Core.Plugins;
 using Populus.Core.World.Objects;
 using Populus.Core.World.Objects.Events;
+using System.Linq;
 using static Populus.Core.World.Objects.Bot;
 
 namespace Populus.GroupManager
@@ -10,9 +11,11 @@ namespace Populus.GroupManager
         #region Declarations
 
         // handlers
+        BotEventDelegate<MovementUpdateEventArgs> objectMovementHandler = null;
         BotEventDelegate<GroupInviteEventArgs> inviteHandler = null;
         BotEventDelegate<GroupMemberUpdateEventArgs> groupMemberUpdateHandler = null;
         BotEventDelegate<GroupListEventArgs> groupListHandler = null;
+        EmptyEventDelegate disbandHandler = null;
 
         // static instance of our groups collection
         private static GroupsCollection mGroupsCollection = new GroupsCollection();
@@ -63,10 +66,27 @@ namespace Populus.GroupManager
             Bot.GroupInvite += inviteHandler;
 
 
+            // Handle any object movement
+            objectMovementHandler = (bot, args) =>
+            {
+                // Get this bots group and if the object belongs to the group update it's position
+                Group group = mGroupsCollection.GetCharacterGroup(bot.Guid);
+                if (group != null)
+                {
+                    var member = group.GetMember(args.ObjectGuid);
+                    if (member != null)
+                        member.UpdatePosition(args.Position);
+                }
+            };
+            Bot.ObjectMovement += objectMovementHandler;
+
             // Handle group member updates
             groupMemberUpdateHandler = (bot, args) =>
             {
-
+                // This updates a single member of the group. It is assumed the bot sending this event already has a group.
+                Group group = mGroupsCollection.GetCharacterGroup(bot.Guid);
+                if (group != null)
+                    group.UpdateGroupMember(args);
             };
             Bot.GroupMemberUpdate += groupMemberUpdateHandler;
 
@@ -74,6 +94,14 @@ namespace Populus.GroupManager
             // Handle group member list update
             groupListHandler = (bot, args) =>
             {
+                // If the list contains only one group member and that member is the bot, disband this bots group
+                var memberList = args.GroupMembersData.ToList();
+                if ((args.MemberCount == 1 && memberList[0].Guid.GetOldGuid() == bot.Guid.GetOldGuid()) || args.MemberCount == 0)
+                {
+                    mGroupsCollection.RemoveGroupForPlayer(bot.Guid);
+                    return;
+                }
+
                 // If this bot does not have a group assigned, either create a new group if one doesn't exist yet
                 // or find the group reference from one of the other group members. This is how we keep group references the same
                 // for each bot.
@@ -81,6 +109,15 @@ namespace Populus.GroupManager
                 group.UpdateFromGroupList(args);
             };
             Bot.GroupListUpdate += groupListHandler;
+
+            // Handle group disbanding or being removed from group
+            disbandHandler = bot =>
+            {
+                // We were removed from our group, empty our group instance
+                mGroupsCollection.RemoveGroupForPlayer(bot.Guid);
+            };
+            Bot.GroupDisbanded += disbandHandler;
+            Bot.GroupUninvite += disbandHandler;
         }
 
         public void Tick(Bot bot)
@@ -91,8 +128,11 @@ namespace Populus.GroupManager
         public void Unload()
         {
             // Remove handlers to avoid memory leaks
+            Bot.GroupDisbanded -= disbandHandler;
+            Bot.GroupUninvite -= disbandHandler;
             Bot.GroupListUpdate -= groupListHandler;
             Bot.GroupMemberUpdate -= groupMemberUpdateHandler;
+            Bot.ObjectMovement -= objectMovementHandler;
             Bot.GroupInvite -= inviteHandler;
         }
 

@@ -1,6 +1,5 @@
 ﻿using Populus.Core.Constants;
 using Populus.Core.Shared;
-using Populus.Core.World.Objects;
 using Populus.Core.World.Objects.Events;
 using System.Collections.Generic;
 using System.Linq;
@@ -104,6 +103,16 @@ namespace Populus.GroupManager
         #region Public Methods
 
         /// <summary>
+        /// Gets a member of the group by their guid
+        /// </summary>
+        /// <param name="guid"></param>
+        /// <returns></returns>
+        public GroupMember GetMember(WoWGuid guid)
+        {
+            return mGroupMembers.ToList().Where(m => m.Guid.GetOldGuid() == guid.GetOldGuid()).SingleOrDefault();
+        }
+
+        /// <summary>
         /// Adds or updates a group member
         /// </summary>
         internal void AddOrUpdateGroupMember()
@@ -163,6 +172,17 @@ namespace Populus.GroupManager
                 // Update the group member
                 member.Update(memberData);
             }
+        }
+
+        /// <summary>
+        /// Updates a group members data
+        /// </summary>
+        /// <param name="args"></param>
+        internal void UpdateGroupMember(GroupMemberUpdateEventArgs args)
+        {
+            var member = mGroupMembers.ToList().Where(m => m.Guid.GetOldGuid() == args.Guid.GetOldGuid()).SingleOrDefault();
+            if (member != null)
+                member.Update(args);
         }
 
         #endregion
