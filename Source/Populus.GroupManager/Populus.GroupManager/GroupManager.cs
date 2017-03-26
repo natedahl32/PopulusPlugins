@@ -15,6 +15,7 @@ namespace Populus.GroupManager
         BotEventDelegate<GroupInviteEventArgs> inviteHandler = null;
         BotEventDelegate<GroupMemberUpdateEventArgs> groupMemberUpdateHandler = null;
         BotEventDelegate<GroupListEventArgs> groupListHandler = null;
+        BotEventDelegate<GroupLeaderChangeEventArgs> groupLeaderChangeHandler = null;
         EmptyEventDelegate disbandHandler = null;
 
         // static instance of our groups collection
@@ -118,6 +119,16 @@ namespace Populus.GroupManager
             };
             Bot.GroupDisbanded += disbandHandler;
             Bot.GroupUninvite += disbandHandler;
+
+            // Handle group leader changing
+            groupLeaderChangeHandler = (bot, args) =>
+            {
+                // Get this bots group and update the leader
+                Group group = mGroupsCollection.GetCharacterGroup(bot.Guid);
+                if (group != null)
+                    group.ChangeLeader(args.LeaderName);
+            };
+            Bot.GroupLeaderChange += groupLeaderChangeHandler;
         }
 
         public void Tick(Bot bot)
@@ -128,6 +139,7 @@ namespace Populus.GroupManager
         public void Unload()
         {
             // Remove handlers to avoid memory leaks
+            Bot.GroupLeaderChange -= groupLeaderChangeHandler;
             Bot.GroupDisbanded -= disbandHandler;
             Bot.GroupUninvite -= disbandHandler;
             Bot.GroupListUpdate -= groupListHandler;
