@@ -40,10 +40,6 @@ namespace Populus.GroupManager
         /// </summary>
         public override string Website => "";
 
-        #endregion
-
-        #region Properties
-
         /// <summary>
         /// Gets the collection that stores all known groups
         /// </summary>
