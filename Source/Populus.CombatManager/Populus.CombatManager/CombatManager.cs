@@ -4,6 +4,16 @@ namespace Populus.CombatManager
 {
     public class CombatManager : PluginBase
     {
+        #region Constructors
+
+        public CombatManager()
+        {
+            // Set priority to highest state because this plugin gathers information
+            Priority = 0;
+        }
+
+        #endregion
+
         #region Properties
 
         public override string Name => "Combat Manager";

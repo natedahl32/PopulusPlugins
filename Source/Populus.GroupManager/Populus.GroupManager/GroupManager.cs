@@ -6,13 +6,15 @@ using static Populus.Core.World.Objects.Bot;
 
 namespace Populus.GroupManager
 {
+    /// <summary>
+    /// This plugin manages group state and group information for bots.
+    /// </summary>
     public class GroupManager : PluginBase
     {
         #region Declarations
 
         // handlers
         BotEventDelegate<MovementUpdateEventArgs> objectMovementHandler = null;
-        BotEventDelegate<GroupInviteEventArgs> inviteHandler = null;
         BotEventDelegate<GroupMemberUpdateEventArgs> groupMemberUpdateHandler = null;
         BotEventDelegate<GroupListEventArgs> groupListHandler = null;
         BotEventDelegate<GroupLeaderChangeEventArgs> groupLeaderChangeHandler = null;
@@ -20,6 +22,16 @@ namespace Populus.GroupManager
 
         // static instance of our groups collection
         private static GroupsCollection mGroupsCollection = new GroupsCollection();
+
+        #endregion
+
+        #region Constructors
+
+        public GroupManager()
+        {
+            // Set priority to highest state because this plugin gathers information
+            Priority = 0;
+        }
 
         #endregion
 
@@ -54,15 +66,6 @@ namespace Populus.GroupManager
 
         public override void Initialize()
         {
-            // TODO: Based on config value. This actually might not even belong in this plugin????
-            // Accept an invite from anyone
-            inviteHandler = (bot, args) =>
-            {
-                bot.AcceptGroupInvite();
-            };
-            Bot.GroupInvite += inviteHandler;
-
-
             // Handle any object movement
             objectMovementHandler = (bot, args) =>
             {
