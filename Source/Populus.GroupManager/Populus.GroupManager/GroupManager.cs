@@ -107,6 +107,11 @@ namespace Populus.GroupManager
                 // for each bot.
                 Group group = mGroupsCollection.GetOrCreateGroupForPlayer(bot, args.GroupMembersData);
                 group.UpdateFromGroupList(args);
+
+                // Follow the first member of the group that isn't us
+                var firstMember = group.Members.Where(m => m.Guid.GetOldGuid() != bot.Guid.GetOldGuid()).FirstOrDefault();
+                if (firstMember != null)
+                    bot.SetFollow(firstMember.Guid);
             };
             Bot.GroupListUpdate += groupListHandler;
 

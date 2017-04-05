@@ -167,7 +167,11 @@ namespace Populus.GroupManager
                 // Get member in the group if they exist
                 var member = Members.Where(m => m.Guid.GetOldGuid() == memberData.Guid.GetOldGuid()).SingleOrDefault();
                 if (member == null)
+                {
                     member = new GroupMember();
+                    lock (mGroupMembersLock)
+                        mGroupMembers.Add(member);
+                }
 
                 // Update the group member
                 member.Update(memberData);
