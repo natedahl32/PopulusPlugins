@@ -2,6 +2,7 @@
 using Populus.Core.World.Objects;
 using Populus.Core.World.Objects.Events;
 using static Populus.Core.World.Objects.Bot;
+using GroupMgr = Populus.GroupManager.GroupManager;
 
 namespace Populus.GroupBot
 {
@@ -18,6 +19,9 @@ namespace Populus.GroupBot
 
         // handlers
         BotEventDelegate<GroupInviteEventArgs> inviteHandler = null;
+
+        // static instance of our bot handlers collection
+        private static WoWGuidCollection<GroupBotHandler> mBotHandlerCollection = new WoWGuidCollection<GroupBotHandler>();
 
         #endregion
 
@@ -47,6 +51,31 @@ namespace Populus.GroupBot
         {
             // Remove handlers to avoid memory leaks
             Bot.GroupInvite -= inviteHandler;
+        }
+
+        public override void OnTick(Bot bot, float deltaTime)
+        {
+            // If the bot is in a group, get the handler or add one if it does not have one yet
+            if (GroupMgr.Groups.CharacterHasGroup(bot.Guid))
+            {
+                var handler = mBotHandlerCollection.Get(bot.Guid);
+                if (handler == null)
+                {
+                    handler = new GroupBotHandler(bot);
+                    mBotHandlerCollection.AddOrUpdate(bot.Guid, handler);
+                }
+
+                // Update the handler
+                handler.Update(deltaTime);
+            }
+            else
+            {
+                var handler = mBotHandlerCollection.Remove(bot.Guid);
+                if (handler != null)
+                    handler.GroupDisbanded();
+            }
+
+            base.OnTick(bot, deltaTime);
         }
 
         #endregion

@@ -55,7 +55,7 @@ namespace Populus.GroupManager
         /// <summary>
         /// Gets the collection that stores all known groups
         /// </summary>
-        public GroupsCollection Groups
+        public static GroupsCollection Groups
         {
             get { return mGroupsCollection; }
         }
@@ -98,7 +98,7 @@ namespace Populus.GroupManager
                 var memberList = args.GroupMembersData.ToList();
                 if ((args.MemberCount == 1 && memberList[0].Guid.GetOldGuid() == bot.Guid.GetOldGuid()) || args.MemberCount == 0)
                 {
-                    mGroupsCollection.RemoveGroupForPlayer(bot.Guid);
+                    mGroupsCollection.Remove(bot.Guid);
                     return;
                 }
 
@@ -107,11 +107,6 @@ namespace Populus.GroupManager
                 // for each bot.
                 Group group = mGroupsCollection.GetOrCreateGroupForPlayer(bot, args.GroupMembersData);
                 group.UpdateFromGroupList(args);
-
-                // Follow the first member of the group that isn't us
-                var firstMember = group.Members.Where(m => m.Guid.GetOldGuid() != bot.Guid.GetOldGuid()).FirstOrDefault();
-                if (firstMember != null)
-                    bot.SetFollow(firstMember.Guid);
             };
             Bot.GroupListUpdate += groupListHandler;
 
@@ -119,7 +114,7 @@ namespace Populus.GroupManager
             disbandHandler = bot =>
             {
                 // We were removed from our group, empty our group instance
-                mGroupsCollection.RemoveGroupForPlayer(bot.Guid);
+                mGroupsCollection.Remove(bot.Guid);
             };
             Bot.GroupDisbanded += disbandHandler;
             Bot.GroupUninvite += disbandHandler;
@@ -144,7 +139,6 @@ namespace Populus.GroupManager
             Bot.GroupListUpdate -= groupListHandler;
             Bot.GroupMemberUpdate -= groupMemberUpdateHandler;
             Bot.ObjectMovement -= objectMovementHandler;
-            Bot.GroupInvite -= inviteHandler;
         }
 
         #endregion

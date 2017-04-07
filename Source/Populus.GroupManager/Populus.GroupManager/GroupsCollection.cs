@@ -1,30 +1,14 @@
-﻿using Populus.Core.Shared;
+﻿using Populus.Core.Plugins;
+using Populus.Core.Shared;
 using Populus.Core.World.Objects;
 using Populus.Core.World.Objects.Events;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Populus.GroupManager
 {
-    public class GroupsCollection
+    public class GroupsCollection : WoWGuidCollection<Group>
     {
-        #region Declarations
-
-        // Thread safe dictionary to store groups based on character guid. Group references are shared across characters (if Character A and Character B are in the same group, they will point to the same group reference)
-        private ConcurrentDictionary<WoWGuid, Group> mGroups;
-
-        #endregion
-
-        #region Constructors
-
-        internal GroupsCollection()
-        {
-            mGroups = new ConcurrentDictionary<WoWGuid, Group>();
-        }
-
-        #endregion
-
         #region Public Methods
 
         /// <summary>
@@ -34,9 +18,7 @@ namespace Populus.GroupManager
         /// <returns></returns>
         public Group GetCharacterGroup(WoWGuid guid)
         {
-            Group group = null;
-            mGroups.TryGetValue(guid, out group);
-            return group;
+            return Get(guid);
         }
 
         /// <summary>
@@ -47,7 +29,7 @@ namespace Populus.GroupManager
         public GroupMember GetGroupMember(WoWGuid guid)
         {
             // Since the same group should be referenced in all intances and a group member cannot belong to more than one group. We just need to pull the first instance of the group member
-            return mGroups.Values.SelectMany(m => m.Members).Where(m => m.Guid.GetOldGuid() == guid.GetOldGuid()).FirstOrDefault();
+            return Data.Values.SelectMany(m => m.Members).Where(m => m.Guid.GetOldGuid() == guid.GetOldGuid()).FirstOrDefault();
         }
 
         /// <summary>
@@ -57,7 +39,7 @@ namespace Populus.GroupManager
         /// <returns></returns>
         public bool CharacterHasGroup(WoWGuid guid)
         {
-            return mGroups.ContainsKey(guid);
+            return Data.ContainsKey(guid);
         }
 
         /// <summary>
@@ -82,23 +64,13 @@ namespace Populus.GroupManager
                     group = new Group();
 
                 // Add the group for this bot
-                mGroups.TryAdd(bot.Guid, group);
+                AddOrUpdate(bot.Guid, group);
             }
             else
             {
                 group = GetCharacterGroup(bot.Guid);
             }
             return group;
-        }
-
-        /// <summary>
-        /// Removes the group instance for this player. Note that we do not destroy the group because other players may still hold a reference to it
-        /// </summary>
-        /// <param name="guid"></param>
-        internal void RemoveGroupForPlayer(WoWGuid guid)
-        {
-            Group group = null;
-            mGroups.TryRemove(guid, out group);
         }
 
         #endregion
