@@ -76,14 +76,15 @@ namespace Populus.GroupBot
         {
             // No leader, no follow
             // If we ARE the leader, we follow no one!
-            if (leader == null || leader.Guid == mBotOwner.Guid)
+            // Don't follow if we don't have the leaders position
+            if (leader == null || leader.Guid == mBotOwner.Guid || leader.Position == null)
             {
                 mBotOwner.RemoveFollow();
                 return;
             }
 
             // If the group leader is within X yards from us, set them as the follow target. Otherwise remove them as the follow target
-            if (leader.Position != null && mBotOwner.DistanceFrom(leader.Position) <= MAX_FOLLOW_DISTANCE)
+            if (mBotOwner.DistanceFrom(leader.Position) <= MAX_FOLLOW_DISTANCE)
             {
                 mBotOwner.SetFollow(leader.Guid);
                 IsOutOfRangeOfLeader = false;
