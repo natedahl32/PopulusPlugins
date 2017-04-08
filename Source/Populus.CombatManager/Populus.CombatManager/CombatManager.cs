@@ -4,6 +4,15 @@ namespace Populus.CombatManager
 {
     public class CombatManager : PluginBase
     {
+        #region Declarations
+
+        // handlers
+
+        // static instance of our bot handlers collection
+        private static WoWGuidCollection<BotCombatState> mBotCombatCollection = new WoWGuidCollection<BotCombatState>();
+
+        #endregion
+
         #region Constructors
 
         public CombatManager()
