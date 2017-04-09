@@ -44,15 +44,30 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Chat\AttackCommand.cs" />
     <Compile Include="Chat\ChatCommandKeyAttribute.cs" />
     <Compile Include="Chat\FollowCommand.cs" />
     <Compile Include="Chat\IChatCommand.cs" />
+    <Compile Include="Combat\CombatLogicHandler.cs" />
+    <Compile Include="Combat\Druid\DruidCombatLogic.cs" />
+    <Compile Include="Combat\Hunter\HunterCombatLogic.cs" />
+    <Compile Include="Combat\Mage\MageCombatLogic.cs" />
+    <Compile Include="Combat\Paladin\PaladinCombatLogic.cs" />
+    <Compile Include="Combat\Priest\PriestCombatLogic.cs" />
+    <Compile Include="Combat\Rogue\RogueCombatLogic.cs" />
+    <Compile Include="Combat\Shaman\ShamanCombatLogic.cs" />
+    <Compile Include="Combat\Warlock\WarlockCombatLogic.cs" />
+    <Compile Include="Combat\Warrior\WarriorCombatLogic.cs" />
     <Compile Include="GroupBot.cs" />
     <Compile Include="GroupBotChatHandler.cs" />
     <Compile Include="GroupBotHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Populus.CombatManager\Populus.CombatManager\Populus.CombatManager.csproj">
+      <Project>{66dac9a7-e0d4-449a-a56c-4d140c927fbe}</Project>
+      <Name>Populus.CombatManager</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Populus.GroupManager\Populus.GroupManager\Populus.GroupManager.csproj">
       <Project>{a0516de3-1162-4662-8d1c-f471ecea67ca}</Project>
       <Name>Populus.GroupManager</Name>

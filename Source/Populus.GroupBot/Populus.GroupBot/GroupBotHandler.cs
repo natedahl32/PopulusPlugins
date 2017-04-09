@@ -1,9 +1,9 @@
-﻿using Populus.Core.Shared;
-using Populus.Core.World.Objects;
-using Populus.Core.World.Objects.Events;
+﻿using Populus.Core.World.Objects;
+using Populus.GroupBot.Combat;
 using Populus.GroupManager;
 using System;
 using GroupMgr = Populus.GroupManager.GroupManager;
+using CombatMgr = Populus.CombatManager.CombatManager;
 
 namespace Populus.GroupBot
 {
@@ -15,6 +15,7 @@ namespace Populus.GroupBot
 
         private readonly Bot mBotOwner;
         private readonly GroupBotChatHandler mChatHandler;
+        private readonly CombatLogicHandler mCombatLogic;
         private Group mGroup;
 
         #endregion
@@ -26,6 +27,7 @@ namespace Populus.GroupBot
             if (bot == null) throw new ArgumentNullException("bot");
             mBotOwner = bot;
             mChatHandler = new GroupBotChatHandler(this);
+            mCombatLogic = CombatLogicHandler.Create(this, mBotOwner.Class);
 
             // defaults
             IsOutOfRangeOfLeader = false;
@@ -63,6 +65,11 @@ namespace Populus.GroupBot
         /// </summary>
         internal GroupBotChatHandler ChatHandler { get { return mChatHandler; } }
 
+        /// <summary>
+        /// Gets the combat handler
+        /// </summary>
+        internal CombatLogicHandler CombatHandler { get { return mCombatLogic; } }
+
         #endregion
 
         #region Public Methods
@@ -73,6 +80,9 @@ namespace Populus.GroupBot
         /// <param name="deltaTime"></param>
         public void Update(float deltaTime)
         {
+            // TODO: If we are in combat, do combat logic
+            if (CombatMgr.GetCombatState(mBotOwner.Guid).IsInCombat) return;
+
             // Follow the group leader if we aren't already
             FollowGroupLeader();
         }
@@ -125,6 +135,15 @@ namespace Populus.GroupBot
                     IsOutOfRangeOfLeader = true;
                 }
             }
+        }
+
+        /// <summary>
+        /// Gives orders to attack a specified unit
+        /// </summary>
+        /// <param name="target">Unit to attack</param>
+        public void Attack(Unit target)
+        {
+            mCombatLogic.StartAttack(target);
         }
 
         #endregion
