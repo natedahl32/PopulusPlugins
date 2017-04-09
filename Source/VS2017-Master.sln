@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Populus.CombatManager", "Po
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Populus.GroupBot", "Populus.GroupBot\Populus.GroupBot\Populus.GroupBot.csproj", "{5067028D-8DB0-4AC0-A290-C06DFF78B8D3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Populus.ActionManager", "Populus.ActionManager\Populus.ActionManager.csproj", "{96A31C3F-4C29-4CD4-B053-43BB1AB44234}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{5067028D-8DB0-4AC0-A290-C06DFF78B8D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5067028D-8DB0-4AC0-A290-C06DFF78B8D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5067028D-8DB0-4AC0-A290-C06DFF78B8D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96A31C3F-4C29-4CD4-B053-43BB1AB44234}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96A31C3F-4C29-4CD4-B053-43BB1AB44234}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96A31C3F-4C29-4CD4-B053-43BB1AB44234}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96A31C3F-4C29-4CD4-B053-43BB1AB44234}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
