@@ -17,7 +17,7 @@ namespace Populus.GroupBot.Chat
             // Any follow command must come from the leader of the group
             if (chat.SenderGuid != botHandler.Group.Leader.Guid) return;
 
-            // TODO: Maybe add subcommands?
+            // TODO: Maybe add subcommand objects?
 
             // Turn follow off
             if (chat.MessageTokenized.Length > 1 && chat.MessageTokenized[1].ToLower() == "off")

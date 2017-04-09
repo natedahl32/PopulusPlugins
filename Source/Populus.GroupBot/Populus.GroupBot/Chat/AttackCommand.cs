@@ -1,4 +1,5 @@
 ﻿using System;
+using Populus.Core.Utils;
 using Populus.Core.World.Objects.Events;
 
 namespace Populus.GroupBot.Chat
@@ -26,7 +27,7 @@ namespace Populus.GroupBot.Chat
             float dist = botHandler.BotOwner.DistanceFrom(target.Position);
             if (dist > MAX_ATTACK_DISTANCE)
             {
-                botHandler.BotOwner.ChatParty($"That target is too far away. I only attack targets within {MAX_ATTACK_DISTANCE} yards. That target is {dist} yards away.");
+                botHandler.BotOwner.ChatParty($"That target is too far away. I only attack targets within {MAX_ATTACK_DISTANCE} yards. That target is {dist.ToNearestInt()} yards away.");
                 return;
             }
 
