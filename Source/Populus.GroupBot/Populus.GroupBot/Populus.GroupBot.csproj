@@ -44,7 +44,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Chat\ChatCommandKeyAttribute.cs" />
+    <Compile Include="Chat\FollowCommand.cs" />
+    <Compile Include="Chat\IChatCommand.cs" />
     <Compile Include="GroupBot.cs" />
+    <Compile Include="GroupBotChatHandler.cs" />
     <Compile Include="GroupBotHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

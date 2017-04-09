@@ -1,5 +1,6 @@
 ﻿using Populus.Core.Shared;
 using Populus.Core.World.Objects;
+using Populus.Core.World.Objects.Events;
 using Populus.GroupManager;
 using System;
 using GroupMgr = Populus.GroupManager.GroupManager;
@@ -13,6 +14,8 @@ namespace Populus.GroupBot
         private const float MAX_FOLLOW_DISTANCE = 40.0f;
 
         private readonly Bot mBotOwner;
+        private readonly GroupBotChatHandler mChatHandler;
+        private Group mGroup;
 
         #endregion
 
@@ -22,6 +25,7 @@ namespace Populus.GroupBot
         {
             if (bot == null) throw new ArgumentNullException("bot");
             mBotOwner = bot;
+            mChatHandler = new GroupBotChatHandler(this);
 
             // defaults
             IsOutOfRangeOfLeader = false;
@@ -36,6 +40,29 @@ namespace Populus.GroupBot
         /// </summary>
         public bool IsOutOfRangeOfLeader { get; private set; }
 
+        /// <summary>
+        /// Gets the bot owner for this handler
+        /// </summary>
+        internal Bot BotOwner { get { return mBotOwner; } }
+
+        /// <summary>
+        /// Gets the group the bot is in
+        /// </summary>
+        internal Group Group
+        {
+            get
+            {
+                if (mGroup == null)
+                    mGroup = GroupMgr.Groups.GetCharacterGroup(mBotOwner.Guid);
+                return mGroup;
+            }
+        }
+
+        /// <summary>
+        /// Gets the chat handler
+        /// </summary>
+        internal GroupBotChatHandler ChatHandler { get { return mChatHandler; } }
+
         #endregion
 
         #region Public Methods
@@ -46,15 +73,17 @@ namespace Populus.GroupBot
         /// <param name="deltaTime"></param>
         public void Update(float deltaTime)
         {
-            // Get the group from the manager
-            var group = GroupMgr.Groups.GetCharacterGroup(mBotOwner.Guid);
-            if (group == null)
-            {
-                Log.WriteLine(LogType.Debug, $"Debug no group was found for {mBotOwner.Name}");
-                return;
-            }
+            // Follow the group leader if we aren't already
+            FollowGroupLeader();
+        }
 
-            HandleFollowLeader(group.Leader);
+        /// <summary>
+        /// Follows the group leader
+        /// </summary>
+        public void FollowGroupLeader()
+        {
+            if (Group == null) return;
+            FollowGroupMember(Group.Leader);
         }
 
         /// <summary>
@@ -62,31 +91,28 @@ namespace Populus.GroupBot
         /// </summary>
         public void GroupDisbanded()
         {
+            mGroup = null;
             mBotOwner.RemoveFollow();
         }
 
-        #endregion
-
-        #region Private Methods
-
         /// <summary>
-        /// Handles following the leader of the group
+        /// Handles following a member of the group
         /// </summary>
-        private void HandleFollowLeader(GroupMember leader)
+        public void FollowGroupMember(GroupMember member)
         {
             // No leader, no follow
             // If we ARE the leader, we follow no one!
             // Don't follow if we don't have the leaders position
-            if (leader == null || leader.Guid == mBotOwner.Guid || leader.Position == null)
+            if (member == null || member.Guid == mBotOwner.Guid || member.Position == null)
             {
                 mBotOwner.RemoveFollow();
                 return;
             }
 
             // If the group leader is within X yards from us, set them as the follow target. Otherwise remove them as the follow target
-            if (mBotOwner.DistanceFrom(leader.Position) <= MAX_FOLLOW_DISTANCE)
+            if (mBotOwner.DistanceFrom(member.Position) <= MAX_FOLLOW_DISTANCE)
             {
-                mBotOwner.SetFollow(leader.Guid);
+                mBotOwner.SetFollow(member.Guid);
                 IsOutOfRangeOfLeader = false;
             }
             else
@@ -95,11 +121,17 @@ namespace Populus.GroupBot
                 {
                     // Remove the follow target and tell the group leader they are too far away for you to follow
                     mBotOwner.RemoveFollow();
-                    mBotOwner.ChatParty($"I can't follow you {leader.Name} you are too far away!");
+                    mBotOwner.ChatParty($"I can't follow {member.Name} you are too far away!");
                     IsOutOfRangeOfLeader = true;
                 }
             }
         }
+
+        #endregion
+
+        #region Private Methods
+
+
 
         #endregion
     }
