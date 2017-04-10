@@ -40,8 +40,12 @@ namespace Populus.GroupBot
         /// <param name="chat">Chat message to handle</param>
         public void HandleChatMessage(ChatEventArgs chat)
         {
+            var commandString = chat.MessageTokenized[0].ToLower();
+            if (!mChatCommand.ContainsKey(commandString))
+                return;
+
             // Handle chat based on first token
-            var command = mChatCommand[chat.MessageTokenized[0].ToLower()];
+            var command = mChatCommand[commandString];
             if (command != null)
                 command.ProcessCommand(mGroupBotHandler, chat);
         }

@@ -4,6 +4,9 @@ using Populus.GroupManager;
 using System;
 using GroupMgr = Populus.GroupManager.GroupManager;
 using CombatMgr = Populus.CombatManager.CombatManager;
+using ActionMgr = Populus.ActionManager.ActionManager;
+using Populus.ActionManager;
+using Populus.CombatManager;
 
 namespace Populus.GroupBot
 {
@@ -15,7 +18,9 @@ namespace Populus.GroupBot
 
         private readonly Bot mBotOwner;
         private readonly GroupBotChatHandler mChatHandler;
+        private readonly BotCombatState mCombatState;
         private readonly CombatLogicHandler mCombatLogic;
+        private readonly ActionQueue mActionQueue;
         private Group mGroup;
 
         #endregion
@@ -28,6 +33,8 @@ namespace Populus.GroupBot
             mBotOwner = bot;
             mChatHandler = new GroupBotChatHandler(this);
             mCombatLogic = CombatLogicHandler.Create(this, mBotOwner.Class);
+            mActionQueue = ActionMgr.GetActionQueue(mBotOwner.Guid);
+            mCombatState = CombatMgr.GetCombatState(mBotOwner.Guid);
 
             // defaults
             IsOutOfRangeOfLeader = false;
@@ -81,7 +88,9 @@ namespace Populus.GroupBot
         public void Update(float deltaTime)
         {
             // TODO: If we are in combat, do combat logic
-            if (CombatMgr.GetCombatState(mBotOwner.Guid).IsInCombat) return;
+            if (mCombatState.IsInCombat) return;
+            // Do not update if we already have actions we need to process
+            if (!mActionQueue.IsEmpty) return;
 
             // Follow the group leader if we aren't already
             FollowGroupLeader();

@@ -65,6 +65,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Populus.ActionManager\Populus.ActionManager.csproj">
+      <Project>{96a31c3f-4c29-4cd4-b053-43bb1ab44234}</Project>
+      <Name>Populus.ActionManager</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Populus.CombatManager\Populus.CombatManager\Populus.CombatManager.csproj">
       <Project>{66dac9a7-e0d4-449a-a56c-4d140c927fbe}</Project>
       <Name>Populus.CombatManager</Name>

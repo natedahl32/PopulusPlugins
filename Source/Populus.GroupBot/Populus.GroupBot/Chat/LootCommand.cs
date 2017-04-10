@@ -4,6 +4,8 @@ using Populus.Core.World.Objects.Events;
 using Populus.Core.World.Objects;
 using System.Collections.Generic;
 using System.Linq;
+using ActionMgr = Populus.ActionManager.ActionManager;
+using Populus.ActionManager.Actions;
 
 namespace Populus.GroupBot.Chat
 {
@@ -27,7 +29,7 @@ namespace Populus.GroupBot.Chat
             {
                 var lootList = FindCloseLootables(botHandler);
                 foreach (var lootable in lootList)
-                    Loot(lootable);
+                    Loot(botHandler, lootable);
                 return;
             }
 
@@ -35,10 +37,11 @@ namespace Populus.GroupBot.Chat
             // Get the leaders target
             var leaderObj = botHandler.BotOwner.GetPlayerByGuid(botHandler.Group.Leader.Guid);
             if (leaderObj == null) return;
+            // TODO: Only works if a unit, what if it's a GameObject?
             var target = botHandler.BotOwner.GetUnitByGuid(leaderObj.TargetGuid);
             if (target == null) return;
 
-            // Get the object that we were told to loot. We loot things differently depending on the type
+            // Get the object that we were told to loot.
             var lootObject = botHandler.BotOwner.GetWorldObjectByGuid(target.Guid);
             if (lootObject == null)
             {
@@ -55,13 +58,15 @@ namespace Populus.GroupBot.Chat
             }
 
             // If the target is not dead, we can't loot it.
+            // TODO: Only if a unit, what if it's a GameObject?
             if (!target.IsDead)
             {
                 botHandler.BotOwner.ChatParty($"That target is not dead, I can't loot that.");
                 return;
             }
 
-            
+            // Loot the object
+            Loot(botHandler, target);
         }
 
         /// <summary>
@@ -87,9 +92,11 @@ namespace Populus.GroupBot.Chat
         /// Attempts to loot a world object
         /// </summary>
         /// <param name="wo">World Object to loot</param>
-        private void Loot(WorldObject wo)
+        private void Loot(GroupBotHandler botHandler, WorldObject wo)
         {
-
+            var actionQueue = ActionMgr.GetActionQueue(botHandler.BotOwner.Guid);
+            actionQueue.Add(new MoveTowardsObject(botHandler.BotOwner, wo, 1.0f));
+            actionQueue.Add(new LootObject(botHandler.BotOwner, wo));
         }
     }
 }

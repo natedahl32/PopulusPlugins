@@ -11,6 +11,8 @@ namespace Populus.GroupBot
     /// will also cause the bot to accept a group invite from anyone.
     /// 
     /// This plugin depends on:
+    ///     ActionManager
+    ///     CombatManager
     ///     GroupManager
     /// </summary>
     public class GroupBot : PluginBase
