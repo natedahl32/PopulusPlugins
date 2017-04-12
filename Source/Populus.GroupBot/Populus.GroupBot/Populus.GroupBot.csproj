@@ -48,7 +48,9 @@
     <Compile Include="Chat\ChatCommandKeyAttribute.cs" />
     <Compile Include="Chat\FollowCommand.cs" />
     <Compile Include="Chat\IChatCommand.cs" />
+    <Compile Include="Chat\ItemCommand.cs" />
     <Compile Include="Chat\LootCommand.cs" />
+    <Compile Include="Chat\QuestCommand.cs" />
     <Compile Include="Combat\CombatLogicHandler.cs" />
     <Compile Include="Combat\Druid\DruidCombatLogic.cs" />
     <Compile Include="Combat\Hunter\HunterCombatLogic.cs" />

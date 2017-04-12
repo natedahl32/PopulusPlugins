@@ -39,7 +39,11 @@ namespace Populus.GroupBot.Chat
             if (leaderObj == null) return;
             // TODO: Only works if a unit, what if it's a GameObject?
             var target = botHandler.BotOwner.GetUnitByGuid(leaderObj.TargetGuid);
-            if (target == null) return;
+            if (target == null)
+            {
+                botHandler.BotOwner.ChatParty("Target what you would like me to loot.");
+                return;
+            }
 
             // Get the object that we were told to loot.
             var lootObject = botHandler.BotOwner.GetWorldObjectByGuid(target.Guid);

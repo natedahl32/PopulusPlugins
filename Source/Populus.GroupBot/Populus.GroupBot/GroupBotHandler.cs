@@ -7,6 +7,8 @@ using CombatMgr = Populus.CombatManager.CombatManager;
 using ActionMgr = Populus.ActionManager.ActionManager;
 using Populus.ActionManager;
 using Populus.CombatManager;
+using Populus.Core.Shared;
+using System.Linq;
 
 namespace Populus.GroupBot
 {
@@ -22,6 +24,8 @@ namespace Populus.GroupBot
         private readonly CombatLogicHandler mCombatLogic;
         private readonly ActionQueue mActionQueue;
         private Group mGroup;
+
+        private Coordinate mLastKnownFollowPosition;
 
         #endregion
 
@@ -129,19 +133,29 @@ namespace Populus.GroupBot
             }
 
             // If the group leader is within X yards from us, set them as the follow target. Otherwise remove them as the follow target
-            if (mBotOwner.DistanceFrom(member.Position) <= MAX_FOLLOW_DISTANCE)
+            if (mBotOwner.DistanceFrom(member.Position) <= MAX_FOLLOW_DISTANCE && mBotOwner.MapId == member.MapId)
             {
                 mBotOwner.SetFollow(member.Guid);
                 IsOutOfRangeOfLeader = false;
+                mLastKnownFollowPosition = mBotOwner.Position;
             }
             else
             {
                 if (!IsOutOfRangeOfLeader)
                 {
-                    // Remove the follow target and tell the group leader they are too far away for you to follow
-                    mBotOwner.RemoveFollow();
-                    mBotOwner.ChatParty($"I can't follow {member.Name} you are too far away!");
-                    IsOutOfRangeOfLeader = true;
+                    // If we have a last known position, move to that, it might take us through a portal
+                    if (mLastKnownFollowPosition != null)
+                    {
+                        mBotOwner.MoveToPosition(mLastKnownFollowPosition);
+                        IsOutOfRangeOfLeader = true;
+                    }
+                    else
+                    {
+                        // Remove the follow target and tell the group leader they are too far away for you to follow
+                        mBotOwner.RemoveFollow();
+                        mBotOwner.ChatParty($"I can't follow {member.Name} you are too far away!");
+                        IsOutOfRangeOfLeader = true;
+                    }
                 }
             }
         }
@@ -159,7 +173,15 @@ namespace Populus.GroupBot
 
         #region Private Methods
 
-
+        /// <summary>
+        /// Drops the current group if the bot is the only person currently online
+        /// </summary>
+        private void DropGroupIfOnlyPersonOnline()
+        {
+            if (Group == null) return;
+            if (!Group.Members.Any(m => m.IsOnline))
+                mBotOwner.LeaveGroup();
+        }
 
         #endregion
     }
