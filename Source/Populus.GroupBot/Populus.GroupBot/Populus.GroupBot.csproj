@@ -51,6 +51,7 @@
     <Compile Include="Chat\ItemCommand.cs" />
     <Compile Include="Chat\LootCommand.cs" />
     <Compile Include="Chat\QuestCommand.cs" />
+    <Compile Include="Chat\VendorCommand.cs" />
     <Compile Include="Combat\CombatLogicHandler.cs" />
     <Compile Include="Combat\Druid\DruidCombatLogic.cs" />
     <Compile Include="Combat\Hunter\HunterCombatLogic.cs" />

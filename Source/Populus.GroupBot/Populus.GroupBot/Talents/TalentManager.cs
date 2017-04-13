@@ -55,7 +55,7 @@ namespace Populus.GroupBot.Talents
                 var classSpec = (ClassName)Convert.ToByte(lines[0]);
                 var specName = lines[1];
                 uint[] talents = new uint[51];
-                for (int i = 2; i < 51; i++)
+                for (int i = 2; i < 53; i++)
                     talents[i - 2] = Convert.ToUInt32(lines[i]);
 
                 var talentSpec = new TalentSpec(classSpec, specName, talents);

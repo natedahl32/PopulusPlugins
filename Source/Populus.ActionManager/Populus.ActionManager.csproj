@@ -48,6 +48,7 @@
     <Compile Include="ActionManager.cs" />
     <Compile Include="ActionQueue.cs" />
     <Compile Include="Actions\AcceptQuests.cs" />
+    <Compile Include="Actions\BuySpellsFromTrainer.cs" />
     <Compile Include="Actions\LootObject.cs" />
     <Compile Include="Actions\MoveTowardsObject.cs" />
     <Compile Include="IAction.cs" />
