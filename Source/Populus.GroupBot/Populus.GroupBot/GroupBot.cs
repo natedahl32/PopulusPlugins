@@ -23,6 +23,7 @@ namespace Populus.GroupBot
         // handlers
         BotEventDelegate<GroupInviteEventArgs> inviteHandler = null;
         BotEventDelegate<ChatEventArgs> chatHandler = null;
+        BotEventDelegate<uint> levelUpHandler = null;
 
         // static instance of our bot handlers collection
         private static WoWGuidCollection<GroupBotHandler> mBotHandlerCollection = new WoWGuidCollection<GroupBotHandler>();
@@ -70,13 +71,27 @@ namespace Populus.GroupBot
                     handler.ChatHandler.HandleChatMessage(args);
             };
             Bot.ChatMessageReceived += chatHandler;
+
+            // Level up handler
+            levelUpHandler = (bot, level) =>
+            {
+                var handler = mBotHandlerCollection.Get(bot.Guid);
+                if (handler != null)
+                    handler.HandleFreeTalentPoints();
+            };
+            Bot.LevelUp += levelUpHandler;
         }
 
         public override void Unload()
         {
+            // Save bot data
+            foreach (var handler in mBotHandlerCollection.GetAll())
+                handler.SaveBotData();
+
             // Remove handlers to avoid memory leaks
             Bot.ChatMessageReceived -= chatHandler;
             Bot.GroupInvite -= inviteHandler;
+            Bot.LevelUp -= levelUpHandler;
         }
 
         public override void OnTick(Bot bot, float deltaTime)

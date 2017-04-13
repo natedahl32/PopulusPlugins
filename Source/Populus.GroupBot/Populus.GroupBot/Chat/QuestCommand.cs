@@ -22,7 +22,7 @@ namespace Populus.GroupBot.Chat
             if (botHandler == null) throw new ArgumentNullException("botHandler");
             if (chat == null) throw new ArgumentNullException("chat");
 
-            // Any loot command must come from the leader of the group
+            // Any quest command must come from the leader of the group
             if (chat.SenderGuid != botHandler.Group.Leader.Guid) return;
 
             // TODO: Maybe add subcommand objects?

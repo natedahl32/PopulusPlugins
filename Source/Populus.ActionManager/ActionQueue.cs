@@ -75,6 +75,9 @@ namespace Populus.ActionManager
         {
             lock(mActionLock)
             {
+                // If there are no actions in the queue, this is the first so we need to start it
+                if (mActions.Count == 0)
+                    action.Start();
                 mActions.AddLast(action);
             }
         }

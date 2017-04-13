@@ -98,6 +98,66 @@ namespace Populus.GroupBot.Combat
             }
         }
 
+        /// <summary>
+        /// Gets the spec associated with the talent tab for a class
+        /// </summary>
+        /// <param name="class"></param>
+        /// <param name="tab"></param>
+        /// <returns></returns>
+        public static MainSpec GetSpecFromTalentTab(ClassName @class, uint tab)
+        {
+            switch (@class)
+            {
+                case ClassName.Druid:
+                    if (tab == 0) return MainSpec.DRUID_SPEC_BALANCE;
+                    if (tab == 1) return MainSpec.DRUID_SPEC_FERAL;
+                    if (tab == 2) return MainSpec.DRUID_SPEC_RESTORATION;
+                    break;
+                case ClassName.Hunter:
+                    if (tab == 0) return MainSpec.HUNTER_SPEC_BEASTMASTERY;
+                    if (tab == 1) return MainSpec.HUNTER_SPEC_MARKSMANSHIP;
+                    if (tab == 2) return MainSpec.HUNTER_SPEC_SURVIVAL;
+                    break;
+                case ClassName.Mage:
+                    if (tab == 0) return MainSpec.MAGE_SPEC_ARCANE;
+                    if (tab == 1) return MainSpec.MAGE_SPEC_FIRE;
+                    if (tab == 2) return MainSpec.MAGE_SPEC_FROST;
+                    break;
+                case ClassName.Paladin:
+                    if (tab == 0) return MainSpec.PALADIN_SPEC_HOLY;
+                    if (tab == 1) return MainSpec.PALADIN_SPEC_PROTECTION;
+                    if (tab == 2) return MainSpec.PALADIN_SPEC_RETRIBUTION;
+                    break;
+                case ClassName.Priest:
+                    if (tab == 0) return MainSpec.PRIEST_SPEC_DISCIPLINE;
+                    if (tab == 1) return MainSpec.PRIEST_SPEC_HOLY;
+                    if (tab == 2) return MainSpec.PRIEST_SPEC_SHADOW;
+                    break;
+                case ClassName.Rogue:
+                    if (tab == 0) return MainSpec.ROGUE_SPEC_ASSASSINATION;
+                    if (tab == 1) return MainSpec.ROGUE_SPEC_COMBAT;
+                    if (tab == 2) return MainSpec.ROGUE_SPEC_SUBTELTY;
+                    break;
+                case ClassName.Shaman:
+                    if (tab == 0) return MainSpec.SHAMAN_SPEC_ELEMENTAL;
+                    if (tab == 1) return MainSpec.SHAMAN_SPEC_ENHANCEMENT;
+                    if (tab == 2) return MainSpec.SHAMAN_SPEC_RESTORATION;
+                    break;
+                case ClassName.Warlock:
+                    if (tab == 0) return MainSpec.WARLOCK_SPEC_AFFLICTION;
+                    if (tab == 1) return MainSpec.WARLOCK_SPEC_DEMONOLOGY;
+                    if (tab == 2) return MainSpec.WARLOCK_SPEC_DESTRUCTION;
+                    break;
+                case ClassName.Warrior:
+                    if (tab == 0) return MainSpec.WARRIOR_SPEC_ARMS;
+                    if (tab == 1) return MainSpec.WARRIOR_SPEC_FURY;
+                    if (tab == 2) return MainSpec.WARRIOR_SPEC_PROTECTION;
+                    break;
+            }
+
+            return MainSpec.NONE;
+        }
+
         #endregion
     }
 }

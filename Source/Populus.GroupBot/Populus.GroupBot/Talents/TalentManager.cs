@@ -25,6 +25,8 @@ namespace Populus.GroupBot.Talents
 
         #region Declarations
 
+        internal const int MAX_TALENT_POINTS = 51;
+
         private readonly Dictionary<ClassName, List<TalentSpec>> mTalentSpecs = new Dictionary<ClassName, List<TalentSpec>>();
 
         #endregion
@@ -49,13 +51,13 @@ namespace Populus.GroupBot.Talents
         internal void LoadTalents()
         {
             // Read all files from the talents folder
-            foreach (string file in Directory.EnumerateFiles("talents", "*.*"))
+            foreach (string file in Directory.EnumerateFiles(@"bot\talents", "*.*"))
             {
                 var lines = File.ReadAllLines(file);
                 var classSpec = (ClassName)Convert.ToByte(lines[0]);
                 var specName = lines[1];
-                uint[] talents = new uint[51];
-                for (int i = 2; i < 53; i++)
+                uint[] talents = new uint[MAX_TALENT_POINTS];
+                for (int i = 2; (i < (MAX_TALENT_POINTS + 2)) && (i < lines.Length); i++)
                     talents[i - 2] = Convert.ToUInt32(lines[i]);
 
                 var talentSpec = new TalentSpec(classSpec, specName, talents);

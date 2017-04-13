@@ -9,6 +9,8 @@ using Populus.ActionManager;
 using Populus.CombatManager;
 using Populus.Core.Shared;
 using System.Linq;
+using Populus.GroupBot.Talents;
+using Populus.GroupBot.Actions;
 
 namespace Populus.GroupBot
 {
@@ -19,6 +21,7 @@ namespace Populus.GroupBot
         private const float MAX_FOLLOW_DISTANCE = 40.0f;
 
         private readonly Bot mBotOwner;
+        private readonly GroupBotData mGroupBotData;
         private readonly GroupBotChatHandler mChatHandler;
         private readonly BotCombatState mCombatState;
         private readonly CombatLogicHandler mCombatLogic;
@@ -39,6 +42,7 @@ namespace Populus.GroupBot
             mCombatLogic = CombatLogicHandler.Create(this, mBotOwner.Class);
             mActionQueue = ActionMgr.GetActionQueue(mBotOwner.Guid);
             mCombatState = CombatMgr.GetCombatState(mBotOwner.Guid);
+            mGroupBotData = GroupBotData.LoadData(bot.Guid.GetOldGuid());
 
             // defaults
             IsOutOfRangeOfLeader = false;
@@ -80,6 +84,19 @@ namespace Populus.GroupBot
         /// Gets the combat handler
         /// </summary>
         internal CombatLogicHandler CombatHandler { get { return mCombatLogic; } }
+
+        /// <summary>
+        /// Gets the group bot data for this bot
+        /// </summary>
+        internal GroupBotData BotData { get { return mGroupBotData; } }
+
+        /// <summary>
+        /// Gets the bots currently assigned talent spec
+        /// </summary>
+        public TalentSpec CurrentTalentSpec
+        {
+            get { return TalentManager.Instance.TalentSpecsByClass(mBotOwner.Class).Where(s => s.Name == BotData.SpecName).SingleOrDefault(); }
+        }
 
         #endregion
 
@@ -167,6 +184,23 @@ namespace Populus.GroupBot
         public void Attack(Unit target)
         {
             mCombatLogic.StartAttack(target);
+        }
+
+        /// <summary>
+        /// Saves bot data to a file
+        /// </summary>
+        internal void SaveBotData()
+        {
+            mGroupBotData.Serialize(mBotOwner.Guid.GetOldGuid());
+        }
+
+        /// <summary>
+        /// Handles any free talent points the bot has saved up
+        /// </summary>
+        internal void HandleFreeTalentPoints()
+        {
+            if (mBotOwner.FreeTalentPoints > 0 && CurrentTalentSpec != null)
+                mActionQueue.Add(new SpendFreeTalentPoints(BotOwner, CurrentTalentSpec));
         }
 
         #endregion
