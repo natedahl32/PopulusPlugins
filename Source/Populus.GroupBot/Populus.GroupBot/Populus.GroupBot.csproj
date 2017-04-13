@@ -63,6 +63,8 @@
     <Compile Include="GroupBotChatHandler.cs" />
     <Compile Include="GroupBotHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Talents\TalentManager.cs" />
+    <Compile Include="Talents\TalentSpec.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Populus.ActionManager\Populus.ActionManager.csproj">

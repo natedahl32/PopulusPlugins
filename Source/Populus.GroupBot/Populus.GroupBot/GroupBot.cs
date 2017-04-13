@@ -1,6 +1,7 @@
 ﻿using Populus.Core.Plugins;
 using Populus.Core.World.Objects;
 using Populus.Core.World.Objects.Events;
+using Populus.GroupBot.Talents;
 using static Populus.Core.World.Objects.Bot;
 using GroupMgr = Populus.GroupManager.GroupManager;
 
@@ -34,6 +35,8 @@ namespace Populus.GroupBot
         {
             // On load we need to register all chat commands we have in this plugin
             GroupBotChatHandler.RegisterChatCommands();
+            // Load all talent specs that have been created as well
+            TalentManager.Instance.LoadTalents();
         }
 
         #endregion
