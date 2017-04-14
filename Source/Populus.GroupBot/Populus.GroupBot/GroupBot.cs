@@ -24,6 +24,7 @@ namespace Populus.GroupBot
         BotEventDelegate<GroupInviteEventArgs> inviteHandler = null;
         BotEventDelegate<ChatEventArgs> chatHandler = null;
         BotEventDelegate<uint> levelUpHandler = null;
+        EmptyEventDelegate loginHandler = null;
 
         // static instance of our bot handlers collection
         private static WoWGuidCollection<GroupBotHandler> mBotHandlerCollection = new WoWGuidCollection<GroupBotHandler>();
@@ -80,6 +81,14 @@ namespace Populus.GroupBot
                     handler.HandleFreeTalentPoints();
             };
             Bot.LevelUp += levelUpHandler;
+
+            // Login handler
+            loginHandler = bot =>
+            {
+                // Wait 10 seconds after login and make sure the bot is not in a group with no one online. If they are, leave the group.
+
+            };
+            Bot.LoggedIn += loginHandler;
         }
 
         public override void Unload()
@@ -92,6 +101,7 @@ namespace Populus.GroupBot
             Bot.ChatMessageReceived -= chatHandler;
             Bot.GroupInvite -= inviteHandler;
             Bot.LevelUp -= levelUpHandler;
+            Bot.LoggedIn -= loginHandler;
         }
 
         public override void OnTick(Bot bot, float deltaTime)
