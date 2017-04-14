@@ -24,7 +24,7 @@ namespace Populus.GroupBot
         private readonly GroupBotData mGroupBotData;
         private readonly GroupBotChatHandler mChatHandler;
         private readonly BotCombatState mCombatState;
-        private readonly CombatLogicHandler mCombatLogic;
+        private CombatLogicHandler mCombatLogic;
         private readonly ActionQueue mActionQueue;
         private Group mGroup;
 
@@ -39,10 +39,11 @@ namespace Populus.GroupBot
             if (bot == null) throw new ArgumentNullException("bot");
             mBotOwner = bot;
             mChatHandler = new GroupBotChatHandler(this);
-            mCombatLogic = CombatLogicHandler.Create(this, mBotOwner.Class);
             mActionQueue = ActionMgr.GetActionQueue(mBotOwner.Guid);
             mCombatState = CombatMgr.GetCombatState(mBotOwner.Guid);
             mGroupBotData = GroupBotData.LoadData(bot.Guid.GetOldGuid());
+            // Occurs after data so we can get spec if one is specified
+            mCombatLogic = CombatLogicHandler.Create(this, mBotOwner.Class, CurrentTalentSpec);
 
             // defaults
             IsOutOfRangeOfLeader = false;
@@ -200,7 +201,13 @@ namespace Populus.GroupBot
         internal void HandleFreeTalentPoints()
         {
             if (mBotOwner.FreeTalentPoints > 0 && CurrentTalentSpec != null)
-                mActionQueue.Add(new SpendFreeTalentPoints(BotOwner, CurrentTalentSpec));
+                mActionQueue.Add(
+                    new SpendFreeTalentPoints(BotOwner, 
+                                              CurrentTalentSpec, 
+                                              () => 
+                                              {
+                                                  mCombatLogic = CombatLogicHandler.Create(this, mBotOwner.Class, CurrentTalentSpec);
+                                              }));
         }
 
         #endregion

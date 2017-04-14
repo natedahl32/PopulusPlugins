@@ -1,12 +1,12 @@
 ﻿namespace Populus.GroupBot.Combat.Druid
 {
-    public class DruidCombatLogic : CombatLogicHandler
+    public class BalanceCombatLogic : DruidCombatLogic
     {
         #region Constructors
 
-        public DruidCombatLogic(GroupBotHandler botHandler) : base(botHandler)
+        public BalanceCombatLogic(GroupBotHandler botHandler) : base(botHandler)
         {
-            
+
         }
 
         #endregion
@@ -18,7 +18,7 @@
         /// </summary>
         public override bool IsMelee
         {
-            get { return true; }
+            get { return false; }
         }
 
         #endregion

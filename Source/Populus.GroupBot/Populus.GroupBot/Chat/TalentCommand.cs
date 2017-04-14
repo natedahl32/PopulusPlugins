@@ -69,7 +69,7 @@ namespace Populus.GroupBot.Chat
         private void ListTalents(GroupBotHandler botHandler)
         {
             var currentTalentSpec = botHandler.CurrentTalentSpec;
-            botHandler.BotOwner.ChatParty($"My current talent spec is set to: {(currentTalentSpec == null ? "NONE" : currentTalentSpec.Name)}");
+            botHandler.BotOwner.ChatParty($"I have {botHandler.BotOwner.FreeTalentPoints} unspent talent points and my current talent spec is set to: {(currentTalentSpec == null ? "NONE" : currentTalentSpec.Name)}");
             botHandler.BotOwner.ChatParty("The talent specs available for my class are:");
             var specsAvailable = TalentManager.Instance.TalentSpecsByClass(botHandler.BotOwner.Class).ToList();
             if (specsAvailable.Count == 0)

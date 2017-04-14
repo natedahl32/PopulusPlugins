@@ -12,6 +12,7 @@ namespace Populus.GroupBot.Actions
 
         private bool mCantLearnAnyTalents = false;
         private TalentSpec mCurrentTalentSpec;
+        private System.Action mCompletedCallback;
 
         #endregion
 
@@ -21,6 +22,12 @@ namespace Populus.GroupBot.Actions
         {
             if (currentTalentSpec == null) throw new ArgumentNullException("currentTalentSpec");
             mCurrentTalentSpec = currentTalentSpec;
+        }
+
+        public SpendFreeTalentPoints(Bot bot, TalentSpec currentTalentSpec, System.Action completedCallback) : this(bot, currentTalentSpec)
+        {
+            if (completedCallback == null) throw new ArgumentNullException("completedCallback");
+            mCompletedCallback = completedCallback;
         }
 
         #endregion
@@ -60,6 +67,9 @@ namespace Populus.GroupBot.Actions
 
             // Remove events
             Bot.LearnedSpell -= LearnedSpell;
+
+            // If we have a completed callback, invoke it
+            mCompletedCallback?.Invoke();
         }
 
         #endregion

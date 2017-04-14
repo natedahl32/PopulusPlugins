@@ -11,6 +11,7 @@ using Populus.GroupBot.Combat.Warlock;
 using Populus.GroupBot.Combat.Warrior;
 using CombatMgr = Populus.CombatManager.CombatManager;
 using System;
+using Populus.GroupBot.Talents;
 
 namespace Populus.GroupBot.Combat
 {
@@ -93,6 +94,132 @@ namespace Populus.GroupBot.Combat
                     return new WarlockCombatLogic(botHandler);
                 case ClassName.Warrior:
                     return new WarriorCombatLogic(botHandler);
+                default:
+                    throw new ArgumentException($"Class {botClass} is not defined. Unable to create combat logic handler for this class.");
+            }
+        }
+
+        /// <summary>
+        /// Create a combat logic handler based on class and spec
+        /// </summary>
+        /// <param name="botHandler"></param>
+        /// <param name="botClass"></param>
+        /// <param name="spec"></param>
+        /// <returns></returns>
+        public static CombatLogicHandler Create(GroupBotHandler botHandler, ClassName botClass, TalentSpec spec)
+        {
+            if (spec == null) return Create(botHandler, botClass);
+
+            switch (botClass)
+            {
+                case ClassName.Druid:
+                    switch (spec.Spec)
+                    {
+                        case MainSpec.DRUID_SPEC_BALANCE:
+                            return new Druid.BalanceCombatLogic(botHandler);
+                        case MainSpec.DRUID_SPEC_FERAL:
+                            return new Druid.FeralCombatLogic(botHandler);
+                        case MainSpec.DRUID_SPEC_RESTORATION:
+                            return new Druid.RestorationCombatLogic(botHandler);
+                        default:
+                            return new DruidCombatLogic(botHandler);
+                    }
+                case ClassName.Hunter:
+                    switch (spec.Spec)
+                    {
+                        case MainSpec.HUNTER_SPEC_BEASTMASTERY:
+                            return new Hunter.BeastMasteryCombatLogic(botHandler);
+                        case MainSpec.HUNTER_SPEC_MARKSMANSHIP:
+                            return new Hunter.MarksmanshipCombatLogic(botHandler);
+                        case MainSpec.HUNTER_SPEC_SURVIVAL:
+                            return new Hunter.SurvivalCombatLogic(botHandler);
+                        default:
+                            return new HunterCombatLogic(botHandler);
+                    }
+                case ClassName.Mage:
+                    switch(spec.Spec)
+                    {
+                        case MainSpec.MAGE_SPEC_ARCANE:
+                            return new Mage.ArcaneCombatLogic(botHandler);
+                        case MainSpec.MAGE_SPEC_FIRE:
+                            return new Mage.FireCombatLogic(botHandler);
+                        case MainSpec.MAGE_SPEC_FROST:
+                            return new Mage.FrostCombatLogic(botHandler);
+                        default:
+                            return new MageCombatLogic(botHandler);
+                    }
+                case ClassName.Paladin:
+                    switch(spec.Spec)
+                    {
+                        case MainSpec.PALADIN_SPEC_HOLY:
+                            return new Paladin.HolyCombatLogic(botHandler);
+                        case MainSpec.PALADIN_SPEC_PROTECTION:
+                            return new Paladin.ProtectionCombatLogic(botHandler);
+                        case MainSpec.PALADIN_SPEC_RETRIBUTION:
+                            return new Paladin.RetributionCombatLogic(botHandler);
+                        default:
+                            return new PaladinCombatLogic(botHandler);
+                    }
+                case ClassName.Priest:
+                    switch(spec.Spec)
+                    {
+                        case MainSpec.PRIEST_SPEC_DISCIPLINE:
+                            return new Priest.DisciplineCombatLogic(botHandler);
+                        case MainSpec.PRIEST_SPEC_HOLY:
+                            return new Priest.HolyCombatLogic(botHandler);
+                        case MainSpec.PRIEST_SPEC_SHADOW:
+                            return new Priest.ShadowCombatLogic(botHandler);
+                        default:
+                            return new PriestCombatLogic(botHandler);
+                    }
+                case ClassName.Rogue:
+                    switch(spec.Spec)
+                    {
+                        case MainSpec.ROGUE_SPEC_ASSASSINATION:
+                            return new Rogue.AssassinationCombatLogic(botHandler);
+                        case MainSpec.ROGUE_SPEC_COMBAT:
+                            return new Rogue.CombatCombatLogic(botHandler);
+                        case MainSpec.ROGUE_SPEC_SUBTELTY:
+                            return new Rogue.SubtletyCombatLogic(botHandler);
+                        default:
+                            return new RogueCombatLogic(botHandler);
+                    }
+                case ClassName.Shaman:
+                    switch (spec.Spec)
+                    {
+                        case MainSpec.SHAMAN_SPEC_ELEMENTAL:
+                            return new Shaman.ElementalCombatLogic(botHandler);
+                        case MainSpec.SHAMAN_SPEC_ENHANCEMENT:
+                            return new Shaman.EnhancementCombatLogic(botHandler);
+                        case MainSpec.SHAMAN_SPEC_RESTORATION:
+                            return new Shaman.RestorationCombatLogic(botHandler);
+                        default:
+                            return new ShamanCombatLogic(botHandler);
+                    }
+                case ClassName.Warlock:
+                    switch(spec.Spec)
+                    {
+                        case MainSpec.WARLOCK_SPEC_AFFLICTION:
+                            return new Warlock.AfflictionCombatLogic(botHandler);
+                        case MainSpec.WARLOCK_SPEC_DEMONOLOGY:
+                            return new Warlock.DemonologyCombatLogic(botHandler);
+                        case MainSpec.WARLOCK_SPEC_DESTRUCTION:
+                            return new Warlock.DestructionCombatLogic(botHandler);
+                        default:
+                            return new WarlockCombatLogic(botHandler);
+                    }
+                case ClassName.Warrior:
+                    switch (spec.Spec)
+                    {
+                        case MainSpec.WARRIOR_SPEC_PROTECTION:
+                            return new Warrior.ProtectionCombatLogic(botHandler);
+                        case MainSpec.WARRIOR_SPEC_ARMS:
+                            return new Warrior.ArmsCombatLogic(botHandler);
+                        case MainSpec.WARRIOR_SPEC_FURY:
+                            return new Warrior.FuryCombatLogic(botHandler);
+                        default:
+                            return new WarriorCombatLogic(botHandler);
+                    }
                 default:
                     throw new ArgumentException($"Class {botClass} is not defined. Unable to create combat logic handler for this class.");
             }

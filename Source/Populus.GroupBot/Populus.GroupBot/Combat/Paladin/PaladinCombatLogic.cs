@@ -18,7 +18,6 @@
         /// </summary>
         public override bool IsMelee
         {
-            // TODO: Depending on spec, for now return true
             get { return true; }
         }
 
