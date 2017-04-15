@@ -44,6 +44,7 @@ namespace Populus.GroupBot
             mGroupBotData = GroupBotData.LoadData(bot.Guid.GetOldGuid());
             // Occurs after data so we can get spec if one is specified
             mCombatLogic = CombatLogicHandler.Create(this, mBotOwner.Class, CurrentTalentSpec);
+            mCombatLogic.InitializeSpells();
 
             // defaults
             IsOutOfRangeOfLeader = false;
@@ -207,6 +208,7 @@ namespace Populus.GroupBot
                                               () => 
                                               {
                                                   mCombatLogic = CombatLogicHandler.Create(this, mBotOwner.Class, CurrentTalentSpec);
+                                                  mCombatLogic.InitializeSpells();
                                               }));
         }
 

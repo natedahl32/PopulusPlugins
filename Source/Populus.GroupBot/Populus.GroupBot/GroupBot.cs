@@ -28,6 +28,8 @@ namespace Populus.GroupBot
         BotEventDelegate<ChatEventArgs> chatHandler = null;
         BotEventDelegate<uint> levelUpHandler = null;
         EmptyEventDelegate loginHandler = null;
+        BotEventDelegate<uint> spellLearnedHandler = null;
+        BotEventDelegate<uint> spellRemovedHandler = null;
 
         // static instance of our bot handlers collection
         private static WoWGuidCollection<GroupBotHandler> mBotHandlerCollection = new WoWGuidCollection<GroupBotHandler>();
@@ -106,6 +108,23 @@ namespace Populus.GroupBot
                         });
             };
             Bot.LoggedIn += loginHandler;
+
+            // Handles spells being learned and unlearned
+            spellLearnedHandler = (bot, args) =>
+            {
+                var handler = mBotHandlerCollection.Get(bot.Guid);
+                if (handler != null)
+                    handler.CombatHandler.InitializeSpells();
+            };
+            Bot.LearnedSpell += spellLearnedHandler;
+
+            spellRemovedHandler = (bot, args) =>
+            {
+                var handler = mBotHandlerCollection.Get(bot.Guid);
+                if (handler != null)
+                    handler.CombatHandler.InitializeSpells();
+            };
+            Bot.RemovedSpell += spellRemovedHandler;
         }
 
         public override void Unload()
@@ -119,6 +138,8 @@ namespace Populus.GroupBot
             Bot.GroupInvite -= inviteHandler;
             Bot.LevelUp -= levelUpHandler;
             Bot.LoggedIn -= loginHandler;
+            Bot.LearnedSpell -= spellLearnedHandler;
+            Bot.RemovedSpell -= spellRemovedHandler;
         }
 
         public override void OnTick(Bot bot, float deltaTime)
