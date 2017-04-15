@@ -12,6 +12,7 @@ using Populus.GroupBot.Combat.Warrior;
 using CombatMgr = Populus.CombatManager.CombatManager;
 using System;
 using Populus.GroupBot.Talents;
+using Populus.Core.DBC;
 
 namespace Populus.GroupBot.Combat
 {
@@ -21,6 +22,18 @@ namespace Populus.GroupBot.Combat
     public abstract class CombatLogicHandler
     {
         #region Declarations
+
+        public const uint RECENTLY_BANDAGED = 11196;
+
+        // racial
+        protected uint STONEFORM,
+            ESCAPE_ARTIST,
+            PERCEPTION,
+            SHADOWMELD,
+            BLOOD_FURY,
+            WAR_STOMP,
+            BERSERKING,
+            WILL_OF_THE_FORSAKEN;
 
         private readonly GroupBotHandler mBotHandler;
 
@@ -52,6 +65,22 @@ namespace Populus.GroupBot.Combat
         #region Public Methods
 
         /// <summary>
+        /// Initializes all spells the player currently has.
+        /// </summary>
+        public virtual void InitializeSpells()
+        {
+            // Racial abilities
+            STONEFORM = InitSpell(RacialTraits.STONEFORM_ALL);
+            ESCAPE_ARTIST = InitSpell(RacialTraits.ESCAPE_ARTIST_ALL);
+            PERCEPTION = InitSpell(RacialTraits.PERCEPTION_ALL);
+            SHADOWMELD = InitSpell(RacialTraits.SHADOWMELD_ALL);
+            BLOOD_FURY = InitSpell(RacialTraits.BLOOD_FURY_ALL);
+            WAR_STOMP = InitSpell(RacialTraits.WAR_STOMP_ALL);
+            BERSERKING = InitSpell(RacialTraits.BERSERKING_ALL);
+            WILL_OF_THE_FORSAKEN = InitSpell(RacialTraits.WILL_OF_THE_FORSAKEN_ALL);
+        }
+
+        /// <summary>
         /// Starts an attack on a unit
         /// </summary>
         /// <param name="unit"></param>
@@ -62,6 +91,37 @@ namespace Populus.GroupBot.Combat
                 CombatMgr.GetCombatState(mBotHandler.BotOwner.Guid).AttackMelee(unit);
 
             // Otherwise we defer to class logic
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Initializes a spell by getting the current rank of the spell the bot currently has
+        /// </summary>
+        /// <param name="spellId"></param>
+        /// <returns></returns>
+        protected uint InitSpell(uint spellId)
+        {
+            // If the player does not have the spell
+            if (!mBotHandler.BotOwner.HasSpell((ushort)spellId))
+                return 0;
+
+            var spell = spellId;
+            uint nextSpell = 0;
+            do
+            {
+                nextSpell = SkillLineAbilityTable.Instance.getParentForSpell(spell);
+                if (nextSpell > 0)
+                {
+                    if (mBotHandler.BotOwner.HasSpell((ushort)nextSpell))
+                        spell = nextSpell;
+                    else
+                        return spell;
+                }
+            } while (nextSpell != 0);
+            return spell;
         }
 
         #endregion
