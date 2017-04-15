@@ -84,13 +84,11 @@ namespace Populus.GroupBot.Combat
         /// Starts an attack on a unit
         /// </summary>
         /// <param name="unit"></param>
-        public void StartAttack(Unit unit)
+        public virtual void StartAttack(Unit unit)
         {
             // If we are a melee class, start melee attacks
             if (IsMelee)
                 CombatMgr.GetCombatState(mBotHandler.BotOwner.Guid).AttackMelee(unit);
-
-            // Otherwise we defer to class logic
         }
 
         #endregion

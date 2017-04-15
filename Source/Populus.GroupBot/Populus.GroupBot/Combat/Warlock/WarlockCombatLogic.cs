@@ -1,4 +1,6 @@
-﻿namespace Populus.GroupBot.Combat.Warlock
+﻿using Populus.Core.World.Objects;
+
+namespace Populus.GroupBot.Combat.Warlock
 {
     public class WarlockCombatLogic : CombatLogicHandler
     {
@@ -165,6 +167,27 @@
             SUMMON_SUCCUBUS = InitSpell(Spells.SUMMON_SUCCUBUS_1);
             SUMMON_VOIDWALKER = InitSpell(Spells.SUMMON_VOIDWALKER_1);
             UNENDING_BREATH = InitSpell(Spells.UNENDING_BREATH_1);
+        }
+
+        public override void StartAttack(Unit unit)
+        {
+            // Tell pet to start attacking
+            PetAttack(unit);
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Commands the warlocks pet to attack, if one is summoned
+        /// </summary>
+        private void PetAttack(Unit unit)
+        {
+            if(BotHandler.BotOwner.Pet != null)
+            {
+                // TODO: Need to figure this one out
+            }
         }
 
         #endregion
