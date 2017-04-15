@@ -1,6 +1,7 @@
 ﻿using Populus.Core.Plugins;
 using Populus.Core.Shared;
 using Populus.Core.World.Objects;
+using Populus.Core.World.Objects.Events;
 using static Populus.Core.World.Objects.Bot;
 
 namespace Populus.CombatManager
@@ -11,6 +12,10 @@ namespace Populus.CombatManager
 
         // handlers
         EmptyEventDelegate loginHandler = null;
+        BotEventDelegate<RaidTargetUpdateArgs> raidTargetUpdateHandler = null;
+        BotEventDelegate<SpellCastCompleteArgs> spellCastCompleteHandler = null;
+        BotEventDelegate<SpellCastFailedArgs> spellCastFailedHandler = null;
+        BotEventDelegate<SpellInterruptedArgs> spellInterruptedHandler = null;
 
         // static instance of our bot handlers collection
         private static WoWGuidCollection<BotCombatState> mBotCombatCollection = new WoWGuidCollection<BotCombatState>();
@@ -47,11 +52,55 @@ namespace Populus.CombatManager
                 mBotCombatCollection.AddOrUpdate(bot.Guid, new BotCombatState(bot));
             };
             Bot.LoggedIn += loginHandler;
+
+            // Handle raid target updates
+            raidTargetUpdateHandler = (bot, args) =>
+            {
+                var state = mBotCombatCollection.Get(bot.Guid);
+                if (state != null)
+                    state.UpdateRaidTarget(args.Icon, args.ObjectGuid);
+            };
+            Bot.RaidTargetUpdate += raidTargetUpdateHandler;
+
+            // Handle spell cast notifications
+            spellCastCompleteHandler = (bot, args) =>
+            {
+                if (bot.Guid == args.CasterGuid)
+                {
+                    var state = mBotCombatCollection.Get(bot.Guid);
+                    if (state != null)
+                        state.SpellCastComplete(args.SpellId);
+                }
+            };
+            Bot.SpellCastCompleted += spellCastCompleteHandler;
+
+            spellCastFailedHandler = (bot, args) =>
+            {
+                var state = mBotCombatCollection.Get(bot.Guid);
+                if (state != null)
+                    state.SpellCastComplete(args.SpellId);
+            };
+            Bot.SpellCastFailed += spellCastFailedHandler;
+
+            spellInterruptedHandler = (bot, args) =>
+            {
+                if (bot.Guid == args.CasterGuid)
+                {
+                    var state = mBotCombatCollection.Get(bot.Guid);
+                    if (state != null)
+                        state.SpellCastComplete(args.SpellId);
+                }
+            };
+            Bot.SpellInterrupted += spellInterruptedHandler;
         }
 
         public override void Unload()
         {
             Bot.LoggedIn -= loginHandler;
+            Bot.RaidTargetUpdate -= raidTargetUpdateHandler;
+            Bot.SpellCastCompleted -= spellCastCompleteHandler;
+            Bot.SpellCastFailed -= spellCastFailedHandler;
+            Bot.SpellInterrupted -= spellInterruptedHandler;
         }
 
         public override void OnTick(Bot bot, float deltaTime)

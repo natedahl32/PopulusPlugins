@@ -2,6 +2,9 @@
 using Populus.Core.World.Objects;
 using Populus.Core.World.Objects.Events;
 using Populus.GroupBot.Talents;
+using System;
+using System.Linq;
+using System.Reactive.Linq;
 using static Populus.Core.World.Objects.Bot;
 using GroupMgr = Populus.GroupManager.GroupManager;
 
@@ -86,7 +89,21 @@ namespace Populus.GroupBot
             loginHandler = bot =>
             {
                 // Wait 10 seconds after login and make sure the bot is not in a group with no one online. If they are, leave the group.
-
+                Observable
+                    .Timer(TimeSpan.FromSeconds(10))
+                    .Subscribe(
+                        x =>
+                        {
+                            if (GroupMgr.Groups.CharacterHasGroup(bot.Guid))
+                            {
+                                var handler = mBotHandlerCollection.Get(bot.Guid);
+                                if (handler != null)
+                                {
+                                    if (!handler.Group.Members.Any(m => m.IsOnline))
+                                        bot.LeaveGroup();
+                                }
+                            }
+                        });
             };
             Bot.LoggedIn += loginHandler;
         }

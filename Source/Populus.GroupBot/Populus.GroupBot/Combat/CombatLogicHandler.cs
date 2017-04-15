@@ -57,9 +57,11 @@ namespace Populus.GroupBot.Combat
         /// <param name="unit"></param>
         public void StartAttack(Unit unit)
         {
-            // If we are level 5 or under, just melee attack
-            if (mBotHandler.BotOwner.Level <= 5)
+            // If we are a melee class, start melee attacks
+            if (IsMelee)
                 CombatMgr.GetCombatState(mBotHandler.BotOwner.Guid).AttackMelee(unit);
+
+            // Otherwise we defer to class logic
         }
 
         #endregion
