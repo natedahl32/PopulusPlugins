@@ -1,4 +1,6 @@
-﻿namespace Populus.GroupBot.Combat.Priest
+﻿using Populus.Core.World.Objects;
+
+namespace Populus.GroupBot.Combat.Priest
 {
     public class PriestCombatLogic : CombatLogicHandler
     {
@@ -131,6 +133,29 @@
             SMITE = InitSpell(Spells.SMITE_1);
             SILENCE = InitSpell(Spells.SILENCE_1);
             VAMPIRIC_EMBRACE = InitSpell(Spells.VAMPIRIC_EMBRACE_1);
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        protected override CombatActionResult DoFirstCombatAction(Unit unit)
+        {
+            return CombatActionResult.NO_ACTION_OK;
+        }
+
+        protected override CombatActionResult DoNextCombatAction(Unit unit)
+        {
+            // TODO: Build up priest combat logic
+            if (HasSpellAndCanCast(SMITE))
+            {
+                BotHandler.CombatState.SpellCast(SMITE);
+                return CombatActionResult.ACTION_OK;
+            }
+
+            // Wand if we get here
+            AttackWand(unit);
+            return CombatActionResult.NO_ACTION_OK;
         }
 
         #endregion

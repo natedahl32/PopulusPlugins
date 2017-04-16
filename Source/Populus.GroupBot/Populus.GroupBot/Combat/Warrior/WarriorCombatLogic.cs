@@ -1,4 +1,6 @@
-﻿namespace Populus.GroupBot.Combat.Warrior
+﻿using Populus.Core.World.Objects;
+
+namespace Populus.GroupBot.Combat.Warrior
 {
     public class WarriorCombatLogic : CombatLogicHandler
     {
@@ -68,7 +70,12 @@
 
         public WarriorCombatLogic(GroupBotHandler botHandler) : base(botHandler)
         {
+            Bot.CombatAttackUpdate += CombatAttackUpdate;
+        }
 
+        ~WarriorCombatLogic()
+        {
+            Bot.CombatAttackUpdate -= CombatAttackUpdate;
         }
 
         #endregion
@@ -142,6 +149,43 @@
             BLOODSURGE = InitSpell(Procs.BLOODSURGE_1);
             TASTE_FOR_BLOOD = InitSpell(Procs.TASTE_FOR_BLOOD_1);
             SUDDEN_DEATH = InitSpell(Procs.SUDDEN_DEATH_1);
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        protected override CombatActionResult DoFirstCombatAction(Unit unit)
+        {
+            AttackMelee(unit);
+
+            if (HasSpellAndCanCast(CHARGE))
+            {
+                BotHandler.CombatState.SpellCast(CHARGE);
+                return CombatActionResult.ACTION_OK;
+            }
+
+            return base.DoFirstCombatAction(unit);
+        }
+
+        protected override CombatActionResult DoNextCombatAction(Unit unit)
+        {
+            // TODO: Build up warrior combat logic
+            if (!mHeroicStrikePrepared && HasSpellAndCanCast(HEROIC_STRIKE))
+            {
+                mHeroicStrikePrepared = true;
+                BotHandler.CombatState.SpellCast(HEROIC_STRIKE);
+                return CombatActionResult.ACTION_OK;
+            }
+
+            return base.DoNextCombatAction(unit);
+        }
+
+        private void CombatAttackUpdate(Bot bot, Core.World.Objects.Events.CombatAttackUpdateArgs eventArgs)
+        {
+            // Reset heroic strike flag on each attack
+            if (bot.Guid == BotHandler.BotOwner.Guid && eventArgs.AttackerGuid == BotHandler.BotOwner.Guid)
+                mHeroicStrikePrepared = false;
         }
 
         #endregion

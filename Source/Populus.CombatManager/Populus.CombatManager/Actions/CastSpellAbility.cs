@@ -43,6 +43,9 @@ namespace Populus.CombatManager.Actions
             Bot.SpellCastFailed += Bot_SpellCastFailed;
             Bot.SpellInterrupted += Bot_SpellInterrupted;
 
+            // Face the target before we cast
+            BotOwner.FaceTarget(mTarget.Guid);
+
             // Cast the spell
             BotOwner.CastSpellAbility(mTarget.Guid, mSpellId);
         }

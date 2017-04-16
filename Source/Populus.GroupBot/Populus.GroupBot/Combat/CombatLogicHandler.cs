@@ -99,6 +99,7 @@ namespace Populus.GroupBot.Combat
         /// <param name="unit"></param>
         public void StartAttack(Unit unit)
         {
+            mIsFirstCombatActionDone = false;
             // Set the target since we were ordered to attack this unit
             BotHandler.CombatState.SetTarget(unit);
             DoCombatAction(unit);
@@ -121,13 +122,14 @@ namespace Populus.GroupBot.Combat
             }
 
             // if our current target is dead, stop attacking
-            if (BotHandler.CombatState.CurrentTarget.IsDead)
+            if (BotHandler.CombatState.CurrentTarget != null && BotHandler.CombatState.CurrentTarget.IsDead)
                 BotHandler.BotOwner.StopAttack();
 
             // if we are currently casting something, wait until we are done with that
             if (BotHandler.CombatState.IsCasting) return;
 
-            DoCombatAction(BotHandler.CombatState.CurrentTarget);
+            if (BotHandler.CombatState.CurrentTarget != null)
+                DoCombatAction(BotHandler.CombatState.CurrentTarget);
         }
 
         /// <summary>
@@ -185,20 +187,28 @@ namespace Populus.GroupBot.Combat
         /// <returns></returns>
         protected uint InitSpell(uint spellId)
         {
-            // If the player does not have the spell
-            if (!mBotHandler.BotOwner.HasSpell((ushort)spellId))
-                return 0;
-
-            var spell = spellId;
+            uint spell = 0;
             List<SpellChainNode> nodes = SpellManager.Instance.GetSpellsInLine(spellId).ToList();
 
+            // If there are no nodes, check if they have this spell or not
+            if (nodes.Count == 0)
+            {
+                // If nothing, just use the spell id passed in
+                if (spell == 0)
+                    if (BotHandler.BotOwner.HasSpell((ushort)spellId))
+                        return spellId;
+            }
+                
+
             // Loop the nodes (they are ordered by rank) until we find the spell we do not currently have
-            for (int i = 1; i < nodes.Count; i++)
+            // We need to work backwards. Melee spells don't keep previos ranks.
+            for (int i = nodes.Count - 1; i >= 0; i--)
             {
                 if (mBotHandler.BotOwner.HasSpell((ushort)nodes[i].SpellId))
+                {
                     spell = nodes[i].SpellId;
-                else
                     break;
+                }
             }
 
             return spell;
@@ -275,7 +285,10 @@ namespace Populus.GroupBot.Combat
         /// <returns></returns>
         protected virtual CombatActionResult DoNextCombatAction(Unit unit)
         {
-            // base does nothing
+            // If we are not attacking and we are melee, attack our target
+            if (!IsAttacking && IsMelee)
+                AttackMelee(unit);
+
             return CombatActionResult.NO_ACTION_OK;
         }
 
