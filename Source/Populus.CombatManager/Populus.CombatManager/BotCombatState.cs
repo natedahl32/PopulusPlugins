@@ -74,8 +74,12 @@ namespace Populus.CombatManager
         {
             get
             {
+                // If target is null, get a target based on marker
                 if (mTarget == null)
-                    mTarget = GetPrimaryDpsTarget();
+                    mTarget = GetTargetByRaidMarker();
+                // If target is still null, get first target in aggro list
+                if (mTarget == null)
+                    mTarget = mAggroList.First;
                 return mTarget;
             }
         }
@@ -227,6 +231,16 @@ namespace Populus.CombatManager
             mBotOwner.CancelCast(mCastingSpellId);
         }
 
+        /// <summary>
+        /// Adds a unit to the aggro list if they are not already on it
+        /// </summary>
+        /// <param name="unit"></param>
+        public void AddToAggroList(Unit unit)
+        {
+            if (!mAggroList.Contains(unit.Guid))
+                mAggroList.AddOrUpdate(unit.Guid, unit);
+        }
+
         #endregion
 
         #region Internal Methods
@@ -240,7 +254,7 @@ namespace Populus.CombatManager
             // Remove from our aggro list
             mAggroList.Remove(guid);
             // If this was our target, remove our target
-            if (mTarget.Guid == guid)
+            if (mTarget != null && mTarget.Guid == guid)
             {
                 CancelSpellCast();
                 mTarget = null;
@@ -257,6 +271,8 @@ namespace Populus.CombatManager
             mAggroList.RemoveDeadUnits();
             if (mAggroList.AggroUnits.Count() <= 0)
                 IsInCombat = false;
+            else
+                IsInCombat = true;
         }
 
         /// <summary>
@@ -326,6 +342,28 @@ namespace Populus.CombatManager
                     CancelSpellCast();
                 mTarget = null;
             }
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Selects the next target based on raid markers
+        /// </summary>
+        /// <returns></returns>
+        private Unit GetTargetByRaidMarker()
+        {
+            var target = GetPrimaryDpsTarget();
+            if (target == null)
+                target = GetMarkedUnit(RaidTargetMarkers.CROSS);
+            if (target == null)
+                target = GetMarkedUnit(RaidTargetMarkers.STAR);
+            if (target == null)
+                target = GetMarkedUnit(RaidTargetMarkers.CIRCLE);
+            if (target == null)
+                target = GetMarkedUnit(RaidTargetMarkers.SQUARE);
+            return target;
         }
 
         #endregion

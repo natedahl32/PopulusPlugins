@@ -103,6 +103,16 @@ namespace Populus.GroupManager
         #region Public Methods
 
         /// <summary>
+        /// Gets whether or not the group contains a member by guid
+        /// </summary>
+        /// <param name="guid"></param>
+        /// <returns></returns>
+        public bool ContainsMember(WoWGuid guid)
+        {
+            return mGroupMembers.ToList().Any(m => m.Guid == guid);
+        }
+
+        /// <summary>
         /// Gets a member of the group by their guid
         /// </summary>
         /// <param name="guid"></param>

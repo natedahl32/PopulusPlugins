@@ -22,7 +22,7 @@ namespace Populus.GroupBot.Chat
             // Turn follow off
             if (chat.MessageTokenized.Length > 1 && chat.MessageTokenized[1].ToLower() == "off")
             {
-                botHandler.BotOwner.RemoveFollow();
+                botHandler.StopFollow();
                 return;
             }
             

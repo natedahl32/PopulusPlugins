@@ -159,11 +159,12 @@ namespace Populus.GroupBot.Combat.Warrior
         {
             AttackMelee(unit);
 
-            if (HasSpellAndCanCast(CHARGE))
-            {
-                BotHandler.CombatState.SpellCast(CHARGE);
-                return CombatActionResult.ACTION_OK;
-            }
+            // TOOD: Fix charge, this break moving into melee
+            //if (HasSpellAndCanCast(CHARGE))
+            //{
+            //    BotHandler.CombatState.SpellCast(CHARGE);
+            //    return CombatActionResult.ACTION_OK;
+            //}
 
             return base.DoFirstCombatAction(unit);
         }

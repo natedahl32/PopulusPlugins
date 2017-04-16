@@ -29,6 +29,7 @@ namespace Populus.GroupBot
         private Group mGroup;
 
         private Coordinate mLastKnownFollowPosition;
+        private bool mCanFollow = true;
 
         #endregion
 
@@ -125,8 +126,9 @@ namespace Populus.GroupBot
             // Do not update if we already have actions we need to process
             if (!mActionQueue.IsEmpty) return;
 
-            // Follow the group leader if we aren't already
-            FollowGroupLeader();
+            // Follow the group leader if we aren't already and we can
+            if (mCanFollow)
+                FollowGroupLeader();
         }
 
         /// <summary>
@@ -164,6 +166,9 @@ namespace Populus.GroupBot
             // If the group leader is within X yards from us, set them as the follow target. Otherwise remove them as the follow target
             if (mBotOwner.DistanceFrom(member.Position) <= MAX_FOLLOW_DISTANCE && mBotOwner.MapId == member.MapId)
             {
+                // Set our flag to can follow
+                mCanFollow = true;
+
                 mBotOwner.SetFollow(member.Guid);
                 IsOutOfRangeOfLeader = false;
                 mLastKnownFollowPosition = mBotOwner.Position;
@@ -187,6 +192,12 @@ namespace Populus.GroupBot
                     }
                 }
             }
+        }
+
+        internal void StopFollow()
+        {
+            mCanFollow = false;
+            mBotOwner.RemoveFollow();
         }
 
         /// <summary>

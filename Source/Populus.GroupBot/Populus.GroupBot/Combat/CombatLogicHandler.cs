@@ -16,6 +16,7 @@ using Populus.Core.DBC;
 using System.Collections.Generic;
 using Populus.Core.World.Spells;
 using System.Linq;
+using Populus.Core.World.Objects.Events;
 
 namespace Populus.GroupBot.Combat
 {
@@ -138,6 +139,57 @@ namespace Populus.GroupBot.Combat
         internal virtual void StopAttack()
         {
             mIsAttacking = false;
+        }
+
+        /// <summary>
+        /// Received a combat update
+        /// </summary>
+        /// <param name="update"></param>
+        internal virtual void AttackUpdate(CombatAttackUpdateArgs update)
+        {
+            // If the attacker is someone in our group, add the victim to our aggro list
+            if (BotHandler.Group.ContainsMember(update.AttackerGuid))
+            {
+                var victim = BotHandler.BotOwner.GetUnitByGuid(update.VictimGuid);
+                if (BotHandler.BotOwner.DistanceFrom(victim.Position) <= 40.0f)
+                    BotHandler.CombatState.AddToAggroList(victim);
+            }
+                
+            // If the victim is someone in our group, add the attacker to our aggro list
+            if (BotHandler.Group.ContainsMember(update.VictimGuid))
+            {
+                var attacker = BotHandler.BotOwner.GetUnitByGuid(update.AttackerGuid);
+                if (BotHandler.BotOwner.DistanceFrom(attacker.Position) <= 40.0f)
+                    BotHandler.CombatState.AddToAggroList(attacker);
+            }
+        }
+
+        /// <summary>
+        /// Received a spell cast complete update
+        /// </summary>
+        /// <param name="update"></param>
+        internal virtual void SpellCastCompleteUpdate(SpellCastCompleteArgs update)
+        {
+            // If the caster is a member of our group, add all targets to the aggro list if they are not friendly
+            if (BotHandler.Group.ContainsMember(update.CasterGuid))
+            {
+                foreach (var target in update.TargetsHit)
+                {
+                    var unit = BotHandler.BotOwner.GetUnitByGuid(target);
+                    if (unit != null && BotHandler.BotOwner.DistanceFrom(unit.Position) <= 40.0f && !BotHandler.BotOwner.IsFriendlyTo(unit))
+                        BotHandler.CombatState.AddToAggroList(unit);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Received not facing target update
+        /// </summary>
+        /// <param name="angle"></param>
+        internal virtual void NotFacingTarget(float angle)
+        {
+            if (BotHandler.CombatState.CurrentTarget != null)
+                BotHandler.BotOwner.FaceTarget(BotHandler.CombatState.CurrentTarget.Guid);
         }
 
         #endregion

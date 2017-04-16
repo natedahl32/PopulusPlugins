@@ -31,7 +31,10 @@ namespace Populus.GroupBot
         BotEventDelegate<InitialSpellsArgs> initialSpellsHandler = null;
         BotEventDelegate<uint> spellLearnedHandler = null;
         BotEventDelegate<uint> spellRemovedHandler = null;
+        BotEventDelegate<CombatBadFacingArgs> notFacingTargetHandler = null;
         BotEventDelegate<CombatAttackStopEventArgs> attackStopHandler = null;
+        BotEventDelegate<CombatAttackUpdateArgs> attackUpdateHandler = null;
+        BotEventDelegate<SpellCastCompleteArgs> spellCastCompleteHandler = null;
 
         // static instance of our bot handlers collection
         private static WoWGuidCollection<GroupBotHandler> mBotHandlerCollection = new WoWGuidCollection<GroupBotHandler>();
@@ -144,6 +147,33 @@ namespace Populus.GroupBot
                     handler.CombatHandler.StopAttack();
             };
             Bot.AttackStopped += attackStopHandler;
+
+            // Handles attack update event
+            attackUpdateHandler = (bot, args) =>
+            {
+                var handler = mBotHandlerCollection.Get(bot.Guid);
+                if (handler != null)
+                    handler.CombatHandler.AttackUpdate(args);
+            };
+            Bot.CombatAttackUpdate += attackUpdateHandler;
+
+            // Handle spell cast update event
+            spellCastCompleteHandler = (bot, args) =>
+            {
+                var handler = mBotHandlerCollection.Get(bot.Guid);
+                if (handler != null)
+                    handler.CombatHandler.SpellCastCompleteUpdate(args);
+            };
+            Bot.SpellCastCompleted += spellCastCompleteHandler;
+
+            // Handle not facing target while attacking
+            notFacingTargetHandler = (bot, args) =>
+            {
+                var handler = mBotHandlerCollection.Get(bot.Guid);
+                if (handler != null)
+                    handler.CombatHandler.NotFacingTarget(args.CorrectAngle);
+            };
+            Bot.MeleeNotFacingTowardsTarget += notFacingTargetHandler;
         }
 
         public override void Unload()
@@ -161,6 +191,9 @@ namespace Populus.GroupBot
             Bot.LearnedSpell -= spellLearnedHandler;
             Bot.RemovedSpell -= spellRemovedHandler;
             Bot.AttackStopped -= attackStopHandler;
+            Bot.CombatAttackUpdate -= attackUpdateHandler;
+            Bot.SpellCastCompleted -= spellCastCompleteHandler;
+            Bot.MeleeNotFacingTowardsTarget -= notFacingTargetHandler;
         }
 
         public override void OnTick(Bot bot, float deltaTime)

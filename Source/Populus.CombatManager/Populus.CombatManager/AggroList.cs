@@ -1,4 +1,5 @@
 ﻿using Populus.Core.Plugins;
+using Populus.Core.Shared;
 using Populus.Core.World.Objects;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +19,14 @@ namespace Populus.CombatManager
         public IEnumerable<Unit> AggroUnits
         {
             get { return Data.Values.ToList(); }
+        }
+
+        /// <summary>
+        /// Gets the first unit in the aggro list
+        /// </summary>
+        public Unit First
+        {
+            get { return Data.Values.FirstOrDefault(); }
         }
 
         #endregion
@@ -41,6 +50,15 @@ namespace Populus.CombatManager
         internal void Clear()
         {
             Data.Clear();
+        }
+
+        /// <summary>
+        /// Gets whether or not the aggro list contains an object with the guid
+        /// </summary>
+        /// <param name="guid"></param>
+        internal bool Contains(WoWGuid guid)
+        {
+            return Data.ContainsKey(guid);
         }
 
         #endregion
