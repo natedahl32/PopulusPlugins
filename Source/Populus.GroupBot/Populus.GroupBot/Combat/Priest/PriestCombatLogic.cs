@@ -147,6 +147,12 @@ namespace Populus.GroupBot.Combat.Priest
         protected override CombatActionResult DoNextCombatAction(Unit unit)
         {
             // TODO: Build up priest combat logic
+            if (HasSpellAndCanCast(SHADOW_WORD_PAIN) && !unit.HasAura(SHADOW_WORD_PAIN) && unit.HealthPercentage > 30.0f)
+            {
+                BotHandler.CombatState.SpellCast(SHADOW_WORD_PAIN);
+                return CombatActionResult.ACTION_OK;
+            }
+
             if (HasSpellAndCanCast(SMITE))
             {
                 BotHandler.CombatState.SpellCast(SMITE);
