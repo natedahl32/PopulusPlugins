@@ -172,7 +172,9 @@ namespace Populus.GroupBot.Combat.Warrior
         protected override CombatActionResult DoNextCombatAction(Unit unit)
         {
             // TODO: Build up warrior combat logic
-            if (!mHeroicStrikePrepared && HasSpellAndCanCast(HEROIC_STRIKE))
+
+            // Heroic strike is excess rage spender
+            if (!mHeroicStrikePrepared && HasSpellAndCanCast(HEROIC_STRIKE) && BotHandler.BotOwner.CurrentPower >= 30)
             {
                 mHeroicStrikePrepared = true;
                 BotHandler.CombatState.SpellCast(HEROIC_STRIKE);
@@ -182,7 +184,7 @@ namespace Populus.GroupBot.Combat.Warrior
             return base.DoNextCombatAction(unit);
         }
 
-        private void CombatAttackUpdate(Bot bot, Core.World.Objects.Events.CombatAttackUpdateArgs eventArgs)
+        protected virtual void CombatAttackUpdate(Bot bot, Core.World.Objects.Events.CombatAttackUpdateArgs eventArgs)
         {
             // Reset heroic strike flag on each attack
             if (bot.Guid == BotHandler.BotOwner.Guid && eventArgs.AttackerGuid == BotHandler.BotOwner.Guid)

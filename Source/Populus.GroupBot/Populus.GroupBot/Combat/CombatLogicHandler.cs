@@ -302,11 +302,15 @@ namespace Populus.GroupBot.Combat
             if (!mIsFirstCombatActionDone)
             {
                 result = DoFirstCombatAction(target);
-                if (result == CombatActionResult.ACTION_OK || result == CombatActionResult.NO_ACTION_OK)
+                if (result == CombatActionResult.ACTION_OK || 
+                    result == CombatActionResult.NO_ACTION_OK ||
+                    result == CombatActionResult.ACTION_OK_CONTINUE_FIRST)
                 {
-                    mIsFirstCombatActionDone = true;
+                    if (result != CombatActionResult.ACTION_OK_CONTINUE_FIRST)
+                        mIsFirstCombatActionDone = true;
+
                     // If we did an action, don't continue
-                    if (result == CombatActionResult.ACTION_OK)
+                    if (result == CombatActionResult.ACTION_OK || result == CombatActionResult.ACTION_OK_CONTINUE_FIRST)
                         return;
                 }
             }
