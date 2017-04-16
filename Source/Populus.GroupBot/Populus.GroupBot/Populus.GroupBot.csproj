@@ -74,6 +74,7 @@
     <Compile Include="Chat\QuestCommand.cs" />
     <Compile Include="Chat\TalentCommand.cs" />
     <Compile Include="Chat\VendorCommand.cs" />
+    <Compile Include="Combat\CombatActionResult.cs" />
     <Compile Include="Combat\CombatLogicHandler.cs" />
     <Compile Include="Combat\Druid\BalanceCombatLogic.cs" />
     <Compile Include="Combat\Druid\DruidCombatLogic.cs" />

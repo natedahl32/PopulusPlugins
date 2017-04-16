@@ -16,6 +16,8 @@ namespace Populus.CombatManager
         BotEventDelegate<SpellCastCompleteArgs> spellCastCompleteHandler = null;
         BotEventDelegate<SpellCastFailedArgs> spellCastFailedHandler = null;
         BotEventDelegate<SpellInterruptedArgs> spellInterruptedHandler = null;
+        EmptyEventDelegate cancelCombatHandler = null;
+        BotEventDelegate<CombatKillLogArgs> killLogHandler = null;
 
         // static instance of our bot handlers collection
         private static WoWGuidCollection<BotCombatState> mBotCombatCollection = new WoWGuidCollection<BotCombatState>();
@@ -92,6 +94,24 @@ namespace Populus.CombatManager
                 }
             };
             Bot.SpellInterrupted += spellInterruptedHandler;
+
+            // Cancel combat
+            cancelCombatHandler = bot =>
+            {
+                var state = mBotCombatCollection.Get(bot.Guid);
+                if (state != null)
+                    state.CancelCombat();
+            };
+            Bot.CancelAttack += cancelCombatHandler;
+
+            // Kill log
+            killLogHandler = (bot, args) =>
+            {
+                var state = mBotCombatCollection.Get(bot.Guid);
+                if (state != null)
+                    state.UnitKilled(args.VictimGuid);
+            };
+            Bot.CombatKillLog += killLogHandler;
         }
 
         public override void Unload()
@@ -101,6 +121,8 @@ namespace Populus.CombatManager
             Bot.SpellCastCompleted -= spellCastCompleteHandler;
             Bot.SpellCastFailed -= spellCastFailedHandler;
             Bot.SpellInterrupted -= spellInterruptedHandler;
+            Bot.CancelAttack -= cancelCombatHandler;
+            Bot.CombatKillLog -= killLogHandler;
         }
 
         public override void OnTick(Bot bot, float deltaTime)

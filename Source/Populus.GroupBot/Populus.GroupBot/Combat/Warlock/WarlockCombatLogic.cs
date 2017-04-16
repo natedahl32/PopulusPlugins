@@ -169,12 +169,6 @@ namespace Populus.GroupBot.Combat.Warlock
             UNENDING_BREATH = InitSpell(Spells.UNENDING_BREATH_1);
         }
 
-        public override void StartAttack(Unit unit)
-        {
-            // Tell pet to start attacking
-            PetAttack(unit);
-        }
-
         #endregion
 
         #region Private Methods
@@ -188,6 +182,26 @@ namespace Populus.GroupBot.Combat.Warlock
             {
                 // TODO: Need to figure this one out
             }
+        }
+
+        protected override CombatActionResult DoFirstCombatAction(Unit unit)
+        {
+            return CombatActionResult.NO_ACTION_OK;
+        }
+
+        protected override CombatActionResult DoNextCombatAction(Unit unit)
+        {
+            // Always pet attack this unit
+            PetAttack(unit);
+
+            // TODO: Build up warlock combat logic
+            if (HasSpellAndCanCast(SHADOW_BOLT))
+            {
+                BotHandler.CombatState.SpellCast(SHADOW_BOLT);
+                return CombatActionResult.ACTION_OK;
+            }
+
+            return CombatActionResult.NO_ACTION_OK;
         }
 
         #endregion

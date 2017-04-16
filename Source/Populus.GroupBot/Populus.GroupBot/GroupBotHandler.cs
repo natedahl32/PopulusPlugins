@@ -88,6 +88,11 @@ namespace Populus.GroupBot
         internal CombatLogicHandler CombatHandler { get { return mCombatLogic; } }
 
         /// <summary>
+        /// Gets the combat state for this bot
+        /// </summary>
+        internal BotCombatState CombatState { get { return mCombatState; } }
+
+        /// <summary>
         /// Gets the group bot data for this bot
         /// </summary>
         internal GroupBotData BotData { get { return mGroupBotData; } }
@@ -110,8 +115,13 @@ namespace Populus.GroupBot
         /// <param name="deltaTime"></param>
         public void Update(float deltaTime)
         {
-            // TODO: If we are in combat, do combat logic
-            if (mCombatState.IsInCombat) return;
+            // If we are in combat, do combat logic
+            if (mCombatState.IsInCombat)
+            {
+                mCombatLogic.Update(deltaTime);
+                return;
+            }
+            
             // Do not update if we already have actions we need to process
             if (!mActionQueue.IsEmpty) return;
 
@@ -177,15 +187,6 @@ namespace Populus.GroupBot
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Gives orders to attack a specified unit
-        /// </summary>
-        /// <param name="target">Unit to attack</param>
-        public void Attack(Unit target)
-        {
-            mCombatLogic.StartAttack(target);
         }
 
         /// <summary>

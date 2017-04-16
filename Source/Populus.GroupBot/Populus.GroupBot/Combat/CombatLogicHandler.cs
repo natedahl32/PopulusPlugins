@@ -13,6 +13,9 @@ using CombatMgr = Populus.CombatManager.CombatManager;
 using System;
 using Populus.GroupBot.Talents;
 using Populus.Core.DBC;
+using System.Collections.Generic;
+using Populus.Core.World.Spells;
+using System.Linq;
 
 namespace Populus.GroupBot.Combat
 {
@@ -24,6 +27,7 @@ namespace Populus.GroupBot.Combat
         #region Declarations
 
         public const uint RECENTLY_BANDAGED = 11196;
+        public const uint WAND_SHOOT = 5019;
 
         // racial
         protected uint STONEFORM,
@@ -36,6 +40,8 @@ namespace Populus.GroupBot.Combat
             WILL_OF_THE_FORSAKEN;
 
         private readonly GroupBotHandler mBotHandler;
+        private bool mIsAttacking = false;
+        private bool mIsFirstCombatActionDone = false;
 
         #endregion
 
@@ -60,6 +66,13 @@ namespace Populus.GroupBot.Combat
         /// </summary>
         public abstract bool IsMelee { get; }
 
+        /// <summary>
+        /// Gets whether or not the bot is currently attacking a target with either melee or ranged
+        /// </summary>
+        public bool IsAttacking { get { return mIsAttacking; } }
+
+
+
         #endregion
 
         #region Public Methods
@@ -81,19 +94,89 @@ namespace Populus.GroupBot.Combat
         }
 
         /// <summary>
-        /// Starts an attack on a unit
+        /// Ordered to start an attack on a unit
         /// </summary>
         /// <param name="unit"></param>
-        public virtual void StartAttack(Unit unit)
+        public void StartAttack(Unit unit)
         {
-            // If we are a melee class, start melee attacks
-            if (IsMelee)
-                CombatMgr.GetCombatState(mBotHandler.BotOwner.Guid).AttackMelee(unit);
+            // Set the target since we were ordered to attack this unit
+            BotHandler.CombatState.SetTarget(unit);
+            DoCombatAction(unit);
+        }
+
+        /// <summary>
+        /// Update combat logic
+        /// </summary>
+        /// <param name="deltaTime"></param>
+        public void Update(float deltaTime)
+        {
+            // if we are dead, we can't do anything
+            if (BotHandler.BotOwner.IsDead) return;
+
+            // if we are no longer in combat, don't do anything
+            if (!BotHandler.CombatState.IsInCombat)
+            {
+                mIsFirstCombatActionDone = false;
+                return;
+            }
+
+            // if our current target is dead, stop attacking
+            if (BotHandler.CombatState.CurrentTarget.IsDead)
+                BotHandler.BotOwner.StopAttack();
+
+            // if we are currently casting something, wait until we are done with that
+            if (BotHandler.CombatState.IsCasting) return;
+
+            DoCombatAction(BotHandler.CombatState.CurrentTarget);
+        }
+
+        /// <summary>
+        /// Received an event to stop attacking
+        /// </summary>
+        internal virtual void StopAttack()
+        {
+            mIsAttacking = false;
         }
 
         #endregion
 
         #region Private Methods
+
+        /// <summary>
+        /// Convenience method to get spell from DBC
+        /// </summary>
+        /// <param name="spellId"></param>
+        /// <returns></returns>
+        protected SpellEntry Spell(uint spellId)
+        {
+            return SpellTable.Instance.getSpell(spellId);
+        }
+
+        /// <summary>
+        /// Checks if the player owns the spell and can cast it
+        /// </summary>
+        /// <param name="spellId"></param>
+        /// <returns></returns>
+        protected bool HasSpellAndCanCast(uint spellId)
+        {
+            // No spell? Can't cast it
+            if (spellId == 0) return false;
+
+            var spell = Spell(spellId);
+            if (spell == null)
+                return false;
+
+            // TODO: Might need this
+            // Is it on cooldown?
+            //if (Player.SpellCooldowns.HasCooldown(spellId)) return false;
+
+            // Have enough power to cast it?
+            if (!BotHandler.BotOwner.CanCastSpell(spell)) return false;
+
+            // TODO: More checks needed. Have reagents? for example
+
+            return true;
+        }
 
         /// <summary>
         /// Initializes a spell by getting the current rank of the spell the bot currently has
@@ -107,19 +190,93 @@ namespace Populus.GroupBot.Combat
                 return 0;
 
             var spell = spellId;
-            uint nextSpell = 0;
-            do
+            List<SpellChainNode> nodes = SpellManager.Instance.GetSpellsInLine(spellId).ToList();
+
+            // Loop the nodes (they are ordered by rank) until we find the spell we do not currently have
+            for (int i = 1; i < nodes.Count; i++)
             {
-                nextSpell = SkillLineAbilityTable.Instance.getParentForSpell(spell);
-                if (nextSpell > 0)
-                {
-                    if (mBotHandler.BotOwner.HasSpell((ushort)nextSpell))
-                        spell = nextSpell;
-                    else
-                        return spell;
-                }
-            } while (nextSpell != 0);
+                if (mBotHandler.BotOwner.HasSpell((ushort)nodes[i].SpellId))
+                    spell = nodes[i].SpellId;
+                else
+                    break;
+            }
+
             return spell;
+        }
+
+        /// <summary>
+        /// Attacks a unit with melee attacks
+        /// </summary>
+        /// <param name="unit"></param>
+        protected void AttackMelee(Unit unit)
+        {
+            if (unit == null) return;
+            BotHandler.CombatState.AttackMelee(unit);
+            mIsAttacking = true;
+        }
+
+        /// <summary>
+        /// Attacks a unit with wand attacks
+        /// </summary>
+        /// <param name="unit"></param>
+        protected void AttackWand(Unit unit)
+        {
+            if (unit == null) return;
+            if (BotHandler.BotOwner.CanUseWands && BotHandler.BotOwner.GetEquippedItemsByInventoryType(InventoryType.INVTYPE_RANGED) != null)
+            {
+                BotHandler.CombatState.SpellCast(unit, WAND_SHOOT);
+                mIsAttacking = true;
+            }
+        }
+
+        /// <summary>
+        /// Performs a combat action
+        /// </summary>
+        /// <param name="unit"></param>
+        private void DoCombatAction(Unit target)
+        {
+            CombatActionResult result;
+            // now we need to get a combat action. get the first one if needed
+            if (!mIsFirstCombatActionDone)
+            {
+                result = DoFirstCombatAction(target);
+                if (result == CombatActionResult.ACTION_OK || result == CombatActionResult.NO_ACTION_OK)
+                {
+                    mIsFirstCombatActionDone = true;
+                    // If we did an action, don't continue
+                    if (result == CombatActionResult.ACTION_OK)
+                        return;
+                }
+            }
+
+            // need an action as part of our rotation
+            result = DoNextCombatAction(target);
+        }
+
+        /// <summary>
+        /// Performs the first combat action
+        /// </summary>
+        /// <param name="unit"></param>
+        protected virtual CombatActionResult DoFirstCombatAction(Unit unit)
+        {
+            // If we are a melee class, start melee attacks. Otherwise start ranged attacks
+            if (IsMelee)
+                AttackMelee(unit);
+            else
+                AttackWand(unit);
+
+            return CombatActionResult.ACTION_OK;
+        }
+
+        /// <summary>
+        /// Performs the next combat action
+        /// </summary>
+        /// <param name="unit"></param>
+        /// <returns></returns>
+        protected virtual CombatActionResult DoNextCombatAction(Unit unit)
+        {
+            // base does nothing
+            return CombatActionResult.NO_ACTION_OK;
         }
 
         #endregion

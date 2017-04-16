@@ -23,7 +23,7 @@ namespace Populus.CombatManager
         private ConcurrentDictionary<RaidTargetMarkers, WoWGuid> mMarkedTargets = new ConcurrentDictionary<RaidTargetMarkers, WoWGuid>();
 
         private readonly Bot mBotOwner;
-        private readonly ActionQueue mActionQueue;
+        private ActionQueue mActionQueue;
         private readonly AggroList mAggroList = new AggroList();
         private Unit mTarget;
 
@@ -41,8 +41,6 @@ namespace Populus.CombatManager
         {
             if (botOwner == null) throw new ArgumentNullException("botOwner");
             this.mBotOwner = botOwner;
-            // hold reference to the action queue
-            mActionQueue = ActionManager.ActionManager.GetActionQueue(mBotOwner.Guid);
 
             IsInCombat = false;
         }
@@ -50,6 +48,19 @@ namespace Populus.CombatManager
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets the action queue for this bot combat state
+        /// </summary>
+        private ActionQueue ActionQueue
+        {
+            get
+            {
+                if (mActionQueue == null)
+                    mActionQueue = ActionManager.ActionManager.GetActionQueue(mBotOwner.Guid);
+                return mActionQueue;
+            }
+        }
 
         /// <summary>
         /// Whether or not the bot is in combat
@@ -61,7 +72,12 @@ namespace Populus.CombatManager
         /// </summary>
         public Unit CurrentTarget
         {
-            get { return mTarget; }
+            get
+            {
+                if (mTarget == null)
+                    mTarget = GetPrimaryDpsTarget();
+                return mTarget;
+            }
         }
 
         /// <summary>
@@ -83,6 +99,25 @@ namespace Populus.CombatManager
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Sets the combat target to a specific target instead of letting the combat state determine. A null target is not valid. Cannot clear using this method.
+        /// </summary>
+        /// <param name="target"></param>
+        public void SetTarget(Unit target)
+        {
+            if (target == null) return;
+            mTarget = target;
+        }
+
+        /// <summary>
+        /// Gets the primary dps target for this bot. This is globally considered to be SKULL.
+        /// </summary>
+        /// <returns></returns>
+        public Unit GetPrimaryDpsTarget()
+        {
+            return GetMarkedUnit(RaidTargetMarkers.SKULL);
+        }
 
         /// <summary>
         /// Gets the unit that is marked by a raid target marker.
@@ -120,6 +155,16 @@ namespace Populus.CombatManager
         }
 
         /// <summary>
+        /// Sends commands to cast a spell on the current target. If no current target exists, the spell will not be cast.
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="spellId"></param>
+        public void SpellCast(uint spellId)
+        {
+            SpellCast(CurrentTarget, spellId);
+        }
+
+        /// <summary>
         /// Sends commands to cast a spell on a target. If that target is hostile, this will place the bot into combat and add the target
         /// to the bots aggro list.
         /// </summary>
@@ -148,11 +193,12 @@ namespace Populus.CombatManager
                     return;
 
                 // Move to a spot that is within range
-                mActionQueue.Add(new MoveTowardsObject(mBotOwner, mTarget, spell.MaximumRange.Value - CAST_RANGE_BUFFER));
+                ActionQueue.Add(new MoveTowardsObject(mBotOwner, mTarget, spell.MaximumRange.Value - CAST_RANGE_BUFFER));
             }
 
-            // Check if hostile
-            if (mBotOwner.IsHostileTo(target))
+            // Check if hostile or not friendly (handles neutral enemy factions, like boars)
+            if (mBotOwner.IsHostileTo(target) ||
+                !mBotOwner.IsFriendlyTo(target))
             {
                 // Set combat flag since this target is hostile
                 IsInCombat = true;
@@ -169,7 +215,16 @@ namespace Populus.CombatManager
                 if (spell.CastTime > 0 || spell.CastingTimeIndex > 1)
                     mCastingSpellId = spellId;
             }
-            mActionQueue.Add(new CastSpellAbility(mBotOwner, target, spellId));
+            ActionQueue.Add(new CastSpellAbility(mBotOwner, target, spellId));
+        }
+
+        /// <summary>
+        /// Cancels the current spell being cast
+        /// </summary>
+        public void CancelSpellCast()
+        {
+            if (!IsCasting) return;
+            mBotOwner.CancelCast(mCastingSpellId);
         }
 
         #endregion
@@ -177,11 +232,28 @@ namespace Populus.CombatManager
         #region Internal Methods
 
         /// <summary>
+        /// Reports a unit that was killed
+        /// </summary>
+        /// <param name="guid"></param>
+        internal void UnitKilled(WoWGuid guid)
+        {
+            // Remove from our aggro list
+            mAggroList.Remove(guid);
+            // If this was our target, remove our target
+            if (mTarget.Guid == guid)
+            {
+                CancelSpellCast();
+                mTarget = null;
+            }
+        }
+
+        /// <summary>
         /// Updates the combat state each tick
         /// </summary>
         /// <param name="deltaTime"></param>
         internal void UpdateState(float deltaTime)
         {
+            // Remove any dead units from aggro
             mAggroList.RemoveDeadUnits();
             if (mAggroList.AggroUnits.Count() <= 0)
                 IsInCombat = false;
@@ -227,6 +299,8 @@ namespace Populus.CombatManager
                     mCastingSpellId = mQueuedSpellId;
                     mQueuedSpellId = 0;
                 }
+                else
+                    mCastingSpellId = 0;
                 return;
             }
 
@@ -234,6 +308,23 @@ namespace Populus.CombatManager
             if (mQueuedSpellId == spellId)
             {
                 mQueuedSpellId = 0;
+            }
+        }
+
+        /// <summary>
+        /// Cancels all combat
+        /// </summary>
+        internal void CancelCombat()
+        {
+            IsInCombat = false;
+            mAggroList.Clear();
+
+            if (mTarget != null)
+            {
+                // If our current target is dead cancel any casts.
+                if (mTarget.IsDead)
+                    CancelSpellCast();
+                mTarget = null;
             }
         }
 

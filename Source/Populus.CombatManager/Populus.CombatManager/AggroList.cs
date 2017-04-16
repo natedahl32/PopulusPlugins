@@ -35,6 +35,14 @@ namespace Populus.CombatManager
                     Remove(mob.Guid);
         }
 
+        /// <summary>
+        /// Clears the entire aggro list
+        /// </summary>
+        internal void Clear()
+        {
+            Data.Clear();
+        }
+
         #endregion
     }
 }
