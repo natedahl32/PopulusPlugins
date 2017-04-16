@@ -220,9 +220,8 @@ namespace Populus.GroupBot.Combat
             if (spell == null)
                 return false;
 
-            // TODO: Might need this
             // Is it on cooldown?
-            //if (Player.SpellCooldowns.HasCooldown(spellId)) return false;
+            if (BotHandler.BotOwner.SpellIsOnCooldown(spellId)) return false;
 
             // Have enough power to cast it?
             if (!BotHandler.BotOwner.CanCastSpell(spell)) return false;
