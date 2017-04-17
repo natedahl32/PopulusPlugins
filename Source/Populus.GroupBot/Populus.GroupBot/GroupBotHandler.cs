@@ -11,6 +11,8 @@ using Populus.Core.Shared;
 using System.Linq;
 using Populus.GroupBot.Talents;
 using Populus.GroupBot.Actions;
+using Populus.Core.World.Objects.Events;
+using Populus.Core.Constants;
 
 namespace Populus.GroupBot
 {
@@ -222,6 +224,19 @@ namespace Populus.GroupBot
                                                   mCombatLogic = CombatLogicHandler.Create(this, mBotOwner.Class, CurrentTalentSpec);
                                                   mCombatLogic.InitializeSpells();
                                               }));
+        }
+
+        /// <summary>
+        /// Handles a loot roll start event
+        /// </summary>
+        /// <param name="update"></param>
+        internal void HandleLootRoll(LootRollStartArgs update)
+        {
+            // If we can roll need
+            if (update.RollOptions.HasFlag(RollVoteMask.ROLL_VOTE_MASK_NEED))
+                mBotOwner.LootRoll(update.LootSourceGuid, update.ItemSlot, RollVote.ROLL_NEED);
+            else
+                mBotOwner.LootRoll(update.LootSourceGuid, update.ItemSlot, RollVote.ROLL_GREED);
         }
 
         #endregion

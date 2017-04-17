@@ -1,4 +1,5 @@
-﻿using Populus.Core.Plugins;
+﻿using Populus.Core.Constants;
+using Populus.Core.Plugins;
 using Populus.Core.World.Objects;
 using Populus.Core.World.Objects.Events;
 using Populus.GroupBot.Talents;
@@ -35,6 +36,7 @@ namespace Populus.GroupBot
         BotEventDelegate<CombatAttackStopEventArgs> attackStopHandler = null;
         BotEventDelegate<CombatAttackUpdateArgs> attackUpdateHandler = null;
         BotEventDelegate<SpellCastCompleteArgs> spellCastCompleteHandler = null;
+        BotEventDelegate<LootRollStartArgs> lootRollStartHandler = null;
 
         // static instance of our bot handlers collection
         private static WoWGuidCollection<GroupBotHandler> mBotHandlerCollection = new WoWGuidCollection<GroupBotHandler>();
@@ -174,6 +176,15 @@ namespace Populus.GroupBot
                     handler.CombatHandler.NotFacingTarget(args.CorrectAngle);
             };
             Bot.MeleeNotFacingTowardsTarget += notFacingTargetHandler;
+
+            // Handle loot roll start
+            lootRollStartHandler = (bot, args) =>
+            {
+                var handler = mBotHandlerCollection.Get(bot.Guid);
+                if (handler != null)
+                    handler.HandleLootRoll(args);
+            };
+            Bot.LootRollStart += lootRollStartHandler;
         }
 
         public override void Unload()
@@ -194,6 +205,7 @@ namespace Populus.GroupBot
             Bot.CombatAttackUpdate -= attackUpdateHandler;
             Bot.SpellCastCompleted -= spellCastCompleteHandler;
             Bot.MeleeNotFacingTowardsTarget -= notFacingTargetHandler;
+            Bot.LootRollStart -= lootRollStartHandler;
         }
 
         public override void OnTick(Bot bot, float deltaTime)
