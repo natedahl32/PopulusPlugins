@@ -1,4 +1,5 @@
-﻿using Populus.Core.World.Objects;
+﻿using Populus.Core.Shared;
+using Populus.Core.World.Objects;
 
 namespace Populus.GroupBot.Combat.Warrior
 {
@@ -174,9 +175,10 @@ namespace Populus.GroupBot.Combat.Warrior
             // TODO: Build up warrior combat logic
 
             // Heroic strike is excess rage spender
-            if (!mHeroicStrikePrepared && HasSpellAndCanCast(HEROIC_STRIKE) && BotHandler.BotOwner.CurrentPower >= 30)
+            if (!mHeroicStrikePrepared && IsInMeleeRange(unit) && HasSpellAndCanCast(HEROIC_STRIKE) && BotHandler.BotOwner.CurrentPower >= 30)
             {
                 mHeroicStrikePrepared = true;
+                //Log.WriteLine(LogType.Debug, "Using HEROIC_STIRKE");
                 BotHandler.CombatState.SpellCast(HEROIC_STRIKE);
                 return CombatActionResult.ACTION_OK;
             }

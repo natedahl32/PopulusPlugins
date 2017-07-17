@@ -27,6 +27,7 @@ namespace Populus.GroupBot.Combat
     {
         #region Declarations
 
+        public const float MELEE_RANGE_DISTANCE = 4.0f;
         public const uint RECENTLY_BANDAGED = 11196;
         public const uint WAND_SHOOT = 5019;
 
@@ -103,6 +104,9 @@ namespace Populus.GroupBot.Combat
             mIsFirstCombatActionDone = false;
             // Set the target since we were ordered to attack this unit
             BotHandler.CombatState.SetTarget(unit);
+            // If we are a ranged class, clear our follow target to start combat
+            if (!IsMelee)
+                BotHandler.BotOwner.RemoveFollow();
             DoCombatAction(unit);
         }
 
@@ -131,6 +135,15 @@ namespace Populus.GroupBot.Combat
 
             if (BotHandler.CombatState.CurrentTarget != null)
                 DoCombatAction(BotHandler.CombatState.CurrentTarget);
+        }
+
+        /// <summary>
+        /// Resets combat flags
+        /// </summary>
+        internal void ResetCombat()
+        {
+            mIsAttacking = false;
+            mIsFirstCombatActionDone = false;
         }
 
         /// <summary>
@@ -195,6 +208,16 @@ namespace Populus.GroupBot.Combat
         #endregion
 
         #region Private Methods
+
+        /// <summary>
+        /// Gets whether or not the bot is in melee range of it's target
+        /// </summary>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        protected bool IsInMeleeRange(Unit target)
+        {
+            return mBotHandler.BotOwner.DistanceFrom(target.Position) <= MELEE_RANGE_DISTANCE;
+        }
 
         /// <summary>
         /// Convenience method to get spell from DBC
@@ -357,27 +380,27 @@ namespace Populus.GroupBot.Combat
         /// <param name="botHandler"></param>
         /// <param name="botClass"></param>
         /// <returns></returns>
-        public static CombatLogicHandler Create(GroupBotHandler botHandler, ClassName botClass)
+        public static CombatLogicHandler Create(GroupBotHandler botHandler, ClassType botClass)
         {
             switch (botClass)
             {
-                case ClassName.Druid:
+                case ClassType.Druid:
                     return new DruidCombatLogic(botHandler);
-                case ClassName.Hunter:
+                case ClassType.Hunter:
                     return new HunterCombatLogic(botHandler);
-                case ClassName.Mage:
+                case ClassType.Mage:
                     return new MageCombatLogic(botHandler);
-                case ClassName.Paladin:
+                case ClassType.Paladin:
                     return new PaladinCombatLogic(botHandler);
-                case ClassName.Priest:
+                case ClassType.Priest:
                     return new PriestCombatLogic(botHandler);
-                case ClassName.Rogue:
+                case ClassType.Rogue:
                     return new RogueCombatLogic(botHandler);
-                case ClassName.Shaman:
+                case ClassType.Shaman:
                     return new ShamanCombatLogic(botHandler);
-                case ClassName.Warlock:
+                case ClassType.Warlock:
                     return new WarlockCombatLogic(botHandler);
-                case ClassName.Warrior:
+                case ClassType.Warrior:
                     return new WarriorCombatLogic(botHandler);
                 default:
                     throw new ArgumentException($"Class {botClass} is not defined. Unable to create combat logic handler for this class.");
@@ -391,13 +414,13 @@ namespace Populus.GroupBot.Combat
         /// <param name="botClass"></param>
         /// <param name="spec"></param>
         /// <returns></returns>
-        public static CombatLogicHandler Create(GroupBotHandler botHandler, ClassName botClass, TalentSpec spec)
+        public static CombatLogicHandler Create(GroupBotHandler botHandler, ClassType botClass, TalentSpec spec)
         {
             if (spec == null) return Create(botHandler, botClass);
 
             switch (botClass)
             {
-                case ClassName.Druid:
+                case ClassType.Druid:
                     switch (spec.Spec)
                     {
                         case MainSpec.DRUID_SPEC_BALANCE:
@@ -409,7 +432,7 @@ namespace Populus.GroupBot.Combat
                         default:
                             return new DruidCombatLogic(botHandler);
                     }
-                case ClassName.Hunter:
+                case ClassType.Hunter:
                     switch (spec.Spec)
                     {
                         case MainSpec.HUNTER_SPEC_BEASTMASTERY:
@@ -421,7 +444,7 @@ namespace Populus.GroupBot.Combat
                         default:
                             return new HunterCombatLogic(botHandler);
                     }
-                case ClassName.Mage:
+                case ClassType.Mage:
                     switch(spec.Spec)
                     {
                         case MainSpec.MAGE_SPEC_ARCANE:
@@ -433,7 +456,7 @@ namespace Populus.GroupBot.Combat
                         default:
                             return new MageCombatLogic(botHandler);
                     }
-                case ClassName.Paladin:
+                case ClassType.Paladin:
                     switch(spec.Spec)
                     {
                         case MainSpec.PALADIN_SPEC_HOLY:
@@ -445,7 +468,7 @@ namespace Populus.GroupBot.Combat
                         default:
                             return new PaladinCombatLogic(botHandler);
                     }
-                case ClassName.Priest:
+                case ClassType.Priest:
                     switch(spec.Spec)
                     {
                         case MainSpec.PRIEST_SPEC_DISCIPLINE:
@@ -457,7 +480,7 @@ namespace Populus.GroupBot.Combat
                         default:
                             return new PriestCombatLogic(botHandler);
                     }
-                case ClassName.Rogue:
+                case ClassType.Rogue:
                     switch(spec.Spec)
                     {
                         case MainSpec.ROGUE_SPEC_ASSASSINATION:
@@ -469,7 +492,7 @@ namespace Populus.GroupBot.Combat
                         default:
                             return new RogueCombatLogic(botHandler);
                     }
-                case ClassName.Shaman:
+                case ClassType.Shaman:
                     switch (spec.Spec)
                     {
                         case MainSpec.SHAMAN_SPEC_ELEMENTAL:
@@ -481,7 +504,7 @@ namespace Populus.GroupBot.Combat
                         default:
                             return new ShamanCombatLogic(botHandler);
                     }
-                case ClassName.Warlock:
+                case ClassType.Warlock:
                     switch(spec.Spec)
                     {
                         case MainSpec.WARLOCK_SPEC_AFFLICTION:
@@ -493,7 +516,7 @@ namespace Populus.GroupBot.Combat
                         default:
                             return new WarlockCombatLogic(botHandler);
                     }
-                case ClassName.Warrior:
+                case ClassType.Warrior:
                     switch (spec.Spec)
                     {
                         case MainSpec.WARRIOR_SPEC_PROTECTION:
@@ -516,51 +539,51 @@ namespace Populus.GroupBot.Combat
         /// <param name="class"></param>
         /// <param name="tab"></param>
         /// <returns></returns>
-        public static MainSpec GetSpecFromTalentTab(ClassName @class, uint tab)
+        public static MainSpec GetSpecFromTalentTab(ClassType @class, uint tab)
         {
             switch (@class)
             {
-                case ClassName.Druid:
+                case ClassType.Druid:
                     if (tab == 0) return MainSpec.DRUID_SPEC_BALANCE;
                     if (tab == 1) return MainSpec.DRUID_SPEC_FERAL;
                     if (tab == 2) return MainSpec.DRUID_SPEC_RESTORATION;
                     break;
-                case ClassName.Hunter:
+                case ClassType.Hunter:
                     if (tab == 0) return MainSpec.HUNTER_SPEC_BEASTMASTERY;
                     if (tab == 1) return MainSpec.HUNTER_SPEC_MARKSMANSHIP;
                     if (tab == 2) return MainSpec.HUNTER_SPEC_SURVIVAL;
                     break;
-                case ClassName.Mage:
+                case ClassType.Mage:
                     if (tab == 0) return MainSpec.MAGE_SPEC_ARCANE;
                     if (tab == 1) return MainSpec.MAGE_SPEC_FIRE;
                     if (tab == 2) return MainSpec.MAGE_SPEC_FROST;
                     break;
-                case ClassName.Paladin:
+                case ClassType.Paladin:
                     if (tab == 0) return MainSpec.PALADIN_SPEC_HOLY;
                     if (tab == 1) return MainSpec.PALADIN_SPEC_PROTECTION;
                     if (tab == 2) return MainSpec.PALADIN_SPEC_RETRIBUTION;
                     break;
-                case ClassName.Priest:
+                case ClassType.Priest:
                     if (tab == 0) return MainSpec.PRIEST_SPEC_DISCIPLINE;
                     if (tab == 1) return MainSpec.PRIEST_SPEC_HOLY;
                     if (tab == 2) return MainSpec.PRIEST_SPEC_SHADOW;
                     break;
-                case ClassName.Rogue:
+                case ClassType.Rogue:
                     if (tab == 0) return MainSpec.ROGUE_SPEC_ASSASSINATION;
                     if (tab == 1) return MainSpec.ROGUE_SPEC_COMBAT;
                     if (tab == 2) return MainSpec.ROGUE_SPEC_SUBTELTY;
                     break;
-                case ClassName.Shaman:
+                case ClassType.Shaman:
                     if (tab == 0) return MainSpec.SHAMAN_SPEC_ELEMENTAL;
                     if (tab == 1) return MainSpec.SHAMAN_SPEC_ENHANCEMENT;
                     if (tab == 2) return MainSpec.SHAMAN_SPEC_RESTORATION;
                     break;
-                case ClassName.Warlock:
+                case ClassType.Warlock:
                     if (tab == 0) return MainSpec.WARLOCK_SPEC_AFFLICTION;
                     if (tab == 1) return MainSpec.WARLOCK_SPEC_DEMONOLOGY;
                     if (tab == 2) return MainSpec.WARLOCK_SPEC_DESTRUCTION;
                     break;
-                case ClassName.Warrior:
+                case ClassType.Warrior:
                     if (tab == 0) return MainSpec.WARRIOR_SPEC_ARMS;
                     if (tab == 1) return MainSpec.WARRIOR_SPEC_FURY;
                     if (tab == 2) return MainSpec.WARRIOR_SPEC_PROTECTION;

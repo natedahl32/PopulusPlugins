@@ -18,6 +18,7 @@ namespace Populus.CombatManager
         BotEventDelegate<SpellInterruptedArgs> spellInterruptedHandler = null;
         EmptyEventDelegate cancelCombatHandler = null;
         BotEventDelegate<CombatKillLogArgs> killLogHandler = null;
+        BotEventDelegate<AiReactionEventArgs> aiReactionHandler = null;
 
         // static instance of our bot handlers collection
         private static WoWGuidCollection<BotCombatState> mBotCombatCollection = new WoWGuidCollection<BotCombatState>();
@@ -112,6 +113,23 @@ namespace Populus.CombatManager
                     state.UnitKilled(args.VictimGuid);
             };
             Bot.CombatKillLog += killLogHandler;
+
+            // Ai Reaction
+            aiReactionHandler = (bot, args) =>
+            {
+                if (args.Reaction == Core.Constants.AiReaction.AI_REACTION_HOSTILE)
+                {
+                    var state = mBotCombatCollection.Get(bot.Guid);
+                    if (state != null)
+                    {
+                        var unit = bot.GetUnitByGuid(args.Npc);
+                        if (unit != null)
+                            state.AddToAggroList(unit);
+                    }
+                }
+                
+            };
+            Bot.AiReaction += aiReactionHandler;
         }
 
         public override void Unload()

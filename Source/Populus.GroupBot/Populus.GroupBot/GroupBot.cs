@@ -5,7 +5,7 @@ using Populus.Core.World.Objects.Events;
 using Populus.GroupBot.Talents;
 using System;
 using System.Linq;
-using System.Reactive.Linq;
+using System.Timers;
 using static Populus.Core.World.Objects.Bot;
 using GroupMgr = Populus.GroupManager.GroupManager;
 
@@ -97,22 +97,27 @@ namespace Populus.GroupBot
             // Login handler
             loginHandler = bot =>
             {
-                // Wait 10 seconds after login and make sure the bot is not in a group with no one online. If they are, leave the group.
-                Observable
-                    .Timer(TimeSpan.FromSeconds(10))
-                    .Subscribe(
-                        x =>
+                var timer = new Timer()
+                {
+                    AutoReset = false,
+                    Interval = 3000,
+                    Enabled = true
+                };
+                // Elapsed handler for timer
+                timer.Elapsed += (s, e) =>
+                {
+                    if (GroupMgr.Groups.CharacterHasGroup(bot.Guid))
+                    {
+                        var handler = mBotHandlerCollection.Get(bot.Guid);
+                        if (handler != null)
                         {
-                            if (GroupMgr.Groups.CharacterHasGroup(bot.Guid))
-                            {
-                                var handler = mBotHandlerCollection.Get(bot.Guid);
-                                if (handler != null)
-                                {
-                                    if (!handler.Group.Members.Any(m => m.IsOnline))
-                                        bot.LeaveGroup();
-                                }
-                            }
-                        });
+                            if (!handler.Group.Members.Any(m => m.IsOnline))
+                                bot.LeaveGroup();
+                        }
+                    }
+                };
+                // Start the timer
+                timer.Start();
             };
             Bot.LoggedIn += loginHandler;
 

@@ -16,7 +16,7 @@ namespace Populus.GroupBot.Talents
 
         #region Constructors
 
-        internal TalentSpec(ClassName classSpec, string name, uint[] talents)
+        internal TalentSpec(ClassType classSpec, string name, uint[] talents)
         {
             this.ForClass = classSpec;
             this.Name = name;
@@ -30,7 +30,7 @@ namespace Populus.GroupBot.Talents
         /// <summary>
         /// Gets the class this talent spec is for
         /// </summary>
-        public ClassName ForClass { get; private set; }
+        public ClassType ForClass { get; private set; }
 
         /// <summary>
         /// Gets the name of this talent spec

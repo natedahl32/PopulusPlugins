@@ -1,4 +1,5 @@
 ﻿using Populus.Core.Constants;
+using Populus.Core.Shared;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -27,7 +28,7 @@ namespace Populus.GroupBot.Talents
 
         internal const int MAX_TALENT_POINTS = 51;
 
-        private readonly Dictionary<ClassName, List<TalentSpec>> mTalentSpecs = new Dictionary<ClassName, List<TalentSpec>>();
+        private readonly Dictionary<ClassType, List<TalentSpec>> mTalentSpecs = new Dictionary<ClassType, List<TalentSpec>>();
 
         #endregion
 
@@ -38,7 +39,7 @@ namespace Populus.GroupBot.Talents
         /// </summary>
         /// <param name="classSpec"></param>
         /// <returns></returns>
-        public IEnumerable<TalentSpec> TalentSpecsByClass(ClassName classSpec)
+        public IEnumerable<TalentSpec> TalentSpecsByClass(ClassType classSpec)
         {
             if (!mTalentSpecs.ContainsKey(classSpec))
                 return new List<TalentSpec>();
@@ -51,10 +52,11 @@ namespace Populus.GroupBot.Talents
         internal void LoadTalents()
         {
             // Read all files from the talents folder
-            foreach (string file in Directory.EnumerateFiles(@"bot\talents", "*.*"))
+            var folderLocation = $"bot\\talents";
+            foreach (string file in Directory.EnumerateFiles(folderLocation, "*.*"))
             {
                 var lines = File.ReadAllLines(file);
-                var classSpec = (ClassName)Convert.ToByte(lines[0]);
+                var classSpec = (ClassType)Convert.ToByte(lines[0]);
                 var specName = lines[1];
                 uint[] talents = new uint[MAX_TALENT_POINTS];
                 for (int i = 2; (i < (MAX_TALENT_POINTS + 2)) && (i < lines.Length); i++)

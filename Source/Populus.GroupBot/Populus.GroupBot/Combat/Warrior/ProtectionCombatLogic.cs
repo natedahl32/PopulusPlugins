@@ -1,4 +1,5 @@
-﻿using Populus.Core.World.Objects;
+﻿using Populus.Core.Shared;
+using Populus.Core.World.Objects;
 
 namespace Populus.GroupBot.Combat.Warrior
 {
@@ -22,23 +23,16 @@ namespace Populus.GroupBot.Combat.Warrior
 
         protected override CombatActionResult DoFirstCombatAction(Unit unit)
         {
-            AttackMelee(unit);
-
             // Get in defensive stance if we are not already
             if (!BotHandler.BotOwner.HasAura(DEFENSIVE_STANCE) && HasSpellAndCanCast(DEFENSIVE_STANCE))
             {
+                //Log.WriteLine(LogType.Debug, "Using DEFENSIVE_STANCE");
                 BotHandler.CombatState.SpellCast(BotHandler.BotOwner, DEFENSIVE_STANCE);
                 // Continue with first combat action if we hit this
                 return CombatActionResult.ACTION_OK_CONTINUE_FIRST;
             }
 
-            // Use bloodrage at the start of a fight if it's available and we are below a certain amount of rage
-            if (!BotHandler.BotOwner.HasAura(BLOODRAGE) && BotHandler.BotOwner.CurrentPower < 50 && HasSpellAndCanCast(BLOODRAGE))
-            {
-                BotHandler.CombatState.SpellCast(BotHandler.BotOwner, BLOODRAGE);
-                return CombatActionResult.ACTION_OK;
-            }
-
+            AttackMelee(unit);
 
             return base.DoFirstCombatAction(unit);
         }
@@ -46,10 +40,20 @@ namespace Populus.GroupBot.Combat.Warrior
         protected override CombatActionResult DoNextCombatAction(Unit unit)
         {
             // TODO: Build up prot warrior combat logic
+            AttackMelee(unit);
+
+            // Use bloodrage if it's available and we are below a certain amount of rage
+            if (!BotHandler.BotOwner.HasAura(BLOODRAGE) && BotHandler.BotOwner.CurrentPower < 20 && HasSpellAndCanCast(BLOODRAGE))
+            {
+                //Log.WriteLine(LogType.Debug, "Using BLOODRAGE");
+                BotHandler.CombatState.SpellCast(BotHandler.BotOwner, BLOODRAGE);
+                return CombatActionResult.ACTION_OK;
+            }
 
             // If revenge procced, use that
-            if (mRevengeProcced && HasSpellAndCanCast(REVENGE))
+            if (mRevengeProcced && HasSpellAndCanCast(REVENGE) && IsInMeleeRange(unit))
             {
+                //Log.WriteLine(LogType.Debug, "Using REVENGE");
                 BotHandler.CombatState.SpellCast(REVENGE);
                 mRevengeProcced = false;
                 return CombatActionResult.ACTION_OK;
@@ -59,8 +63,9 @@ namespace Populus.GroupBot.Combat.Warrior
             if (unit.GetAuraForSpell(SUNDER_ARMOR) == null || 
                 unit.GetAuraForSpell(SUNDER_ARMOR).Stacks < 3)
             {
-                if (HasSpellAndCanCast(SUNDER_ARMOR))
+                if (HasSpellAndCanCast(SUNDER_ARMOR) && IsInMeleeRange(unit))
                 {
+                    //Log.WriteLine(LogType.Debug, "Using SUNDER_ARMOR");
                     BotHandler.CombatState.SpellCast(SUNDER_ARMOR);
                     return CombatActionResult.ACTION_OK;
                 }

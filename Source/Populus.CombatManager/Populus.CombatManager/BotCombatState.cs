@@ -41,8 +41,6 @@ namespace Populus.CombatManager
         {
             if (botOwner == null) throw new ArgumentNullException("botOwner");
             this.mBotOwner = botOwner;
-
-            IsInCombat = false;
         }
 
         #endregion
@@ -65,7 +63,7 @@ namespace Populus.CombatManager
         /// <summary>
         /// Whether or not the bot is in combat
         /// </summary>
-        public bool IsInCombat { get; private set; }
+        public bool IsInCombat { get { return mAggroList.AggroUnits.Count() > 0; } }
 
         /// <summary>
         /// Gets the current target for the bot
@@ -143,12 +141,9 @@ namespace Populus.CombatManager
         /// </summary>
         public void AttackMelee(Unit target)
         {
-            // First of all, set our combat flag
-            IsInCombat = true;
-
             // Set our target and it to our aggro list
             mTarget = target;
-            mAggroList.AddOrUpdate(target.Guid, target);
+            AddToAggroList(target);
             mBotOwner.SetTarget(target.Guid);
 
             // Follow the target to move to it
@@ -204,11 +199,8 @@ namespace Populus.CombatManager
             if (mBotOwner.IsHostileTo(target) ||
                 !mBotOwner.IsFriendlyTo(target))
             {
-                // Set combat flag since this target is hostile
-                IsInCombat = true;
-
                 // Add the target to the aggro list
-                mAggroList.AddOrUpdate(target.Guid, target);
+                AddToAggroList(target);
             }
 
             // Cast the spell
@@ -237,8 +229,10 @@ namespace Populus.CombatManager
         /// <param name="unit"></param>
         public void AddToAggroList(Unit unit)
         {
-            if (!mAggroList.Contains(unit.Guid))
-                mAggroList.AddOrUpdate(unit.Guid, unit);
+            // Log if this starts combat
+            if (!IsInCombat) mBotOwner.Logger.Log($"Unit {unit.Name} added to aggro. Combat is started!");
+            // Shouldn't need to check if already exists, will update if it does
+            mAggroList.AddOrUpdate(unit.Guid, unit);
         }
 
         #endregion
@@ -253,6 +247,8 @@ namespace Populus.CombatManager
         {
             // Remove from our aggro list
             mAggroList.Remove(guid);
+            if (!IsInCombat) mBotOwner.Logger.Log("Combat has ended");
+
             // If this was our target, remove our target
             if (mTarget != null && mTarget.Guid == guid)
             {
@@ -267,12 +263,13 @@ namespace Populus.CombatManager
         /// <param name="deltaTime"></param>
         internal void UpdateState(float deltaTime)
         {
+            var inCombat = IsInCombat;
+
             // Remove any dead units from aggro
             mAggroList.RemoveDeadUnits();
-            if (mAggroList.AggroUnits.Count() <= 0)
-                IsInCombat = false;
-            else
-                IsInCombat = true;
+
+            // If we were in combat, but we are no longer.
+            if (inCombat && !IsInCombat) mBotOwner.Logger.Log("Combat has ended");
         }
 
         /// <summary>
@@ -332,8 +329,8 @@ namespace Populus.CombatManager
         /// </summary>
         internal void CancelCombat()
         {
-            IsInCombat = false;
             mAggroList.Clear();
+            mBotOwner.Logger.Log("Combat was canceled. Removing units from aggro list.");
 
             if (mTarget != null)
             {

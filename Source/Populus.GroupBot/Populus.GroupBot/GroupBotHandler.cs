@@ -123,7 +123,7 @@ namespace Populus.GroupBot
             {
                 mCombatLogic.Update(deltaTime);
                 return;
-            }
+            }   
             
             // Do not update if we already have actions we need to process
             if (!mActionQueue.IsEmpty) return;
