@@ -1,4 +1,6 @@
-﻿namespace Populus.GroupBot.Combat.Mage
+﻿using Populus.Core.World.Objects;
+
+namespace Populus.GroupBot.Combat.Mage
 {
     public class MageCombatLogic : CombatLogicHandler
     {
@@ -125,6 +127,50 @@
             SHOOT = InitSpell(Spells.SHOOT_2);
             SLOW_FALL = InitSpell(Spells.SLOW_FALL_1);
             SLOW = InitSpell(Spells.SLOW_1);
+        }
+
+        public override CombatActionResult DoOutOfCombatAction()
+        {
+            // TODO: Check for drinks, if none found summon some
+            // TODO: Check for food, if non found summon some
+
+            // Ice barrier if not on self
+            if (HasSpellAndCanCast(ICE_BARRIER) && !BotHandler.BotOwner.HasAura(ICE_BARRIER))
+            {
+                BotHandler.CombatState.SpellCast(BotHandler.BotOwner, ICE_BARRIER);
+                return CombatActionResult.ACTION_OK;
+            }
+
+            return base.DoOutOfCombatAction();
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        protected override CombatActionResult DoFirstCombatAction(Unit unit)
+        {
+            return CombatActionResult.NO_ACTION_OK;
+        }
+
+        protected override CombatActionResult DoNextCombatAction(Unit unit)
+        {
+            // Default leveling logic for a mage
+            if (HasSpellAndCanCast(FROSTBOLT))
+            {
+                BotHandler.CombatState.SpellCast(FROSTBOLT);
+                return CombatActionResult.ACTION_OK;
+            }
+
+            if (HasSpellAndCanCast(FIREBALL))
+            {
+                BotHandler.CombatState.SpellCast(FIREBALL);
+                return CombatActionResult.ACTION_OK;
+            }
+
+            // Wand if we get here
+            AttackWand(unit);
+            return CombatActionResult.NO_ACTION_OK;
         }
 
         #endregion

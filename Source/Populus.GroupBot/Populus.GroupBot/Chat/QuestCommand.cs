@@ -34,6 +34,13 @@ namespace Populus.GroupBot.Chat
                 return;
             }
 
+            // Complete quests
+            if (chat.MessageTokenized.Length > 1 && chat.MessageTokenized[1].ToLower() == "complete")
+            {
+                CompleteQuests(botHandler, chat);
+                return;
+            }
+
             ListQuests(botHandler);
         }
 
@@ -98,6 +105,64 @@ namespace Populus.GroupBot.Chat
         }
 
         /// <summary>
+        /// Complete quests
+        /// </summary>
+        /// <param name="botHandler"></param>
+        /// <param name="args"></param>
+        private void CompleteQuests(GroupBotHandler botHandler, ChatEventArgs chat)
+        {
+            if (chat.MessageTokenized.Length > 2 && chat.MessageTokenized[2].ToLower() == "all")
+            {
+                // TODO: Find all quest givers in range and complete any quests we can from them
+                return;
+            }
+
+            // Get the leaders target
+            var leaderObj = botHandler.BotOwner.GetPlayerByGuid(botHandler.Group.Leader.Guid);
+            if (leaderObj == null) return;
+            var target = botHandler.BotOwner.GetWorldObjectByGuid(leaderObj.TargetGuid);
+            if (target == null)
+            {
+                botHandler.BotOwner.ChatParty("Target what you would like me to complete a quest from.");
+                return;
+            }
+
+            // Get the object that we were told to loot.
+            var questGiver = botHandler.BotOwner.GetWorldObjectByGuid(target.Guid);
+            if (questGiver == null)
+            {
+                botHandler.BotOwner.ChatParty($"That target does not exist, I can't complete quests from that that.");
+                return;
+            }
+
+            // If the target is not a questgiver, we can't accept quests from them
+            if ((target is Unit && !((target as Unit).IsQuestGiver)) ||
+                (target is GameObject && !((target as GameObject).IsQuestGiver)))
+            {
+                botHandler.BotOwner.ChatParty($"That target is not a quest giver.");
+                return;
+            }
+
+            // Make sure we are close enough to the object to accept quests from them
+            float dist = botHandler.BotOwner.DistanceFrom(questGiver.Position);
+            if (dist > MAX_QUESTGIVER_DISTANCE)
+            {
+                botHandler.BotOwner.ChatParty($"The questgiver is too far away. I can only complete quests within {MAX_QUESTGIVER_DISTANCE} yards. The questgiver is {dist.ToNearestInt()} yards away.");
+                return;
+            }
+
+            // If the questgiver is dead, we can't interact withit
+            if (target is Unit && (target as Unit).IsDead)
+            {
+                botHandler.BotOwner.ChatParty($"The questgiver is dead, I can't complete quests from them.");
+                return;
+            }
+
+            // Accept quests from the quest giver
+            AcceptQuestFromObject(botHandler, target);
+        }
+
+        /// <summary>
         /// Lists all quests the bot currently has
         /// </summary>
         /// <param name="botHandler"></param>
@@ -127,7 +192,19 @@ namespace Populus.GroupBot.Chat
         {
             var actionQueue = ActionMgr.GetActionQueue(botHandler.BotOwner.Guid);
             actionQueue.Add(new MoveTowardsObject(botHandler.BotOwner, wo, 1.0f));
-            actionQueue.Add(new LootObject(botHandler.BotOwner, wo));
+            actionQueue.Add(new AcceptQuests(botHandler.BotOwner, wo));
+        }
+
+        /// <summary>
+        /// Starts the process to complete a quest from a world object
+        /// </summary>
+        /// <param name="botHandler"></param>
+        /// <param name="wo"></param>
+        private void CompleteQuestFromObject(GroupBotHandler botHandler, WorldObject wo)
+        {
+            var actionQueue = ActionMgr.GetActionQueue(botHandler.BotOwner.Guid);
+            actionQueue.Add(new MoveTowardsObject(botHandler.BotOwner, wo, 1.0f));
+            actionQueue.Add(new AcceptQuests(botHandler.BotOwner, wo));
         }
     }
 }

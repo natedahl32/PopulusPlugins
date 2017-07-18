@@ -9,6 +9,7 @@ namespace Populus.ActionManager.Actions
         #region Declarations
 
         private WorldObject mQuestGiver;
+        private bool mIsComplete = false;
 
         #endregion
 
@@ -24,7 +25,7 @@ namespace Populus.ActionManager.Actions
 
         #region Properties
 
-        public override bool IsComplete => throw new NotImplementedException();
+        public override bool IsComplete => mIsComplete;
 
         #endregion
 
@@ -36,6 +37,18 @@ namespace Populus.ActionManager.Actions
 
             // Wire up our events we need
             Bot.QuestListReceived += QuestListReceived;
+            Bot.QuestOfferReceived += QuestOfferReceived;
+
+            // Request quest list
+            BotOwner.RequestQuestListFromQuestGiver(mQuestGiver.Guid);
+        }
+
+        public override void Removed()
+        {
+            base.Removed();
+
+            Bot.QuestOfferReceived -= QuestOfferReceived;
+            Bot.QuestListReceived -= QuestListReceived;
         }
 
         #endregion
@@ -44,7 +57,15 @@ namespace Populus.ActionManager.Actions
 
         private void QuestListReceived(Bot bot, QuestGiverListArgs args)
         {
-            // TODO: Accept all quests returned to us
+            foreach (var q in args.QuestListItems)
+                BotOwner.AcceptQuest(mQuestGiver.Guid, q.QuestId);
+            mIsComplete = true;
+        }
+
+        private void QuestOfferReceived(Bot bot, uint questId)
+        {
+            BotOwner.AcceptQuest(mQuestGiver.Guid, questId);
+            mIsComplete = true;
         }
 
         #endregion

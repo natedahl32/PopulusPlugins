@@ -128,6 +128,10 @@ namespace Populus.GroupBot
             // Do not update if we already have actions we need to process
             if (!mActionQueue.IsEmpty) return;
 
+            // Check for out of combat actions to be performed
+            if (mCombatLogic.DoOutOfCombatAction() == CombatActionResult.ACTION_OK)
+                return;
+
             // Follow the group leader if we aren't already and we can
             if (mCanFollow)
                 FollowGroupLeader();

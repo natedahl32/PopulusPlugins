@@ -138,6 +138,17 @@ namespace Populus.GroupBot.Combat
         }
 
         /// <summary>
+        /// Performs an out of combat action
+        /// </summary>
+        /// <returns></returns>
+        public virtual CombatActionResult DoOutOfCombatAction()
+        {
+            // TODO: If mana is below a certain threshold, drink water
+
+            return CombatActionResult.NO_ACTION_OK;
+        }
+
+        /// <summary>
         /// Resets combat flags
         /// </summary>
         internal void ResetCombat()

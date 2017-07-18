@@ -135,6 +135,25 @@ namespace Populus.GroupBot.Combat.Priest
             VAMPIRIC_EMBRACE = InitSpell(Spells.VAMPIRIC_EMBRACE_1);
         }
 
+        public override CombatActionResult DoOutOfCombatAction()
+        {
+            // Inner Fire if not on self
+            if (HasSpellAndCanCast(INNER_FIRE) && !BotHandler.BotOwner.HasAura(INNER_FIRE))
+            {
+                BotHandler.CombatState.SpellCast(BotHandler.BotOwner, INNER_FIRE);
+                return CombatActionResult.ACTION_OK;
+            }
+
+            // Inner Fire if not on self
+            if (HasSpellAndCanCast(POWER_WORD_FORTITUDE) && !BotHandler.BotOwner.HasAura(POWER_WORD_FORTITUDE))
+            {
+                BotHandler.CombatState.SpellCast(BotHandler.BotOwner, POWER_WORD_FORTITUDE);
+                return CombatActionResult.ACTION_OK;
+            }
+
+            return base.DoOutOfCombatAction();
+        }
+
         #endregion
 
         #region Private Methods
