@@ -1,4 +1,5 @@
 ﻿using Populus.Core.World.Objects;
+using System.Linq;
 
 namespace Populus.GroupBot.Combat.Priest
 {
@@ -144,11 +145,59 @@ namespace Populus.GroupBot.Combat.Priest
                 return CombatActionResult.ACTION_OK;
             }
 
-            // Inner Fire if not on self
+            // Power Word Fortitude if not on self
             if (HasSpellAndCanCast(POWER_WORD_FORTITUDE) && !BotHandler.BotOwner.HasAura(POWER_WORD_FORTITUDE))
             {
                 BotHandler.CombatState.SpellCast(BotHandler.BotOwner, POWER_WORD_FORTITUDE);
                 return CombatActionResult.ACTION_OK;
+            }
+
+            // Handle group checks. More efficient to do these all at once
+            foreach (var member in BotHandler.Group.Members)
+            {
+                var unit = BotHandler.BotOwner.GetUnitByGuid(member.Guid);
+                if (unit == null) continue;
+
+                // Check Power Word Fortitude
+                if (!unit.HasAura(POWER_WORD_FORTITUDE) && HasSpellAndCanCast(POWER_WORD_FORTITUDE))
+                {
+                    BotHandler.CombatState.SpellCast(unit, POWER_WORD_FORTITUDE);
+                    return CombatActionResult.ACTION_OK;
+                }
+
+                // Check if group member needs a moderate heal
+                if (HasSpellAndCanCast(LESSER_HEAL) && unit.HealthPercentage < 70.0f)
+                {
+                    BotHandler.CombatState.SpellCast(unit, LESSER_HEAL);
+                    return CombatActionResult.ACTION_OK;
+                }
+
+                // Check if group member needs a small hot
+                if (HasSpellAndCanCast(RENEW) && unit.HealthPercentage < 90.0f)
+                {
+                    BotHandler.CombatState.SpellCast(unit, RENEW);
+                    return CombatActionResult.ACTION_OK;
+                }
+            }
+
+            // Power Word Fortitude if not on a member of the group
+            if (HasSpellAndCanCast(POWER_WORD_FORTITUDE))
+            {
+                foreach (var member in BotHandler.Group.Members)
+                {
+                    var unit = BotHandler.BotOwner.GetUnitByGuid(member.Guid);
+                    if (unit != null && !unit.HasAura(POWER_WORD_FORTITUDE))
+                    {
+                        BotHandler.CombatState.SpellCast(unit, POWER_WORD_FORTITUDE);
+                        return CombatActionResult.ACTION_OK;
+                    }
+                }
+            }
+
+            // Heal group members that are low on health
+            if (HasSpellAndCanCast(LESSER_HEAL))
+            {
+
             }
 
             return base.DoOutOfCombatAction();
@@ -165,6 +214,20 @@ namespace Populus.GroupBot.Combat.Priest
 
         protected override CombatActionResult DoNextCombatAction(Unit unit)
         {
+            // Handle group health checks.
+            foreach (var member in BotHandler.Group.Members)
+            {
+                var memberUnit = BotHandler.BotOwner.GetUnitByGuid(member.Guid);
+                if (memberUnit == null) continue;
+
+                // Check if group member needs a moderate heal
+                if (HasSpellAndCanCast(LESSER_HEAL) && memberUnit.HealthPercentage < 50.0f)
+                {
+                    BotHandler.CombatState.SpellCast(memberUnit, LESSER_HEAL);
+                    return CombatActionResult.ACTION_OK;
+                }
+            }
+
             // TODO: Build up priest combat logic
             if (HasSpellAndCanCast(SHADOW_WORD_PAIN) && !unit.HasAura(SHADOW_WORD_PAIN) && unit.HealthPercentage > 30.0f)
             {
@@ -172,14 +235,16 @@ namespace Populus.GroupBot.Combat.Priest
                 return CombatActionResult.ACTION_OK;
             }
 
+            // Wand if the mob is less than 40% health
+            if (unit.HealthPercentage < 40.0f && AttackWand(unit))
+                return CombatActionResult.NO_ACTION_OK;
+
             if (HasSpellAndCanCast(SMITE))
             {
                 BotHandler.CombatState.SpellCast(SMITE);
                 return CombatActionResult.ACTION_OK;
             }
 
-            // Wand if we get here
-            AttackWand(unit);
             return CombatActionResult.NO_ACTION_OK;
         }
 

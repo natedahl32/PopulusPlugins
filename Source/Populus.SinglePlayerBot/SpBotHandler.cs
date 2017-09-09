@@ -18,7 +18,7 @@ namespace Populus.SinglePlayerBot
     {
         #region Declarations
 
-        internal enum StateTriggers { LevelUp }
+        internal enum StateTriggers { Combat, LevelUp }
 
         private readonly Bot mBotOwner;
         private readonly ActionQueue mActionQueue;

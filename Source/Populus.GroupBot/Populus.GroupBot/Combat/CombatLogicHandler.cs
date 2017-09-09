@@ -73,8 +73,6 @@ namespace Populus.GroupBot.Combat
         /// </summary>
         public bool IsAttacking { get { return mIsAttacking; } }
 
-
-
         #endregion
 
         #region Public Methods
@@ -314,14 +312,17 @@ namespace Populus.GroupBot.Combat
         /// Attacks a unit with wand attacks
         /// </summary>
         /// <param name="unit"></param>
-        protected void AttackWand(Unit unit)
+        protected bool AttackWand(Unit unit)
         {
-            if (unit == null) return;
+            if (unit == null) return false;
             if (BotHandler.BotOwner.CanUseWands && BotHandler.BotOwner.GetEquippedItemsByInventoryType(InventoryType.INVTYPE_RANGED) != null)
             {
                 BotHandler.CombatState.SpellCast(unit, WAND_SHOOT);
                 mIsAttacking = true;
+                return true;
             }
+
+            return false;
         }
 
         /// <summary>

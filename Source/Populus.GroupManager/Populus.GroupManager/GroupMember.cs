@@ -2,6 +2,7 @@
 using Populus.Core.Shared;
 using Populus.Core.World.Objects.Events;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Populus.GroupManager
 {
@@ -151,6 +152,16 @@ namespace Populus.GroupManager
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Returns whether or not the group member has the spell aura or not
+        /// </summary>
+        /// <param name="auraId"></param>
+        /// <returns></returns>
+        public bool HasAura(ushort auraId)
+        {
+            return AuraIds.Contains(auraId);
+        }
 
         /// <summary>
         /// Updates the group members position
