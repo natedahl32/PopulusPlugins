@@ -13,6 +13,9 @@ using Populus.GroupBot.Talents;
 using Populus.GroupBot.Actions;
 using Populus.Core.World.Objects.Events;
 using Populus.Core.Constants;
+using Populus.GroupBot.States;
+using Stateless;
+using Populus.GroupBot.Triggers;
 
 namespace Populus.GroupBot
 {
@@ -33,6 +36,9 @@ namespace Populus.GroupBot
         private Coordinate mLastKnownFollowPosition;
         private bool mCanFollow = true;
 
+        private State mCurrentState = Idle.Instance;
+        private readonly StateMachine<State, StateTriggers> mStateMachine;
+
         #endregion
 
         #region Constructors
@@ -51,6 +57,9 @@ namespace Populus.GroupBot
 
             // defaults
             IsOutOfRangeOfLeader = false;
+
+            mStateMachine = new StateMachine<States.State, StateTriggers>(() => mCurrentState, s => mCurrentState = s);
+            BuildStateMachine();
         }
 
         #endregion
@@ -108,6 +117,11 @@ namespace Populus.GroupBot
             get { return TalentManager.Instance.TalentSpecsByClass(mBotOwner.Class).Where(s => s.Name == BotData.SpecName).SingleOrDefault(); }
         }
 
+        /// <summary>
+        /// Coordinates the bot is teleporting to
+        /// </summary>
+        public Coordinate TeleportingTo { get; private set; }
+
         #endregion
 
         #region Public Methods
@@ -118,23 +132,26 @@ namespace Populus.GroupBot
         /// <param name="deltaTime"></param>
         public void Update(float deltaTime)
         {
-            // If we are in combat, do combat logic
-            if (mCombatState.IsInCombat)
-            {
-                mCombatLogic.Update(deltaTime);
-                return;
-            }   
+            // Update the current state
+            mCurrentState.Update(this, deltaTime);
+
+            //// If we are in combat, do combat logic
+            //if (mCombatState.IsInCombat)
+            //{
+            //    mCombatLogic.Update(deltaTime);
+            //    return;
+            //}   
             
-            // Do not update if we already have actions we need to process
-            if (!mActionQueue.IsEmpty) return;
+            //// Do not update if we already have actions we need to process
+            //if (!mActionQueue.IsEmpty) return;
 
-            // Check for out of combat actions to be performed
-            if (mCombatLogic.DoOutOfCombatAction() == CombatActionResult.ACTION_OK)
-                return;
+            //// Check for out of combat actions to be performed
+            //if (mCombatLogic.DoOutOfCombatAction() == CombatActionResult.ACTION_OK)
+            //    return;
 
-            // Follow the group leader if we aren't already and we can
-            if (mCanFollow)
-                FollowGroupLeader();
+            //// Follow the group leader if we aren't already and we can
+            //if (mCanFollow)
+            //    FollowGroupLeader();
         }
 
         /// <summary>
@@ -191,13 +208,25 @@ namespace Populus.GroupBot
                     }
                     else
                     {
-                        // Remove the follow target and tell the group leader they are too far away for you to follow
+                        // Remove the follow target and teleport to the group member
                         mBotOwner.RemoveFollow();
-                        mBotOwner.ChatParty($"I can't follow {member.Name} you are too far away!");
-                        IsOutOfRangeOfLeader = true;
+                        TeleportToGroupMember(member);
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Teleports to a group members position
+        /// </summary>
+        /// <param name="member"></param>
+        internal void TeleportToGroupMember(GroupMember member)
+        {
+            mBotOwner.ChatSay($".go {member.Name}");
+            //mBotOwner.ChatParty($"I can't follow {member.Name} you are too far away!");
+            IsOutOfRangeOfLeader = true;
+            TeleportingTo = member.Position;
+            TriggerState(StateTriggers.Teleporting);
         }
 
         internal void StopFollow()
@@ -243,6 +272,30 @@ namespace Populus.GroupBot
                 mBotOwner.LootRoll(update.LootSourceGuid, update.ItemSlot, RollVote.ROLL_GREED);
         }
 
+        /// <summary>
+        /// Triggers a state
+        /// </summary>
+        /// <param name="trigger"></param>
+        internal void TriggerState(StateTriggers trigger)
+        {
+            mStateMachine.Fire(trigger);
+        }
+
+        /// <summary>
+        /// Learn all spells up to the bots level (does not learn talents)
+        /// </summary>
+        internal void LearnLevelSpells()
+        {
+            // Level 1 spells are already learned
+            if (BotOwner.Level <= 1) return;
+
+            // Get all spells we should know at this level
+            var spells = mCombatLogic.GetSpellsUpToLevel(BotOwner.Level);
+            foreach (var spell in spells)
+                if (!BotOwner.HasSpell((ushort)spell))
+                    LearnSpell(spell);
+        }
+
         #endregion
 
         #region Private Methods
@@ -255,6 +308,27 @@ namespace Populus.GroupBot
             if (Group == null) return;
             if (!Group.Members.Any(m => m.IsOnline))
                 mBotOwner.LeaveGroup();
+        }
+
+        /// <summary>
+        /// Build the state machine for the bot
+        /// </summary>
+        private void BuildStateMachine()
+        {
+            mStateMachine.Configure(Idle.Instance)
+                .Permit(StateTriggers.Teleporting, Teleport.Instance);
+
+            mStateMachine.Configure(Teleport.Instance)
+                .Permit(StateTriggers.Idle, Idle.Instance);
+        }
+
+        /// <summary>
+        /// Issues command to learn a spell with the id
+        /// </summary>
+        /// <param name="spellId"></param>
+        private void LearnSpell(uint spellId)
+        {
+            mBotOwner.ChatSay($".learn {spellId}");
         }
 
         #endregion

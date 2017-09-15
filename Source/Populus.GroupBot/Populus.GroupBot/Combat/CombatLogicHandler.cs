@@ -73,9 +73,25 @@ namespace Populus.GroupBot.Combat
         /// </summary>
         public bool IsAttacking { get { return mIsAttacking; } }
 
+        /// <summary>
+        /// Gets all spells available to the class for all levels
+        /// </summary>
+        protected abstract Dictionary<int, List<uint>> SpellsByLevel { get; }
+
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Gets all spells up to a given level
+        /// </summary>
+        /// <param name="level"></param>
+        /// <returns></returns>
+        public IEnumerable<uint> GetSpellsUpToLevel(uint level)
+        {
+            var result = SpellsByLevel.Where(kvp => kvp.Key <= level).ToList();
+            return result.SelectMany(s => s.Value).Select(v => v);
+        }
 
         /// <summary>
         /// Initializes all spells the player currently has.
