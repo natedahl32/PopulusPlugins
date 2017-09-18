@@ -195,13 +195,13 @@ namespace Populus.GroupBot.Combat.Warlock
             PetAttack(unit);
 
             // TODO: Build up warlock combat logic
-            if (HasSpellAndCanCast(CURSE_OF_AGONY) && !unit.HasAura(CURSE_OF_AGONY) && unit.HealthPercentage > 50.0f)
+            if (HasSpellAndCanCast(CURSE_OF_AGONY) && !unit.HasAura(CURSE_OF_AGONY) && unit.HealthPercentage > 80.0f)
             {
                 BotHandler.CombatState.SpellCast(CURSE_OF_AGONY);
                 return CombatActionResult.ACTION_OK;
             }
 
-            if (HasSpellAndCanCast(CORRUPTION) && !unit.HasAura(CORRUPTION) && unit.HealthPercentage > 40.0f)
+            if (HasSpellAndCanCast(CORRUPTION) && !unit.HasAura(CORRUPTION) && unit.HealthPercentage > 50.0f)
             {
                 BotHandler.CombatState.SpellCast(CORRUPTION);
                 return CombatActionResult.ACTION_OK;

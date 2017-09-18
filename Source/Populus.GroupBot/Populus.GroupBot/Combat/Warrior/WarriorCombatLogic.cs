@@ -65,6 +65,9 @@ namespace Populus.GroupBot.Combat.Warrior
         // flag that determines if heroic strike was used or not
         protected bool mHeroicStrikePrepared = false;
 
+        // holds the threshold of rage we will use to determine if we can cast heroic strike or not
+        private int mUseHeroicStrikeRageThreshold = 30;
+
         #endregion
 
         #region Constructors
@@ -89,6 +92,15 @@ namespace Populus.GroupBot.Combat.Warrior
         public override bool IsMelee
         {
             get { return true; }
+        }
+
+        /// <summary>
+        /// Gets or sets the threshold value of rage that will determine if we cast heroic strike or not
+        /// </summary>
+        protected int UseHeroicStrikeRageThreshold
+        {
+            get { return mUseHeroicStrikeRageThreshold; }
+            set { mUseHeroicStrikeRageThreshold = value; }
         }
 
         #endregion
@@ -172,14 +184,10 @@ namespace Populus.GroupBot.Combat.Warrior
 
         protected override CombatActionResult DoNextCombatAction(Unit unit)
         {
-            // TODO: Build up warrior combat logic
-
             // Heroic strike is excess rage spender
-            if (!mHeroicStrikePrepared && IsInMeleeRange(unit) && HasSpellAndCanCast(HEROIC_STRIKE) && BotHandler.BotOwner.CurrentPower >= 30)
+            if (!mHeroicStrikePrepared && IsInMeleeRange(unit) && HasSpellAndCanCast(HEROIC_STRIKE) && BotHandler.BotOwner.CurrentPower >= mUseHeroicStrikeRageThreshold)
             {
-                mHeroicStrikePrepared = true;
-                //Log.WriteLine(LogType.Debug, "Using HEROIC_STIRKE");
-                BotHandler.CombatState.SpellCast(HEROIC_STRIKE);
+                CastHeroicStrike();
                 return CombatActionResult.ACTION_OK;
             }
 
@@ -189,8 +197,15 @@ namespace Populus.GroupBot.Combat.Warrior
         protected virtual void CombatAttackUpdate(Bot bot, Core.World.Objects.Events.CombatAttackUpdateArgs eventArgs)
         {
             // Reset heroic strike flag on each attack
-            if (bot.Guid == BotHandler.BotOwner.Guid && eventArgs.AttackerGuid == BotHandler.BotOwner.Guid)
+            if (bot.Guid == BotHandler.BotOwner.Guid && eventArgs.AttackerGuid == BotHandler.BotOwner.Guid && mHeroicStrikePrepared)
                 mHeroicStrikePrepared = false;
+        }
+
+        protected void CastHeroicStrike()
+        {
+            mHeroicStrikePrepared = true;
+            //Log.WriteLine(LogType.Debug, "Using HEROIC_STIRKE");
+            BotHandler.CombatState.SpellCast(HEROIC_STRIKE);
         }
 
         #endregion

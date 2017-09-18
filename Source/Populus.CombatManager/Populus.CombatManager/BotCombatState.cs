@@ -7,7 +7,6 @@ using Populus.Core.Shared;
 using Populus.Core.World.Objects;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Populus.CombatManager
