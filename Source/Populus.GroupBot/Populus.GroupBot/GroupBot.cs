@@ -1,5 +1,4 @@
-﻿using Populus.Core.Constants;
-using Populus.Core.Plugins;
+﻿using Populus.Core.Plugins;
 using Populus.Core.World.Objects;
 using Populus.Core.World.Objects.Events;
 using Populus.GroupBot.Talents;
@@ -90,7 +89,10 @@ namespace Populus.GroupBot
             {
                 var handler = mBotHandlerCollection.Get(bot.Guid);
                 if (handler != null)
+                {
+                    handler.LearnLevelSpells();
                     handler.HandleFreeTalentPoints();
+                }
             };
             Bot.LevelUp += levelUpHandler;
 
@@ -223,6 +225,7 @@ namespace Populus.GroupBot
                 {
                     handler = new GroupBotHandler(bot);
                     mBotHandlerCollection.AddOrUpdate(bot.Guid, handler);
+                    handler.LearnLevelSpells();
                 }
 
                 // Update the handler
