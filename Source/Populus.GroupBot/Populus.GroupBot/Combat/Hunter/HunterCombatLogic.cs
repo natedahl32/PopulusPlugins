@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Populus.Core.World.Objects;
+using System.Collections.Generic;
 
 namespace Populus.GroupBot.Combat.Hunter
 {
@@ -162,6 +163,21 @@ namespace Populus.GroupBot.Combat.Hunter
             SCATTER_SHOT = InitSpell(Spells.SCATTER_SHOT_1);
             TRUESHOT_AURA = InitSpell(Spells.TRUESHOT_AURA_1);
             WYVERN_STING = InitSpell(Spells.WYVERN_STING_1);
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Commands the hunters pet to attack, if one is summoned
+        /// </summary>
+        protected void PetAttack(Unit unit)
+        {
+            if (BotHandler.BotOwner.Pet != null)
+            {
+                // TODO: Need to figure this one out
+            }
         }
 
         #endregion

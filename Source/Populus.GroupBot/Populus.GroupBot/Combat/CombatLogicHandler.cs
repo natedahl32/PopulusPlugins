@@ -43,6 +43,7 @@ namespace Populus.GroupBot.Combat
 
         private readonly GroupBotHandler mBotHandler;
         private bool mIsAttacking = false;
+        private Unit mAttackingUnit = null;
         private bool mIsFirstCombatActionDone = false;
 
         #endregion
@@ -136,7 +137,7 @@ namespace Populus.GroupBot.Combat
             // if we are no longer in combat, don't do anything
             if (!BotHandler.CombatState.IsInCombat)
             {
-                mIsFirstCombatActionDone = false;
+                ResetCombat();
                 return;
             }
 
@@ -167,7 +168,7 @@ namespace Populus.GroupBot.Combat
         /// </summary>
         internal void ResetCombat()
         {
-            mIsAttacking = false;
+            StopAttack();
             mIsFirstCombatActionDone = false;
         }
 
@@ -177,6 +178,7 @@ namespace Populus.GroupBot.Combat
         internal virtual void StopAttack()
         {
             mIsAttacking = false;
+            mAttackingUnit = null;
         }
 
         /// <summary>
@@ -320,8 +322,12 @@ namespace Populus.GroupBot.Combat
         protected void AttackMelee(Unit unit)
         {
             if (unit == null) return;
-            BotHandler.CombatState.AttackMelee(unit);
-            mIsAttacking = true;
+            if (mAttackingUnit == null || unit.Guid != mAttackingUnit.Guid)
+            {
+                BotHandler.CombatState.AttackMelee(unit);
+                mIsAttacking = true;
+                mAttackingUnit = unit;
+            }
         }
 
         /// <summary>
@@ -333,8 +339,14 @@ namespace Populus.GroupBot.Combat
             if (unit == null) return false;
             if (BotHandler.BotOwner.CanUseWands && BotHandler.BotOwner.GetEquippedItemsByInventoryType(InventoryType.INVTYPE_RANGED) != null)
             {
-                BotHandler.CombatState.SpellCast(unit, WAND_SHOOT);
-                mIsAttacking = true;
+                if (mAttackingUnit == null || unit.Guid != mAttackingUnit.Guid)
+                {
+                    BotHandler.CombatState.SpellCast(unit, WAND_SHOOT);
+                    mIsAttacking = true;
+                    return true;
+                }
+
+                // We are already attacking with wand
                 return true;
             }
 
