@@ -157,7 +157,35 @@ namespace Populus.GroupBot.Combat.Mage
         // Key = Level, Values = List of spells attained at that level
         private static Dictionary<int, List<uint>> mSpellsByLevel = new Dictionary<int, List<uint>>
         {
-            { 4, new List<uint> {   } }
+            { 4, new List<uint> { Spells.FROSTBOLT_1, Spells.CONJURE_WATER_1 } },
+            { 6, new List<uint> { Spells.FIREBALL_2, Spells.FIRE_BLAST_1, Spells.CONJURE_FOOD_1 } },
+            { 8, new List<uint> { Spells.FROSTBOLT_2, Spells.ARCANE_MISSILES_1, Spells.POLYMORPH_1 } },
+            { 10, new List<uint> { Spells.FROST_NOVA_1, Spells.FROST_ARMOR_1, Spells.CONJURE_WATER_2 } },
+            { 12, new List<uint> { Spells.FIREBALL_3, Spells.DAMPEN_MAGIC_1, Spells.SLOW_FALL_1, Spells.CONJURE_FOOD_2 } },
+            { 14, new List<uint> { Spells.FROSTBOLT_3, Spells.FIRE_BLAST_2, Spells.ARCANE_INTELLECT_2, Spells.ARCANE_EXPLOSION_1 } },
+            { 16, new List<uint> { Spells.FLAMESTRIKE_1, Spells.ARCANE_MISSILES_2 } },
+            { 18, new List<uint> { Spells.FIREBALL_4, Spells.REMOVE_CURSE_MAGE_1, Spells.AMPLIFY_MAGIC_1 } },
+            { 20, new List<uint> { Spells.BLIZZARD_1, Spells.FROST_ARMOR_3, Spells.FROSTBOLT_4, Spells.FIRE_WARD_1, Spells.TELEPORT_IRONFORGE_1, Spells.TELEPORT_ORGRIMMAR_1, Spells.TELEPORT_STORMWIND_1, Spells.TELEPORT_UNDERCITY_1, Spells.MANA_SHIELD_1, Spells.CONJURE_WATER_3, Spells.POLYMORPH_2, Spells.BLINK_1 } },
+            { 22, new List<uint> { Spells.FROST_WARD_1, Spells.FIRE_BLAST_3, Spells.SCORCH_1, Spells.ARCANE_EXPLOSION_2, Spells.CONJURE_FOOD_3 } },
+            { 24, new List<uint> { Spells.FLAMESTRIKE_2, Spells.FIREBALL_5, Spells.ARCANE_MISSILES_3, Spells.COUNTERSPELL_1, Spells.DAMPEN_MAGIC_2 } },
+            { 26, new List<uint> { Spells.FROST_NOVA_2, Spells.FROSTBOLT_5, Spells.CONE_OF_COLD_1 } },
+            { 28, new List<uint> { Spells.BLIZZARD_2, Spells.SCORCH_2, Spells.ARCANE_INTELLECT_3, Spells.MANA_SHIELD_2, Spells.CONJURE_MANA_GEM_1 } },
+            { 30, new List<uint> { Spells.ICE_ARMOR_1, Spells.FIREBALL_6, Spells.FIRE_BLAST_4, Spells.FIRE_WARD_2, Spells.TELEPORT_DARNASSUS_1, Spells.TELEPORT_THUNDER_BLUFF_1, Spells.ARCANE_EXPLOSION_3, Spells.AMPLIFY_MAGIC_2, Spells.CONJURE_WATER_4 } },
+            { 32, new List<uint> { Spells.FROSTBOLT_6, Spells.FROST_WARD_2, Spells.FLAMESTRIKE_3, Spells.ARCANE_MISSILES_4, Spells.CONJURE_FOOD_4 } },
+            { 34, new List<uint> { Spells.CONE_OF_COLD_2, Spells.SCORCH_3, Spells.MAGE_ARMOR_1 } },
+            { 36, new List<uint> { Spells.BLIZZARD_3, Spells.FIREBALL_7, Spells.DAMPEN_MAGIC_3, Spells.MANA_SHIELD_3 } },
+            { 38, new List<uint> { Spells.FROSTBOLT_7, Spells.FIRE_BLAST_5, Spells.ARCANE_EXPLOSION_4, Spells.CONJURE_MANA_GEM_2 } },
+            { 40, new List<uint> { Spells.FROST_NOVA_3, Spells.ICE_ARMOR_2, Spells.FLAMESTRIKE_4, Spells.SCORCH_4, Spells.FIRE_WARD_3, Spells.ARCANE_MISSILES_5, Spells.PORTAL_IRONFORGE_1, Spells.PORTAL_ORGRIMMAR_1, Spells.PORTAL_STORMWIND_1, Spells.PORTAL_UNDERCITY_1, Spells.CONJURE_WATER_5, Spells.POLYMORPH_3 } },
+            { 42, new List<uint> { Spells.CONE_OF_COLD_3, Spells.FROST_WARD_3, Spells.FIREBALL_8, Spells.ARCANE_INTELLECT_4, Spells.AMPLIFY_MAGIC_3, Spells.CONJURE_FOOD_5 } },
+            { 44, new List<uint> { Spells.FROSTBOLT_8, Spells.BLIZZARD_4, Spells.MANA_SHIELD_4 } },
+            { 46, new List<uint> { Spells.FIRE_BLAST_6, Spells.SCORCH_5, Spells.ARCANE_EXPLOSION_5, Spells.MAGE_ARMOR_2 } },
+            { 48, new List<uint> { Spells.FIREBALL_9, Spells.FLAMESTRIKE_5, Spells.DAMPEN_MAGIC_4, Spells.ARCANE_MISSILES_6, Spells.CONJURE_MANA_GEM_3 } },
+            { 50, new List<uint> { Spells.CONE_OF_COLD_4, Spells.FROSTBOLT_9, Spells.ICE_ARMOR_3, Spells.FIRE_WARD_4, Spells.PORTAL_DARNASSUS_1, Spells.PORTAL_THUNDER_BLUFF_1, Spells.CONJURE_WATER_6 } },
+            { 52, new List<uint> { Spells.FROST_WARD_4, Spells.BLIZZARD_5, Spells.SCORCH_6, Spells.MANA_SHIELD_5, Spells.CONJURE_FOOD_6 } },
+            { 54, new List<uint> { Spells.FROST_NOVA_4, Spells.FIREBALL_10, Spells.FIRE_BLAST_7, Spells.AMPLIFY_MAGIC_4, Spells.ARCANE_EXPLOSION_6 } },
+            { 56, new List<uint> { Spells.FROSTBOLT_10, Spells.FLAMESTRIKE_6, Spells.ARCANE_INTELLECT_5, Spells.ARCANE_MISSILES_7, Spells.ARCANE_BRILLIANCE_1, Spells.ARCANE_MISSILES_8 } },
+            { 58, new List<uint> { Spells.CONE_OF_COLD_5, Spells.SCORCH_7, Spells.CONJURE_MANA_GEM_4, Spells.MAGE_ARMOR_3 } },
+            { 60, new List<uint> { Spells.BLIZZARD_6, Spells.ICE_ARMOR_4, Spells.FROSTBOLT_11, Spells.FROST_WARD_5, Spells.FIREBALL_11, Spells.FIRE_WARD_5, Spells.FIREBALL_12, Spells.DAMPEN_MAGIC_5, Spells.MANA_SHIELD_6, Spells.POLYMORPH_4, Spells.CONJURE_FOOD_7, Spells.CONJURE_WATER_7 } }
         };
 
         protected override CombatActionResult DoFirstCombatAction(Unit unit)
