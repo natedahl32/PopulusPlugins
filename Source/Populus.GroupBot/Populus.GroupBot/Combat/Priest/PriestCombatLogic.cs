@@ -216,7 +216,35 @@ namespace Populus.GroupBot.Combat.Priest
         // Key = Level, Values = List of spells attained at that level
         private static Dictionary<int, List<uint>> mSpellsByLevel = new Dictionary<int, List<uint>>
         {
-            { 4, new List<uint> {   } }
+            { 4, new List<uint> { Spells.LESSER_HEAL_2, Spells.SHADOW_WORD_PAIN_1 } },
+            { 6, new List<uint> { Spells.SMITE_2, Spells.POWER_WORD_SHIELD_1 } },
+            { 8, new List<uint> { Spells.RENEW_1, Spells.FADE_1 } },
+            { 10, new List<uint> { Spells.LESSER_HEAL_3, Spells.RESURRECTION_1, Spells.SHADOW_WORD_PAIN_2, Spells.MIND_BLAST_1 } },
+            { 12, new List<uint> { Spells.INNER_FIRE_1, Spells.POWER_WORD_SHIELD_2, Spells.POWER_WORD_FORTITUDE_2 } },
+            { 14, new List<uint> { Spells.SMITE_3, Spells.CURE_DISEASE_1, Spells.RENEW_2, Spells.PSYCHIC_SCREAM_1 } },
+            { 16, new List<uint> { Spells.HEAL_1, Spells.MIND_BLAST_2 } },
+            { 18, new List<uint> { Spells.SHADOW_WORD_PAIN_3, Spells.POWER_WORD_SHIELD_3, Spells.DISPEL_MAGIC_1 } },
+            { 20, new List<uint> { Spells.RENEW_3, Spells.FLASH_HEAL_1, Spells.HOLY_FIRE_1, Spells.MIND_SOOTHE_1, Spells.MIND_FLAY_1, Spells.SHACKLE_UNDEAD_1, Spells.INNER_FIRE_2 } },
+            { 22, new List<uint> { Spells.HEAL_2, Spells.SMITE_4, Spells.RESURRECTION_2, Spells.MIND_VISION_1, Spells.MIND_BLAST_3 } },
+            { 24, new List<uint> { Spells.HOLY_FIRE_2, Spells.POWER_WORD_SHIELD_4, Spells.POWER_WORD_FORTITUDE_3, Spells.MANA_BURN_1 } },
+            { 26, new List<uint> { Spells.RENEW_4, Spells.FLASH_HEAL_2, Spells.SHADOW_WORD_PAIN_4 } },
+            { 28, new List<uint> { Spells.HEAL_3, Spells.MIND_BLAST_4, Spells.PSYCHIC_SCREAM_2, Spells.MIND_FLAY_2 } },
+            { 30, new List<uint> { Spells.SMITE_5, Spells.PRAYER_OF_HEALING_1, Spells.HOLY_FIRE_3, Spells.SHADOW_PROTECTION_1, Spells.MIND_CONTROL_1, Spells.INNER_FIRE_3, Spells.POWER_WORD_SHIELD_5, Spells.DIVINE_SPIRIT_1 } },
+            { 32, new List<uint> { Spells.ABOLISH_DISEASE_1, Spells.RENEW_5, Spells.FLASH_HEAL_3 } },
+            { 34, new List<uint> { Spells.HEAL_4, Spells.RESURRECTION_3, Spells.SHADOW_WORD_PAIN_5, Spells.MIND_BLAST_5, Spells.LEVITATE_1 } },
+            { 36, new List<uint> { Spells.HOLY_FIRE_4, Spells.MIND_FLAY_3, Spells.POWER_WORD_SHIELD_6, Spells.POWER_WORD_FORTITUDE_4, Spells.DISPEL_MAGIC_2 } },
+            { 38, new List<uint> { Spells.SMITE_6, Spells.RENEW_6, Spells.FLASH_HEAL_4 } },
+            { 40, new List<uint> { Spells.GREATER_HEAL_1, Spells.PRAYER_OF_HEALING_2, Spells.MIND_BLAST_6, Spells.SHACKLE_UNDEAD_2, Spells.INNER_FIRE_4, Spells.DIVINE_SPIRIT_2 } },
+            { 42, new List<uint> { Spells.HOLY_FIRE_5, Spells.SHADOW_PROTECTION_2, Spells.PSYCHIC_SCREAM_3, Spells.SHADOW_WORD_PAIN_6, Spells.POWER_WORD_SHIELD_7 } },
+            { 44, new List<uint> { Spells.FLASH_HEAL_5, Spells.RENEW_7, Spells.MIND_VISION_2, Spells.MIND_FLAY_4 } },
+            { 46, new List<uint> { Spells.GREATER_HEAL_2, Spells.SMITE_7, Spells.RESURRECTION_4, Spells.MIND_BLAST_7 } },
+            { 48, new List<uint> { Spells.HOLY_FIRE_6, Spells.POWER_WORD_SHIELD_8, Spells.POWER_WORD_FORTITUDE_5, Spells.PRAYER_OF_FORTITUDE_1 } },
+            { 50, new List<uint> { Spells.FLASH_HEAL_6, Spells.RENEW_8, Spells.PRAYER_OF_HEALING_3, Spells.SHADOW_WORD_PAIN_7, Spells.INNER_FIRE_5 } },
+            { 52, new List<uint> { Spells.GREATER_HEAL_3, Spells.MIND_BLAST_8, Spells.MIND_FLAY_5 } },
+            { 54, new List<uint> { Spells.SMITE_8, Spells.HOLY_FIRE_7, Spells.POWER_WORD_SHIELD_9 } },
+            { 56, new List<uint> { Spells.FLASH_HEAL_7, Spells.RENEW_9, Spells.SHADOW_PROTECTION_3, Spells.PSYCHIC_SCREAM_4, Spells.PRAYER_OF_SHADOW_PROTECTION_1 } },
+            { 58, new List<uint> { Spells.GREATER_HEAL_4, Spells.RESURRECTION_5, Spells.SHADOW_WORD_PAIN_8, Spells.MIND_BLAST_9 } },
+            { 60, new List<uint> { Spells.PRAYER_OF_HEALING_4, Spells.HOLY_FIRE_8, Spells.GREATER_HEAL_5, Spells.RENEW_10, Spells.PRAYER_OF_HEALING_5, Spells.MIND_FLAY_6, Spells.SHACKLE_UNDEAD_3, Spells.INNER_FIRE_6, Spells.POWER_WORD_SHIELD_10, Spells.POWER_WORD_FORTITUDE_6, Spells.PRAYER_OF_FORTITUDE_2, Spells.PRAYER_OF_SPIRIT_1 } }
         };
 
         protected override CombatActionResult DoFirstCombatAction(Unit unit)
