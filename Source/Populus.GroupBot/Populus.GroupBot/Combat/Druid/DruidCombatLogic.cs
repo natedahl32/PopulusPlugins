@@ -181,7 +181,35 @@ namespace Populus.GroupBot.Combat.Druid
         // Key = Level, Values = List of spells attained at that level
         private static Dictionary<int, List<uint>> mSpellsByLevel = new Dictionary<int, List<uint>>
         {
-            { 4, new List<uint> {   } }
+            { 4, new List<uint> { Spells.REJUVENATION_1, Spells.MOONFIRE_1 } },
+            { 6, new List<uint> { Spells.MANGLE_1, Spells.THORNS_1, Spells.WRATH_2 } },
+            { 8, new List<uint> { Spells.HEALING_TOUCH_2, Spells.ENTANGLING_ROOTS_1 } },
+            { 10, new List<uint> { Spells.DEMORALIZING_ROAR_1, Spells.BEAR_FORM_1, Spells.MAUL_1, Spells.GROWL_1, Spells.MARK_OF_THE_WILD_2, Spells.REJUVENATION_2, Spells.MOONFIRE_2, Spells.TELEPORT_MOONGLADE_1 } },
+            { 12, new List<uint> { Spells.ENRAGE_1, Spells.REGROWTH_1 } },
+            { 14, new List<uint> { Spells.BASH_1, Spells.HEALING_TOUCH_3, Spells.CURE_POISON_1, Spells.THORNS_2, Spells.WRATH_3 } },
+            { 16, new List<uint> { Spells.SWIPE_1, Spells.AQUATIC_FORM_1, Spells.REJUVENATION_3, Spells.MOONFIRE_3 } },
+            { 18, new List<uint> { Spells.MAUL_2, Spells.REGROWTH_2, Spells.FAERIE_FIRE_1, Spells.ENTANGLING_ROOTS_2, Spells.HIBERNATE_1 } },
+            { 20, new List<uint> { Spells.CAT_FORM_1, Spells.DEMORALIZING_ROAR_2, Spells.RIP_1, Spells.PROWL_1, Spells.HEALING_TOUCH_4, Spells.MARK_OF_THE_WILD_3, Spells.REBIRTH_1, Spells.STARFIRE_1, Spells.INSECT_SWARM_1 } },
+            { 22, new List<uint> { Spells.SHRED_1, Spells.REJUVENATION_4, Spells.WRATH_4, Spells.MOONFIRE_4, Spells.SOOTHE_ANIMAL_1 } },
+            { 24, new List<uint> { Spells.SWIPE_2, Spells.TIGERS_FURY_1, Spells.RAKE_1, Spells.REGROWTH_3, Spells.REMOVE_CURSE_1, Spells.THORNS_3 } },
+            { 26, new List<uint> { Spells.MAUL_3, Spells.DASH_1, Spells.HEALING_TOUCH_5, Spells.ABOLISH_POISON_1, Spells.STARFIRE_2 } },
+            { 28, new List<uint> { Spells.CLAW_2, Spells.CHALLENGING_ROAR_1, Spells.COWER_1, Spells.RIP_2, Spells.REJUVENATION_5, Spells.MOONFIRE_5, Spells.ENTANGLING_ROOTS_3 } },
+            { 30, new List<uint> { Spells.SHRED_2, Spells.BASH_2, Spells.TRAVEL_FORM_1, Spells.MARK_OF_THE_WILD_4, Spells.REGROWTH_4, Spells.TRANQUILITY_1, Spells.REBIRTH_2, Spells.WRATH_5, Spells.INSECT_SWARM_2 } },
+            { 32, new List<uint> { Spells.TRACK_HUMANOIDS_1, Spells.RAVAGE_1, Spells.DEMORALIZING_ROAR_3, Spells.FEROCIOUS_BITE_1, Spells.HEALING_TOUCH_6 } },
+            { 34, new List<uint> { Spells.RAKE_2, Spells.MAUL_4, Spells.SWIPE_3, Spells.REJUVENATION_6, Spells.THORNS_4, Spells.STARFIRE_3, Spells.MOONFIRE_6 } },
+            { 36, new List<uint> { Spells.TIGERS_FURY_2, Spells.POUNCE_1, Spells.RIP_3, Spells.FRENZIED_REGENERATION_1, Spells.REGROWTH_5 } },
+            { 38, new List<uint> { Spells.CLAW_3, Spells.SHRED_3, Spells.HEALING_TOUCH_7, Spells.WRATH_6, Spells.ENTANGLING_ROOTS_4, Spells.SOOTHE_ANIMAL_2, Spells.HIBERNATE_2 } },
+            { 40, new List<uint> { Spells.COWER_2, Spells.DIRE_BEAR_FORM_1, Spells.FEROCIOUS_BITE_2, Spells.MARK_OF_THE_WILD_5, Spells.REJUVENATION_7, Spells.TRANQUILITY_2, Spells.REBIRTH_3, Spells.MOONFIRE_7, Spells.HURRICANE_1, Spells.INNERVATE_1, Spells.INSECT_SWARM_3 } },
+            { 42, new List<uint> { Spells.RAVAGE_2, Spells.MAUL_5, Spells.DEMORALIZING_ROAR_4, Spells.REGROWTH_6, Spells.STARFIRE_4 } },
+            { 44, new List<uint> { Spells.RAKE_3, Spells.RIP_4, Spells.SWIPE_4, Spells.HEALING_TOUCH_8, Spells.THORNS_5, Spells.BARKSKIN_1 } },
+            { 46, new List<uint> { Spells.BASH_3, Spells.DASH_2, Spells.POUNCE_2, Spells.SHRED_4, Spells.REJUVENATION_8, Spells.WRATH_7, Spells.MOONFIRE_8 } },
+            { 48, new List<uint> { Spells.TIGERS_FURY_3, Spells.CLAW_4, Spells.FEROCIOUS_BITE_3, Spells.REGROWTH_7, Spells.ENTANGLING_ROOTS_5 } },
+            { 50, new List<uint> { Spells.RAVAGE_3, Spells.MAUL_6, Spells.HEALING_TOUCH_9, Spells.MARK_OF_THE_WILD_6, Spells.TRANQUILITY_3, Spells.REBIRTH_4, Spells.GIFT_OF_THE_WILD_1, Spells.STARFIRE_5, Spells.HURRICANE_2, Spells.INSECT_SWARM_4 } },
+            { 52, new List<uint> { Spells.COWER_3, Spells.RIP_5, Spells.DEMORALIZING_ROAR_5, Spells.REJUVENATION_9, Spells.MOONFIRE_9 } },
+            { 54, new List<uint> { Spells.SHRED_5, Spells.RAKE_4, Spells.SWIPE_5, Spells.REGROWTH_8, Spells.THORNS_6, Spells.WRATH_8, Spells.SOOTHE_ANIMAL_3 } },
+            { 56, new List<uint> { Spells.POUNCE_3, Spells.FEROCIOUS_BITE_4, Spells.HEALING_TOUCH_10 } },
+            { 58, new List<uint> { Spells.CLAW_5, Spells.RAVAGE_4, Spells.MAUL_7, Spells.REJUVENATION_10, Spells.STARFIRE_6, Spells.MOONFIRE_10, Spells.ENTANGLING_ROOTS_6, Spells.HIBERNATE_3 } },
+            { 60, new List<uint> { Spells.TIGERS_FURY_4, Spells.RIP_6, Spells.FEROCIOUS_BITE_5, Spells.MARK_OF_THE_WILD_7, Spells.REGROWTH_9, Spells.TRANQUILITY_4, Spells.REBIRTH_5, Spells.GIFT_OF_THE_WILD_2, Spells.REJUVENATION_11, Spells.HEALING_TOUCH_11 } }
         };
 
         public static class Reagents
