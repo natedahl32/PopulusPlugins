@@ -1,4 +1,6 @@
-﻿namespace Populus.GroupBot.Combat.Hunter
+﻿using System.Collections.Generic;
+
+namespace Populus.GroupBot.Combat.Hunter
 {
     public class HunterCombatLogic : CombatLogicHandler
     {
@@ -90,6 +92,11 @@
             get { return false; }
         }
 
+        /// <summary>
+        /// Gets all hunter spells and abilities available by level
+        /// </summary>
+        protected override Dictionary<int, List<uint>> SpellsByLevel => mSpellsByLevel;
+
         #endregion
 
         #region Public Methods
@@ -160,6 +167,12 @@
         #endregion
 
         #region Hunter Constants
+
+        // Key = Level, Values = List of spells attained at that level
+        private static Dictionary<int, List<uint>> mSpellsByLevel = new Dictionary<int, List<uint>>
+        {
+            { 4, new List<uint> {   } }
+        };
 
         public static class Spells
         {

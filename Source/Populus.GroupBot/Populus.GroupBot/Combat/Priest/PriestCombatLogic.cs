@@ -1,4 +1,5 @@
 ﻿using Populus.Core.World.Objects;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Populus.GroupBot.Combat.Priest
@@ -81,6 +82,11 @@ namespace Populus.GroupBot.Combat.Priest
         {
             get { return false; }
         }
+
+        /// <summary>
+        /// Gets all priest spells and abilities available by level
+        /// </summary>
+        protected override Dictionary<int, List<uint>> SpellsByLevel => mSpellsByLevel;
 
         #endregion
 
@@ -206,6 +212,12 @@ namespace Populus.GroupBot.Combat.Priest
         #endregion
 
         #region Private Methods
+
+        // Key = Level, Values = List of spells attained at that level
+        private static Dictionary<int, List<uint>> mSpellsByLevel = new Dictionary<int, List<uint>>
+        {
+            { 4, new List<uint> {   } }
+        };
 
         protected override CombatActionResult DoFirstCombatAction(Unit unit)
         {

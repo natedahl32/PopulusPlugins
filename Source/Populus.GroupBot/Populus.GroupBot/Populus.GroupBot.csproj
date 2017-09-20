@@ -57,10 +57,12 @@
     <Compile Include="Chat\AttackCommand.cs" />
     <Compile Include="Chat\ChatCommandKeyAttribute.cs" />
     <Compile Include="Chat\FollowCommand.cs" />
+    <Compile Include="Chat\GroupCommand.cs" />
     <Compile Include="Chat\IChatCommand.cs" />
     <Compile Include="Chat\ItemCommand.cs" />
     <Compile Include="Chat\LootCommand.cs" />
     <Compile Include="Chat\QuestCommand.cs" />
+    <Compile Include="Chat\SpellsCommand.cs" />
     <Compile Include="Chat\TalentCommand.cs" />
     <Compile Include="Chat\VendorCommand.cs" />
     <Compile Include="Combat\CombatActionResult.cs" />

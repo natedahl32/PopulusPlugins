@@ -90,7 +90,7 @@ namespace Populus.GroupBot
                 var handler = mBotHandlerCollection.Get(bot.Guid);
                 if (handler != null)
                 {
-                    handler.LearnLevelSpells();
+                    handler.LearnLevelSpells(level);
                     handler.HandleFreeTalentPoints();
                 }
             };
@@ -225,7 +225,7 @@ namespace Populus.GroupBot
                 {
                     handler = new GroupBotHandler(bot);
                     mBotHandlerCollection.AddOrUpdate(bot.Guid, handler);
-                    handler.LearnLevelSpells();
+                    handler.LearnLevelSpells(bot.Level);
                 }
 
                 // Update the handler

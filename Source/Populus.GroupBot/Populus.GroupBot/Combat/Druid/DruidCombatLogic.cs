@@ -1,4 +1,6 @@
-﻿namespace Populus.GroupBot.Combat.Druid
+﻿using System.Collections.Generic;
+
+namespace Populus.GroupBot.Combat.Druid
 {
     public class DruidCombatLogic : CombatLogicHandler
     {
@@ -97,6 +99,11 @@
             get { return true; }
         }
 
+        /// <summary>
+        /// Gets all druid spells and abilities available by level
+        /// </summary>
+        protected override Dictionary<int, List<uint>> SpellsByLevel => mSpellsByLevel;
+
         #endregion
 
         #region Public Methods
@@ -170,6 +177,12 @@
         #endregion
 
         #region Druid Constants
+
+        // Key = Level, Values = List of spells attained at that level
+        private static Dictionary<int, List<uint>> mSpellsByLevel = new Dictionary<int, List<uint>>
+        {
+            { 4, new List<uint> {   } }
+        };
 
         public static class Reagents
         {

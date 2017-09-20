@@ -284,13 +284,13 @@ namespace Populus.GroupBot
         /// <summary>
         /// Learn all spells up to the bots level (does not learn talents)
         /// </summary>
-        internal void LearnLevelSpells()
+        internal void LearnLevelSpells(uint newLevel)
         {
             // Level 1 spells are already learned
-            if (BotOwner.Level <= 1) return;
+            if (newLevel <= 1) return;
 
             // Get all spells we should know at this level
-            var spells = mCombatLogic.GetSpellsUpToLevel(BotOwner.Level);
+            var spells = mCombatLogic.GetSpellsUpToLevel(newLevel);
             foreach (var spell in spells)
                 if (!BotOwner.HasSpell((ushort)spell))
                     LearnSpell(spell);
