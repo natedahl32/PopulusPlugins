@@ -23,11 +23,10 @@ namespace Populus.GroupBot.Combat.Warrior
 
         protected override CombatActionResult DoFirstCombatAction(Unit unit)
         {
-            // Get in defensive stance if we are not already
-            if (!BotHandler.BotOwner.HasAura(DEFENSIVE_STANCE) && HasSpellAndCanCast(DEFENSIVE_STANCE))
+            // Get in berserker stance if we are not already
+            if (!BotHandler.BotOwner.HasAura(BERSERKER_STANCE) && HasSpellAndCanCast(BERSERKER_STANCE))
             {
-                //Log.WriteLine(LogType.Debug, "Using DEFENSIVE_STANCE");
-                BotHandler.CombatState.SpellCast(BotHandler.BotOwner, DEFENSIVE_STANCE);
+                BotHandler.CombatState.SpellCast(BotHandler.BotOwner, BERSERKER_STANCE);
                 // Continue with first combat action if we hit this
                 return CombatActionResult.ACTION_OK_CONTINUE_FIRST;
             }
