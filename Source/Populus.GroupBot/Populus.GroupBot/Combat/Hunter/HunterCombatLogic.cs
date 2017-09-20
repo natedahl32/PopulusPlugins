@@ -187,7 +187,35 @@ namespace Populus.GroupBot.Combat.Hunter
         // Key = Level, Values = List of spells attained at that level
         private static Dictionary<int, List<uint>> mSpellsByLevel = new Dictionary<int, List<uint>>
         {
-            { 4, new List<uint> {   } }
+            { 4, new List<uint> { Spells.ASPECT_OF_THE_MONKEY_1, Spells.SERPENT_STING_1 } },
+            { 6, new List<uint> { Spells.HUNTERS_MARK_1, Spells.ARCANE_SHOT_1 } },
+            { 8, new List<uint> { Spells.RAPTOR_STRIKE_2, Spells.CONCUSSIVE_SHOT_1 } },
+            { 10, new List<uint> { Spells.TAME_BEAST_1, Spells.CALL_PET_1, Spells.REVIVE_PET_1, Spells.ASPECT_OF_THE_HAWK_1, Spells.FEED_PET_1, Spells.DISMISS_PET_1, Spells.TRACK_HUMANOIDS_1, Spells.SERPENT_STING_2 } },
+            { 12, new List<uint> { Spells.MEND_PET_1, Spells.WING_CLIP_1, Spells.ARCANE_SHOT_2, Spells.DISTRACTING_SHOT_1 } },
+            { 14, new List<uint> { Spells.SCARE_BEAST_1, Spells.EAGLE_EYE_1, Spells.EYES_OF_THE_BEAST_1 } },
+            { 16, new List<uint> { Spells.MONGOOSE_BITE_1, Spells.IMMOLATION_TRAP_1, Spells.RAPTOR_STRIKE_3 } },
+            { 18, new List<uint> { Spells.ASPECT_OF_THE_HAWK_2, Spells.TRACK_UNDEAD_1, Spells.MULTISHOT_1, Spells.SERPENT_STING_3 } },
+            { 20, new List<uint> { Spells.MEND_PET_2, Spells.ASPECT_OF_THE_CHEETAH_1, Spells.DISENGAGE_1, Spells.FREEZING_TRAP_1, Spells.ARCANE_SHOT_3 } },
+            { 22, new List<uint> { Spells.SCORPID_STING_1, Spells.HUNTERS_MARK_2 } },
+            { 24, new List<uint> { Spells.BEAST_LORE_1, Spells.RAPTOR_STRIKE_4, Spells.TRACK_HIDDEN_1 } },
+            { 26, new List<uint> { Spells.IMMOLATION_TRAP_2, Spells.TRACK_ELEMENTALS_1, Spells.RAPID_FIRE_1, Spells.SERPENT_STING_4 } },
+            { 28, new List<uint> { Spells.MEND_PET_3, Spells.ASPECT_OF_THE_HAWK_3, Spells.FROST_TRAP_1, Spells.ARCANE_SHOT_4 } },
+            { 30, new List<uint> { Spells.ASPECT_OF_THE_BEAST_1, Spells.SCARE_BEAST_2, Spells.FEIGN_DEATH_1, Spells.MONGOOSE_BITE_2, Spells.SCATTER_SHOT_1, Spells.MULTISHOT_2 } },
+            { 32, new List<uint> { Spells.RAPTOR_STRIKE_5, Spells.TRACK_DEMONS_1, Spells.FLARE_1 } },
+            { 34, new List<uint> { Spells.EXPLOSIVE_TRAP_1, Spells.SERPENT_STING_5 } },
+            { 36, new List<uint> { Spells.MEND_PET_4, Spells.IMMOLATION_TRAP_3, Spells.VIPER_STING_1, Spells.ARCANE_SHOT_5 } },
+            { 38, new List<uint> { Spells.ASPECT_OF_THE_HAWK_4 } },
+            { 40, new List<uint> { Spells.ASPECT_OF_THE_PACK_1, Spells.RAPTOR_STRIKE_6, Spells.FREEZING_TRAP_2, Spells.WYVERN_STING_1, Spells.TRACK_GIANTS_1, Spells.VOLLEY_1, Spells.HUNTERS_MARK_3 } },
+            { 42, new List<uint> { Spells.SERPENT_STING_6, Spells.MULTISHOT_3 } },
+            { 44, new List<uint> { Spells.MEND_PET_5, Spells.MONGOOSE_BITE_3, Spells.EXPLOSIVE_TRAP_2, Spells.ARCANE_SHOT_6 } },
+            { 46, new List<uint> { Spells.SCARE_BEAST_3, Spells.ASPECT_OF_THE_WILD_1, Spells.IMMOLATION_TRAP_4 } },
+            { 48, new List<uint> { Spells.ASPECT_OF_THE_HAWK_5, Spells.RAPTOR_STRIKE_7 } },
+            { 50, new List<uint> { Spells.TRACK_DRAGONKIN_1, Spells.WYVERN_STING_2, Spells.BLACK_ARROW_1, Spells.SERPENT_STING_7, Spells.VOLLEY_2 } },
+            { 52, new List<uint> { Spells.MEND_PET_6, Spells.ARCANE_SHOT_7 } },
+            { 54, new List<uint> { Spells.EXPLOSIVE_TRAP_3, Spells.MULTISHOT_4 } },
+            { 56, new List<uint> { Spells.ASPECT_OF_THE_WILD_2, Spells.RAPTOR_STRIKE_8, Spells.IMMOLATION_TRAP_5 } },
+            { 58, new List<uint> { Spells.ASPECT_OF_THE_HAWK_6, Spells.MONGOOSE_BITE_4, Spells.SERPENT_STING_8, Spells.VOLLEY_3, Spells.HUNTERS_MARK_4 } },
+            { 60, new List<uint> { Spells.MEND_PET_7, Spells.ASPECT_OF_THE_HAWK_7, Spells.FREEZING_TRAP_3, Spells.WYVERN_STING_3, Spells.ARCANE_SHOT_8, Spells.BLACK_ARROW_2, Spells.MULTISHOT_5, Spells.SERPENT_STING_9, Spells.TRANQUILIZING_SHOT_1 } }
         };
 
         public static class Spells
