@@ -3,6 +3,7 @@
     public enum StateTriggers
     {
         Idle,
-        Teleporting
+        Teleporting,
+        Combat
     }
 }

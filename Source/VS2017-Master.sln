@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26621.2
+VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Populus.GroupManager", "Populus.GroupManager\Populus.GroupManager\Populus.GroupManager.csproj", "{A0516DE3-1162-4662-8D1C-F471ECEA67CA}"
 EndProject
@@ -10,8 +10,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Populus.GroupBot", "Populus.GroupBot\Populus.GroupBot\Populus.GroupBot.csproj", "{5067028D-8DB0-4AC0-A290-C06DFF78B8D3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Populus.ActionManager", "Populus.ActionManager\Populus.ActionManager.csproj", "{96A31C3F-4C29-4CD4-B053-43BB1AB44234}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Populus.SinglePlayerBot", "Populus.SinglePlayerBot\Populus.SinglePlayerBot.csproj", "{D9294357-38B1-49E1-B8C5-1094F4C3ED94}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,10 +33,6 @@ Global
 		{96A31C3F-4C29-4CD4-B053-43BB1AB44234}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{96A31C3F-4C29-4CD4-B053-43BB1AB44234}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{96A31C3F-4C29-4CD4-B053-43BB1AB44234}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D9294357-38B1-49E1-B8C5-1094F4C3ED94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D9294357-38B1-49E1-B8C5-1094F4C3ED94}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D9294357-38B1-49E1-B8C5-1094F4C3ED94}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D9294357-38B1-49E1-B8C5-1094F4C3ED94}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

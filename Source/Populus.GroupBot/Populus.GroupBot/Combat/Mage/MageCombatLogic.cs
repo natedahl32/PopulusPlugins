@@ -1,4 +1,5 @@
-﻿using Populus.Core.World.Objects;
+﻿using FluentBehaviourTree;
+using Populus.Core.World.Objects;
 using System.Collections.Generic;
 
 namespace Populus.GroupBot.Combat.Mage
@@ -135,24 +136,85 @@ namespace Populus.GroupBot.Combat.Mage
             SLOW = InitSpell(Spells.SLOW_1);
         }
 
-        public override CombatActionResult DoOutOfCombatAction()
-        {
-            // TODO: Check for drinks, if none found summon some
-            // TODO: Check for food, if non found summon some
+        //public override CombatActionResult DoOutOfCombatAction()
+        //{
+        //    // TODO: Check for drinks, if none found summon some
+        //    // TODO: Check for food, if non found summon some
 
-            // Ice barrier if not on self
-            if (HasSpellAndCanCast(ICE_BARRIER) && !BotHandler.BotOwner.HasAura(ICE_BARRIER))
-            {
-                BotHandler.CombatState.SpellCast(BotHandler.BotOwner, ICE_BARRIER);
-                return CombatActionResult.ACTION_OK;
-            }
+        //    // Ice barrier if not on self
+        //    if (HasSpellAndCanCast(ICE_BARRIER) && !BotHandler.BotOwner.HasAura(ICE_BARRIER))
+        //    {
+        //        BotHandler.CombatState.SpellCast(BotHandler.BotOwner, ICE_BARRIER);
+        //        return CombatActionResult.ACTION_OK;
+        //    }
 
-            return base.DoOutOfCombatAction();
-        }
+        //    return base.DoOutOfCombatAction();
+        //}
 
         #endregion
 
         #region Private Methods
+
+        protected override IBehaviourTreeNode InitializeCombatBehaivor()
+        {
+            var builder = new BehaviourTreeBuilder();
+            builder.Selector("Combat Behavior")
+                        .Condition("Not casting", t => BotHandler.CombatState.IsCasting)
+                        .Do("Cast Fireball", t => CastFireball())
+                   .End();
+            return builder.Build();
+        }
+
+        protected override IBehaviourTreeNode InitializeOutOfCombatBehavior()
+        {
+            var builder = new BehaviourTreeBuilder();
+            builder.Selector("OOC Behavior")
+                        .Parallel("Eat and Drink", 2, 2)    // Run eat and drink in paralell until both either fail or succeed
+                            .Splice(OutOfCombatLogic.OutOfCombatHealthRegen(BotHandler))
+                            .Splice(OutOfCombatLogic.OutOfCombatManaRegen(BotHandler))
+                        .End()
+                   .End();
+            return builder.Build();
+        }
+
+        private BehaviourTreeStatus CastFireball()
+        {
+            if (HasSpellAndCanCast(FIREBALL))
+            {
+                BotHandler.CombatState.SpellCast(FIREBALL);
+                return BehaviourTreeStatus.Success;
+            }
+            return BehaviourTreeStatus.Failure;
+        }
+
+        //protected override CombatActionResult DoFirstCombatAction(Unit unit)
+        //{
+        //    return CombatActionResult.NO_ACTION_OK;
+        //}
+
+        //protected override CombatActionResult DoNextCombatAction(Unit unit)
+        //{
+        //    // Default leveling logic for a mage
+        //    if (HasSpellAndCanCast(FROSTBOLT))
+        //    {
+        //        BotHandler.CombatState.SpellCast(FROSTBOLT);
+        //        return CombatActionResult.ACTION_OK;
+        //    }
+
+        //    if (HasSpellAndCanCast(FIREBALL))
+        //    {
+        //        BotHandler.CombatState.SpellCast(FIREBALL);
+        //        return CombatActionResult.ACTION_OK;
+        //    }
+
+        //    // Wand if we get here
+        //    AttackWand(unit);
+        //    return CombatActionResult.NO_ACTION_OK;
+        //}
+
+        #endregion
+
+        #region Mage Constants
 
         // Key = Level, Values = List of spells attained at that level
         private static Dictionary<int, List<uint>> mSpellsByLevel = new Dictionary<int, List<uint>>
@@ -187,35 +249,6 @@ namespace Populus.GroupBot.Combat.Mage
             { 58, new List<uint> { Spells.CONE_OF_COLD_5, Spells.SCORCH_7, Spells.CONJURE_MANA_GEM_4, Spells.MAGE_ARMOR_3 } },
             { 60, new List<uint> { Spells.BLIZZARD_6, Spells.ICE_ARMOR_4, Spells.FROSTBOLT_11, Spells.FROST_WARD_5, Spells.FIREBALL_11, Spells.FIRE_WARD_5, Spells.FIREBALL_12, Spells.DAMPEN_MAGIC_5, Spells.MANA_SHIELD_6, Spells.POLYMORPH_4, Spells.CONJURE_FOOD_7, Spells.CONJURE_WATER_7 } }
         };
-
-        protected override CombatActionResult DoFirstCombatAction(Unit unit)
-        {
-            return CombatActionResult.NO_ACTION_OK;
-        }
-
-        protected override CombatActionResult DoNextCombatAction(Unit unit)
-        {
-            // Default leveling logic for a mage
-            if (HasSpellAndCanCast(FROSTBOLT))
-            {
-                BotHandler.CombatState.SpellCast(FROSTBOLT);
-                return CombatActionResult.ACTION_OK;
-            }
-
-            if (HasSpellAndCanCast(FIREBALL))
-            {
-                BotHandler.CombatState.SpellCast(FIREBALL);
-                return CombatActionResult.ACTION_OK;
-            }
-
-            // Wand if we get here
-            AttackWand(unit);
-            return CombatActionResult.NO_ACTION_OK;
-        }
-
-        #endregion
-
-        #region Mage Constants
 
         public static class Spells
         {

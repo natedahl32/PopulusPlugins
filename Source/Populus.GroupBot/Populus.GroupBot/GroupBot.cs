@@ -151,27 +151,27 @@ namespace Populus.GroupBot
             // Handles attack stop event
             attackStopHandler = (bot, args) =>
             {
-                var handler = mBotHandlerCollection.Get(bot.Guid);
-                if (handler != null)
-                    handler.CombatHandler.StopAttack();
+                //var handler = mBotHandlerCollection.Get(bot.Guid);
+                //if (handler != null)
+                //    handler.CombatHandler.StopAttack();
             };
             Bot.AttackStopped += attackStopHandler;
 
             // Handles attack update event
             attackUpdateHandler = (bot, args) =>
             {
-                var handler = mBotHandlerCollection.Get(bot.Guid);
-                if (handler != null)
-                    handler.CombatHandler.AttackUpdate(args);
+                //var handler = mBotHandlerCollection.Get(bot.Guid);
+                //if (handler != null)
+                //    handler.CombatHandler.AttackUpdate(args);
             };
             Bot.CombatAttackUpdate += attackUpdateHandler;
 
             // Handle spell cast update event
             spellCastCompleteHandler = (bot, args) =>
             {
-                var handler = mBotHandlerCollection.Get(bot.Guid);
-                if (handler != null)
-                    handler.CombatHandler.SpellCastCompleteUpdate(args);
+                //var handler = mBotHandlerCollection.Get(bot.Guid);
+                //if (handler != null)
+                //    handler.CombatHandler.SpellCastCompleteUpdate(args);
             };
             Bot.SpellCastCompleted += spellCastCompleteHandler;
 

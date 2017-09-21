@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using FluentBehaviourTree;
+using System.Collections.Generic;
 
 namespace Populus.GroupBot.Combat.Druid
 {
@@ -172,6 +173,20 @@ namespace Populus.GroupBot.Combat.Druid
             ECLIPSE_LUNAR = InitSpell(Procs.ECLIPSE_LUNAR_1);
             ECLIPSE_SOLAR = InitSpell(Procs.ECLIPSE_SOLAR_1);
 
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        protected override IBehaviourTreeNode InitializeCombatBehaivor()
+        {
+            return null;
+        }
+
+        protected override IBehaviourTreeNode InitializeOutOfCombatBehavior()
+        {
+            return null;
         }
 
         #endregion

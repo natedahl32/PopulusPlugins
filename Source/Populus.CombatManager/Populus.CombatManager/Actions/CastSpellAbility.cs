@@ -1,5 +1,6 @@
 ﻿using System;
 using Populus.Core.World.Objects;
+using Populus.Core.DBC;
 
 namespace Populus.CombatManager.Actions
 {
@@ -48,6 +49,11 @@ namespace Populus.CombatManager.Actions
 
             // Cast the spell
             BotOwner.CastSpellAbility(mTarget.Guid, mSpellId);
+
+            // Log what we are casting
+            var spell = SpellTable.Instance.getSpell(mSpellId);
+            if (spell != null)
+                BotOwner.Logger.Log($"Casting spell {spell.SpellName}");
         }
 
         public override void Completed()

@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="FluentBehaviourTree, Version=0.0.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\FluentBehaviourTree.0.0.4.0\lib\net35\FluentBehaviourTree.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -79,6 +82,7 @@
     <Compile Include="Combat\Mage\FireCombatLogic.cs" />
     <Compile Include="Combat\Mage\FrostCombatLogic.cs" />
     <Compile Include="Combat\Mage\MageCombatLogic.cs" />
+    <Compile Include="Combat\OutOfCombatLogic.cs" />
     <Compile Include="Combat\Paladin\HolyCombatLogic.cs" />
     <Compile Include="Combat\Paladin\PaladinCombatLogic.cs" />
     <Compile Include="Combat\Paladin\ProtectionCombatLogic.cs" />
@@ -108,6 +112,7 @@
     <Compile Include="GroupBotData.cs" />
     <Compile Include="GroupBotHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="States\Combat.cs" />
     <Compile Include="States\Idle.cs" />
     <Compile Include="States\State.cs" />
     <Compile Include="States\Teleport.cs" />

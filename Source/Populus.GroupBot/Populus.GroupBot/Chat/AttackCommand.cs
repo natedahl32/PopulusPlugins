@@ -32,7 +32,7 @@ namespace Populus.GroupBot.Chat
             }
 
             // Attack!
-            botHandler.CombatHandler.StartAttack(target);
+            botHandler.CombatHandler.Attack(target);
         }
     }
 }

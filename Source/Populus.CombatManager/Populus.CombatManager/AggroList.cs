@@ -29,6 +29,14 @@ namespace Populus.CombatManager
             get { return Data.Values.FirstOrDefault(); }
         }
 
+        /// <summary>
+        /// Gets the number of mobs currently on the aggro list
+        /// </summary>
+        public int Count
+        {
+            get { return Data.Values.ToList().Count; }
+        }
+
         #endregion
 
         #region Public Methods

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Populus.Core.World.Objects;
+using FluentBehaviourTree;
 
 namespace Populus.GroupBot.Combat.Warlock
 {
@@ -179,6 +180,16 @@ namespace Populus.GroupBot.Combat.Warlock
 
         #region Private Methods
 
+        protected override IBehaviourTreeNode InitializeCombatBehaivor()
+        {
+            return null;
+        }
+
+        protected override IBehaviourTreeNode InitializeOutOfCombatBehavior()
+        {
+            return null;
+        }
+
         /// <summary>
         /// Commands the warlocks pet to attack, if one is summoned
         /// </summary>
@@ -190,37 +201,37 @@ namespace Populus.GroupBot.Combat.Warlock
             }
         }
 
-        protected override CombatActionResult DoFirstCombatAction(Unit unit)
-        {
-            return CombatActionResult.NO_ACTION_OK;
-        }
+        //protected override CombatActionResult DoFirstCombatAction(Unit unit)
+        //{
+        //    return CombatActionResult.NO_ACTION_OK;
+        //}
 
-        protected override CombatActionResult DoNextCombatAction(Unit unit)
-        {
-            // Always pet attack this unit
-            PetAttack(unit);
+        //protected override CombatActionResult DoNextCombatAction(Unit unit)
+        //{
+        //    // Always pet attack this unit
+        //    PetAttack(unit);
 
-            // TODO: Build up warlock combat logic
-            if (HasSpellAndCanCast(CURSE_OF_AGONY) && !unit.HasAura(CURSE_OF_AGONY) && unit.HealthPercentage > 80.0f)
-            {
-                BotHandler.CombatState.SpellCast(CURSE_OF_AGONY);
-                return CombatActionResult.ACTION_OK;
-            }
+        //    // TODO: Build up warlock combat logic
+        //    if (HasSpellAndCanCast(CURSE_OF_AGONY) && !unit.HasAura(CURSE_OF_AGONY) && unit.HealthPercentage > 80.0f)
+        //    {
+        //        BotHandler.CombatState.SpellCast(CURSE_OF_AGONY);
+        //        return CombatActionResult.ACTION_OK;
+        //    }
 
-            if (HasSpellAndCanCast(CORRUPTION) && !unit.HasAura(CORRUPTION) && unit.HealthPercentage > 50.0f)
-            {
-                BotHandler.CombatState.SpellCast(CORRUPTION);
-                return CombatActionResult.ACTION_OK;
-            }
+        //    if (HasSpellAndCanCast(CORRUPTION) && !unit.HasAura(CORRUPTION) && unit.HealthPercentage > 50.0f)
+        //    {
+        //        BotHandler.CombatState.SpellCast(CORRUPTION);
+        //        return CombatActionResult.ACTION_OK;
+        //    }
 
-            if (HasSpellAndCanCast(SHADOW_BOLT))
-            {
-                BotHandler.CombatState.SpellCast(SHADOW_BOLT);
-                return CombatActionResult.ACTION_OK;
-            }
+        //    if (HasSpellAndCanCast(SHADOW_BOLT))
+        //    {
+        //        BotHandler.CombatState.SpellCast(SHADOW_BOLT);
+        //        return CombatActionResult.ACTION_OK;
+        //    }
 
-            return CombatActionResult.NO_ACTION_OK;
-        }
+        //    return CombatActionResult.NO_ACTION_OK;
+        //}
 
         #endregion
 

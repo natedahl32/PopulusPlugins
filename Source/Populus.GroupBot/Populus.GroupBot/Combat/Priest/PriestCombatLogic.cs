@@ -1,4 +1,5 @@
-﻿using Populus.Core.World.Objects;
+﻿using FluentBehaviourTree;
+using Populus.Core.World.Objects;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -142,76 +143,131 @@ namespace Populus.GroupBot.Combat.Priest
             VAMPIRIC_EMBRACE = InitSpell(Spells.VAMPIRIC_EMBRACE_1);
         }
 
-        public override CombatActionResult DoOutOfCombatAction()
-        {
-            // Inner Fire if not on self
-            if (HasSpellAndCanCast(INNER_FIRE) && !BotHandler.BotOwner.HasAura(INNER_FIRE))
-            {
-                BotHandler.CombatState.SpellCast(BotHandler.BotOwner, INNER_FIRE);
-                return CombatActionResult.ACTION_OK;
-            }
+        //public override CombatActionResult DoOutOfCombatAction()
+        //{
+        //    // Inner Fire if not on self
+        //    if (HasSpellAndCanCast(INNER_FIRE) && !BotHandler.BotOwner.HasAura(INNER_FIRE))
+        //    {
+        //        BotHandler.CombatState.SpellCast(BotHandler.BotOwner, INNER_FIRE);
+        //        return CombatActionResult.ACTION_OK;
+        //    }
 
-            // Power Word Fortitude if not on self
-            if (HasSpellAndCanCast(POWER_WORD_FORTITUDE) && !BotHandler.BotOwner.HasAura(POWER_WORD_FORTITUDE))
-            {
-                BotHandler.CombatState.SpellCast(BotHandler.BotOwner, POWER_WORD_FORTITUDE);
-                return CombatActionResult.ACTION_OK;
-            }
+        //    // Power Word Fortitude if not on self
+        //    if (HasSpellAndCanCast(POWER_WORD_FORTITUDE) && !BotHandler.BotOwner.HasAura(POWER_WORD_FORTITUDE))
+        //    {
+        //        BotHandler.CombatState.SpellCast(BotHandler.BotOwner, POWER_WORD_FORTITUDE);
+        //        return CombatActionResult.ACTION_OK;
+        //    }
 
-            // Handle group checks. More efficient to do these all at once
-            foreach (var member in BotHandler.Group.Members)
-            {
-                var unit = BotHandler.BotOwner.GetUnitByGuid(member.Guid);
-                if (unit == null) continue;
+        //    // Handle group checks. More efficient to do these all at once
+        //    foreach (var member in BotHandler.Group.Members)
+        //    {
+        //        var unit = BotHandler.BotOwner.GetUnitByGuid(member.Guid);
+        //        if (unit == null) continue;
 
-                // Check Power Word Fortitude
-                if (!unit.HasAura(POWER_WORD_FORTITUDE) && HasSpellAndCanCast(POWER_WORD_FORTITUDE))
-                {
-                    BotHandler.CombatState.SpellCast(unit, POWER_WORD_FORTITUDE);
-                    return CombatActionResult.ACTION_OK;
-                }
+        //        // Check Power Word Fortitude
+        //        if (!unit.HasAura(POWER_WORD_FORTITUDE) && HasSpellAndCanCast(POWER_WORD_FORTITUDE))
+        //        {
+        //            BotHandler.CombatState.SpellCast(unit, POWER_WORD_FORTITUDE);
+        //            return CombatActionResult.ACTION_OK;
+        //        }
 
-                // Check if group member needs a moderate heal
-                if (HasSpellAndCanCast(LESSER_HEAL) && unit.HealthPercentage < 70.0f)
-                {
-                    BotHandler.CombatState.SpellCast(unit, LESSER_HEAL);
-                    return CombatActionResult.ACTION_OK;
-                }
+        //        // Check if group member needs a moderate heal
+        //        if (HasSpellAndCanCast(LESSER_HEAL) && unit.HealthPercentage < 70.0f)
+        //        {
+        //            BotHandler.CombatState.SpellCast(unit, LESSER_HEAL);
+        //            return CombatActionResult.ACTION_OK;
+        //        }
 
-                // Check if group member needs a small hot
-                if (HasSpellAndCanCast(RENEW) && unit.HealthPercentage < 90.0f)
-                {
-                    BotHandler.CombatState.SpellCast(unit, RENEW);
-                    return CombatActionResult.ACTION_OK;
-                }
-            }
+        //        // Check if group member needs a small hot
+        //        if (HasSpellAndCanCast(RENEW) && unit.HealthPercentage < 90.0f)
+        //        {
+        //            BotHandler.CombatState.SpellCast(unit, RENEW);
+        //            return CombatActionResult.ACTION_OK;
+        //        }
+        //    }
 
-            // Power Word Fortitude if not on a member of the group
-            if (HasSpellAndCanCast(POWER_WORD_FORTITUDE))
-            {
-                foreach (var member in BotHandler.Group.Members)
-                {
-                    var unit = BotHandler.BotOwner.GetUnitByGuid(member.Guid);
-                    if (unit != null && !unit.HasAura(POWER_WORD_FORTITUDE))
-                    {
-                        BotHandler.CombatState.SpellCast(unit, POWER_WORD_FORTITUDE);
-                        return CombatActionResult.ACTION_OK;
-                    }
-                }
-            }
+        //    // Power Word Fortitude if not on a member of the group
+        //    if (HasSpellAndCanCast(POWER_WORD_FORTITUDE))
+        //    {
+        //        foreach (var member in BotHandler.Group.Members)
+        //        {
+        //            var unit = BotHandler.BotOwner.GetUnitByGuid(member.Guid);
+        //            if (unit != null && !unit.HasAura(POWER_WORD_FORTITUDE))
+        //            {
+        //                BotHandler.CombatState.SpellCast(unit, POWER_WORD_FORTITUDE);
+        //                return CombatActionResult.ACTION_OK;
+        //            }
+        //        }
+        //    }
 
-            // Heal group members that are low on health
-            if (HasSpellAndCanCast(LESSER_HEAL))
-            {
+        //    // Heal group members that are low on health
+        //    if (HasSpellAndCanCast(LESSER_HEAL))
+        //    {
 
-            }
+        //    }
 
-            return base.DoOutOfCombatAction();
-        }
+        //    return base.DoOutOfCombatAction();
+        //}
 
         #endregion
 
         #region Private Methods
+
+        protected override IBehaviourTreeNode InitializeCombatBehaivor()
+        {
+            return null;
+        }
+
+        protected override IBehaviourTreeNode InitializeOutOfCombatBehavior()
+        {
+            return null;
+        }
+
+        //protected override CombatActionResult DoFirstCombatAction(Unit unit)
+        //{
+        //    return CombatActionResult.NO_ACTION_OK;
+        //}
+
+        //protected override CombatActionResult DoNextCombatAction(Unit unit)
+        //{
+        //    // Handle group health checks.
+        //    foreach (var member in BotHandler.Group.Members)
+        //    {
+        //        var memberUnit = BotHandler.BotOwner.GetUnitByGuid(member.Guid);
+        //        if (memberUnit == null) continue;
+
+        //        // Check if group member needs a moderate heal
+        //        if (HasSpellAndCanCast(LESSER_HEAL) && memberUnit.HealthPercentage < 50.0f)
+        //        {
+        //            BotHandler.CombatState.SpellCast(memberUnit, LESSER_HEAL);
+        //            return CombatActionResult.ACTION_OK;
+        //        }
+        //    }
+
+        //    // TODO: Build up priest combat logic
+        //    if (HasSpellAndCanCast(SHADOW_WORD_PAIN) && !unit.HasAura(SHADOW_WORD_PAIN) && unit.HealthPercentage > 30.0f)
+        //    {
+        //        BotHandler.CombatState.SpellCast(SHADOW_WORD_PAIN);
+        //        return CombatActionResult.ACTION_OK;
+        //    }
+
+        //    // Wand if the mob is less than 40% health
+        //    if (unit.HealthPercentage < 40.0f && AttackWand(unit))
+        //        return CombatActionResult.NO_ACTION_OK;
+
+        //    if (HasSpellAndCanCast(SMITE))
+        //    {
+        //        BotHandler.CombatState.SpellCast(SMITE);
+        //        return CombatActionResult.ACTION_OK;
+        //    }
+
+        //    return CombatActionResult.NO_ACTION_OK;
+        //}
+
+        #endregion
+
+        #region Priest Constants
 
         // Key = Level, Values = List of spells attained at that level
         private static Dictionary<int, List<uint>> mSpellsByLevel = new Dictionary<int, List<uint>>
@@ -246,51 +302,6 @@ namespace Populus.GroupBot.Combat.Priest
             { 58, new List<uint> { Spells.GREATER_HEAL_4, Spells.RESURRECTION_5, Spells.SHADOW_WORD_PAIN_8, Spells.MIND_BLAST_9 } },
             { 60, new List<uint> { Spells.PRAYER_OF_HEALING_4, Spells.HOLY_FIRE_8, Spells.GREATER_HEAL_5, Spells.RENEW_10, Spells.PRAYER_OF_HEALING_5, Spells.MIND_FLAY_6, Spells.SHACKLE_UNDEAD_3, Spells.INNER_FIRE_6, Spells.POWER_WORD_SHIELD_10, Spells.POWER_WORD_FORTITUDE_6, Spells.PRAYER_OF_FORTITUDE_2, Spells.PRAYER_OF_SPIRIT_1 } }
         };
-
-        protected override CombatActionResult DoFirstCombatAction(Unit unit)
-        {
-            return CombatActionResult.NO_ACTION_OK;
-        }
-
-        protected override CombatActionResult DoNextCombatAction(Unit unit)
-        {
-            // Handle group health checks.
-            foreach (var member in BotHandler.Group.Members)
-            {
-                var memberUnit = BotHandler.BotOwner.GetUnitByGuid(member.Guid);
-                if (memberUnit == null) continue;
-
-                // Check if group member needs a moderate heal
-                if (HasSpellAndCanCast(LESSER_HEAL) && memberUnit.HealthPercentage < 50.0f)
-                {
-                    BotHandler.CombatState.SpellCast(memberUnit, LESSER_HEAL);
-                    return CombatActionResult.ACTION_OK;
-                }
-            }
-
-            // TODO: Build up priest combat logic
-            if (HasSpellAndCanCast(SHADOW_WORD_PAIN) && !unit.HasAura(SHADOW_WORD_PAIN) && unit.HealthPercentage > 30.0f)
-            {
-                BotHandler.CombatState.SpellCast(SHADOW_WORD_PAIN);
-                return CombatActionResult.ACTION_OK;
-            }
-
-            // Wand if the mob is less than 40% health
-            if (unit.HealthPercentage < 40.0f && AttackWand(unit))
-                return CombatActionResult.NO_ACTION_OK;
-
-            if (HasSpellAndCanCast(SMITE))
-            {
-                BotHandler.CombatState.SpellCast(SMITE);
-                return CombatActionResult.ACTION_OK;
-            }
-
-            return CombatActionResult.NO_ACTION_OK;
-        }
-
-        #endregion
-
-        #region Priest Constants
 
         public static class Reagents
         {

@@ -1,7 +1,6 @@
-﻿using Populus.Core.Shared;
+﻿using FluentBehaviourTree;
 using Populus.Core.World.Objects;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Populus.GroupBot.Combat.Warrior
 {
@@ -175,31 +174,72 @@ namespace Populus.GroupBot.Combat.Warrior
 
         #region Private Methods
 
-        protected override CombatActionResult DoFirstCombatAction(Unit unit)
+        protected override IBehaviourTreeNode InitializeCombatBehaivor()
         {
-            AttackMelee(unit);
-
-            // TOOD: Fix charge, this break moving into melee
-            //if (HasSpellAndCanCast(CHARGE))
-            //{
-            //    BotHandler.CombatState.SpellCast(CHARGE);
-            //    return CombatActionResult.ACTION_OK;
-            //}
-
-            return base.DoFirstCombatAction(unit);
+            var builder = new BehaviourTreeBuilder();
+            builder.Selector("Combat Behavior")
+                        .Splice(CombatLogicHandler.MeleeAttack(BotHandler))
+                   .End();
+            return builder.Build();
         }
 
-        protected override CombatActionResult DoNextCombatAction(Unit unit)
+        protected override IBehaviourTreeNode InitializeOutOfCombatBehavior()
         {
-            // Heroic strike is excess rage spender
-            if (!mHeroicStrikePrepared && IsInMeleeRange(unit) && HasSpellAndCanCast(HEROIC_STRIKE) && BotHandler.BotOwner.CurrentPower >= mUseHeroicStrikeRageThreshold)
-            {
-                CastHeroicStrike();
-                return CombatActionResult.ACTION_OK;
-            }
-
-            return base.DoNextCombatAction(unit);
+            var builder = new BehaviourTreeBuilder();
+            builder.Selector("OOC Behavior")
+                        .Splice(OutOfCombatLogic.OutOfCombatHealthRegen(BotHandler))
+                   .End();
+            return builder.Build();
         }
+
+        //public override CombatActionResult DoOutOfCombatAction()
+        //{
+        //    // If we are not in battle stance, get in it
+        //    if (HasSpellAndCanCast(BATTLE_STANCE) && !BotHandler.BotOwner.HasAura(BATTLE_STANCE))
+        //    {
+        //        BotHandler.CombatState.SpellCast(BotHandler.BotOwner, BATTLE_STANCE);
+        //        // Continue with first combat action if we hit this
+        //        return CombatActionResult.ACTION_OK;
+        //    }
+
+        //    // If we don't have Battle Shout on us, cast it
+        //    if (HasSpellAndCanCast(BATTLE_SHOUT) && !BotHandler.BotOwner.HasAura(BATTLE_SHOUT))
+        //    {
+        //        BotHandler.CombatState.SpellCast(BotHandler.BotOwner, BATTLE_SHOUT);
+        //        // Continue with first combat action if we hit this
+        //        return CombatActionResult.ACTION_OK;
+        //    }
+
+        //    return base.DoOutOfCombatAction();
+        //}
+
+        //protected override CombatActionResult DoFirstCombatAction(Unit unit)
+        //{
+        //    AttackMelee(unit);
+
+        //    // TOOD: Fix charge, this break moving into melee
+        //    //if (HasSpellAndCanCast(CHARGE))
+        //    //{
+        //    //    BotHandler.CombatState.SpellCast(CHARGE);
+        //    //    return CombatActionResult.ACTION_OK;
+        //    //}
+
+        //    return base.DoFirstCombatAction(unit);
+        //}
+
+        //protected override CombatActionResult DoNextCombatAction(Unit unit)
+        //{
+        //    AttackMelee(unit);
+
+        //    // Heroic strike is excess rage spender
+        //    if (!mHeroicStrikePrepared && IsInMeleeRange(unit) && HasSpellAndCanCast(HEROIC_STRIKE) && BotHandler.BotOwner.CurrentPower >= mUseHeroicStrikeRageThreshold)
+        //    {
+        //        CastHeroicStrike();
+        //        return CombatActionResult.ACTION_OK;
+        //    }
+
+        //    return base.DoNextCombatAction(unit);
+        //}
 
         protected virtual void CombatAttackUpdate(Bot bot, Core.World.Objects.Events.CombatAttackUpdateArgs eventArgs)
         {
@@ -240,7 +280,7 @@ namespace Populus.GroupBot.Combat.Warrior
             { 34, new List<uint> { Spells.DEMORALIZING_SHOUT_3, Spells.REVENGE_3 } },
             { 36, new List<uint> { Spells.WHIRLWIND_1 } },
             { 38, new List<uint> { Spells.THUNDER_CLAP_4, Spells.SLAM_2, Spells.PUMMEL_1 } },
-            { 40, new List<uint> { Spells.REND_5, Spells.HEROIC_STRIKE_6, Spells.MORTAL_STRIKE_1, Spells.CLEAVE_3, Spells.EXECUTE_3, Spells.BLOODTHIRST_1, Spells.SHIELD_SLAM_1 } },
+            { 40, new List<uint> { Spells.REND_5, Spells.HEROIC_STRIKE_6, Spells.MORTAL_STRIKE_1, Spells.CLEAVE_3, Spells.EXECUTE_3, Spells.SHIELD_SLAM_1 } },
             { 42, new List<uint> { Spells.BATTLE_SHOUT_5 } },
             { 44, new List<uint> { Spells.DEMORALIZING_SHOUT_4, Spells.REVENGE_4 } },
             { 46, new List<uint> { Spells.CHARGE_3, Spells.SLAM_3 } },

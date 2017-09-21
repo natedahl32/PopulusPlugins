@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using FluentBehaviourTree;
+using System.Collections.Generic;
 
 namespace Populus.GroupBot.Combat.Shaman
 {
@@ -177,6 +178,20 @@ namespace Populus.GroupBot.Combat.Shaman
             MANA_SPRING_EFFECT = InitSpell(Spells.MANA_SPRING_EFFECT_1);
             TREMOR_TOTEM_EFFECT = InitSpell(Spells.TREMOR_TOTEM_EFFECT_1);
             EARTHBIND_EFFECT = InitSpell(Spells.EARTHBIND_EFFECT_1);
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        protected override IBehaviourTreeNode InitializeCombatBehaivor()
+        {
+            return null;
+        }
+
+        protected override IBehaviourTreeNode InitializeOutOfCombatBehavior()
+        {
+            return null;
         }
 
         #endregion

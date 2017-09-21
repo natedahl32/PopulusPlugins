@@ -96,12 +96,12 @@ namespace Populus.CombatManager
             };
             Bot.SpellInterrupted += spellInterruptedHandler;
 
-            // Cancel combat
+            // Cancel attack
             cancelCombatHandler = bot =>
             {
                 var state = mBotCombatCollection.Get(bot.Guid);
                 if (state != null)
-                    state.CancelCombat();
+                    state.StopAttack();
             };
             Bot.CancelAttack += cancelCombatHandler;
 
@@ -130,6 +130,28 @@ namespace Populus.CombatManager
                 
             };
             Bot.AiReaction += aiReactionHandler;
+
+            // Attack start
+            Bot.AttackStarted += (bot, args) =>
+            {
+                if (args.AttackerGuid == bot.Guid)
+                {
+                    var state = mBotCombatCollection.Get(bot.Guid);
+                    if (state != null)
+                        state.StartAttack();
+                }
+            };
+
+            // Attack stop
+            Bot.AttackStopped += (bot, args) =>
+            {
+                if (args.AttackerGuid == bot.Guid)
+                {
+                    var state = mBotCombatCollection.Get(bot.Guid);
+                    if (state != null)
+                        state.StopAttack();
+                }
+            };
         }
 
         public override void Unload()

@@ -1,5 +1,6 @@
 ﻿using Populus.Core.Constants;
 using Populus.Core.World.Objects;
+using Populus.Core.Utils;
 using Populus.GroupBot.Combat.Druid;
 using Populus.GroupBot.Combat.Hunter;
 using Populus.GroupBot.Combat.Mage;
@@ -17,6 +18,7 @@ using System.Collections.Generic;
 using Populus.Core.World.Spells;
 using System.Linq;
 using Populus.Core.World.Objects.Events;
+using FluentBehaviourTree;
 
 namespace Populus.GroupBot.Combat
 {
@@ -46,6 +48,32 @@ namespace Populus.GroupBot.Combat
         private Unit mAttackingUnit = null;
         private bool mIsFirstCombatActionDone = false;
 
+        // Behavior trees
+        private IBehaviourTreeNode mOutOfCombatBehavior;
+        private IBehaviourTreeNode mCombatBehavior;
+
+        private static class ConjuredFood
+        {
+            public const uint FOOD_LVL_5 = 5349;
+            public const uint FOOD_LVL_15 = 1113;
+            public const uint FOOD_LVL_25 = 1114;
+            public const uint FOOD_LVL_35 = 1487;
+            public const uint FOOD_LVL_45 = 8075;
+            public const uint FOOD_LVL_55 = 8076;
+            public const uint FOOD_LVL_65 = 22895;
+        }
+
+        private static class ConjuredWater
+        {
+            public const uint WATER_LVL_5 = 5350;
+            public const uint WATER_LVL_15 = 2288;
+            public const uint WATER_LVL_25 = 2136;
+            public const uint WATER_LVL_35 = 3772;
+            public const uint WATER_LVL_45 = 8077;
+            public const uint WATER_LVL_55 = 8078;
+            public const uint WATER_LVL_65 = 8079;
+        }
+
         #endregion
 
         #region Constructors
@@ -53,6 +81,8 @@ namespace Populus.GroupBot.Combat
         public CombatLogicHandler(GroupBotHandler botHandler)
         {
             mBotHandler = botHandler ?? throw new ArgumentNullException("botHandler");
+            this.mOutOfCombatBehavior = InitializeOutOfCombatBehavior();
+            this.mCombatBehavior = InitializeCombatBehaivor();
         }
 
         #endregion
@@ -70,18 +100,52 @@ namespace Populus.GroupBot.Combat
         public abstract bool IsMelee { get; }
 
         /// <summary>
-        /// Gets whether or not the bot is currently attacking a target with either melee or ranged
-        /// </summary>
-        public bool IsAttacking { get { return mIsAttacking; } }
-
-        /// <summary>
         /// Gets all spells available to the class for all levels
         /// </summary>
         protected abstract Dictionary<int, List<uint>> SpellsByLevel { get; }
 
+        /// <summary>
+        /// Health level percentage where we regenerate health out of combat
+        /// </summary>
+        public virtual float OutOfCombatHealthRegenLevel { get { return 50.0f; } }
+
+        /// <summary>
+        /// Mana level percentage where we regenerate mana out of combat
+        /// </summary>
+        public virtual float OutOfCombatManaRegenLevel { get { return 30.0f; } }
+
+        /// <summary>
+        /// Does the bot have food in inventory
+        /// </summary>
+        public bool HasFood
+        {
+            get { return BotHandler.BotOwner.HasItemInInventory(GetFood()); }
+        }
+
+        /// <summary>
+        /// Does the bot have water in inventory
+        /// </summary>
+        public bool HasWater
+        {
+            get { return GetWater() > 0 && BotHandler.BotOwner.HasItemInInventory(GetWater()); }
+        }
+
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Starts an attack against a unit (we may already be attacking another unit). We leave it up to the combat logic
+        /// to determine how to attack.
+        /// </summary>
+        /// <param name="unit"></param>
+        public void Attack(Unit unit)
+        {
+            // Add this unit to the aggro list and set it as the current target. This will start combat
+            // if it's not already started. And also immediately start attacking the unit.
+            BotHandler.CombatState.AddToAggroList(unit);
+            BotHandler.CombatState.SetTarget(unit);
+        }
 
         /// <summary>
         /// Gets all spells up to a given level
@@ -111,118 +175,6 @@ namespace Populus.GroupBot.Combat
         }
 
         /// <summary>
-        /// Ordered to start an attack on a unit
-        /// </summary>
-        /// <param name="unit"></param>
-        public void StartAttack(Unit unit)
-        {
-            mIsFirstCombatActionDone = false;
-            // Set the target since we were ordered to attack this unit
-            BotHandler.CombatState.SetTarget(unit);
-            // If we are a ranged class, clear our follow target to start combat
-            if (!IsMelee)
-                BotHandler.BotOwner.RemoveFollow();
-            DoCombatAction(unit);
-        }
-
-        /// <summary>
-        /// Update combat logic
-        /// </summary>
-        /// <param name="deltaTime"></param>
-        public void Update(float deltaTime)
-        {
-            // if we are dead, we can't do anything
-            if (BotHandler.BotOwner.IsDead) return;
-
-            // if we are no longer in combat, don't do anything
-            if (!BotHandler.CombatState.IsInCombat)
-            {
-                ResetCombat();
-                return;
-            }
-
-            // if our current target is dead, stop attacking
-            if (BotHandler.CombatState.CurrentTarget != null && BotHandler.CombatState.CurrentTarget.IsDead)
-                BotHandler.BotOwner.StopAttack();
-
-            // if we are currently casting something, wait until we are done with that
-            if (BotHandler.CombatState.IsCasting) return;
-
-            if (BotHandler.CombatState.CurrentTarget != null)
-                DoCombatAction(BotHandler.CombatState.CurrentTarget);
-        }
-
-        /// <summary>
-        /// Performs an out of combat action
-        /// </summary>
-        /// <returns></returns>
-        public virtual CombatActionResult DoOutOfCombatAction()
-        {
-            // TODO: If mana is below a certain threshold, drink water
-
-            return CombatActionResult.NO_ACTION_OK;
-        }
-
-        /// <summary>
-        /// Resets combat flags
-        /// </summary>
-        internal void ResetCombat()
-        {
-            StopAttack();
-            mIsFirstCombatActionDone = false;
-        }
-
-        /// <summary>
-        /// Received an event to stop attacking
-        /// </summary>
-        internal virtual void StopAttack()
-        {
-            mIsAttacking = false;
-            mAttackingUnit = null;
-        }
-
-        /// <summary>
-        /// Received a combat update
-        /// </summary>
-        /// <param name="update"></param>
-        internal virtual void AttackUpdate(CombatAttackUpdateArgs update)
-        {
-            // If the attacker is someone in our group, add the victim to our aggro list
-            if (BotHandler.Group.ContainsMember(update.AttackerGuid))
-            {
-                var victim = BotHandler.BotOwner.GetUnitByGuid(update.VictimGuid);
-                if (BotHandler.BotOwner.DistanceFrom(victim.Position) <= 40.0f)
-                    BotHandler.CombatState.AddToAggroList(victim);
-            }
-                
-            // If the victim is someone in our group, add the attacker to our aggro list
-            if (BotHandler.Group.ContainsMember(update.VictimGuid))
-            {
-                var attacker = BotHandler.BotOwner.GetUnitByGuid(update.AttackerGuid);
-                if (BotHandler.BotOwner.DistanceFrom(attacker.Position) <= 40.0f)
-                    BotHandler.CombatState.AddToAggroList(attacker);
-            }
-        }
-
-        /// <summary>
-        /// Received a spell cast complete update
-        /// </summary>
-        /// <param name="update"></param>
-        internal virtual void SpellCastCompleteUpdate(SpellCastCompleteArgs update)
-        {
-            // If the caster is a member of our group, add all targets to the aggro list if they are not friendly
-            if (BotHandler.Group.ContainsMember(update.CasterGuid))
-            {
-                foreach (var target in update.TargetsHit)
-                {
-                    var unit = BotHandler.BotOwner.GetUnitByGuid(target);
-                    if (unit != null && BotHandler.BotOwner.DistanceFrom(unit.Position) <= 40.0f && !BotHandler.BotOwner.IsFriendlyTo(unit))
-                        BotHandler.CombatState.AddToAggroList(unit);
-                }
-            }
-        }
-
-        /// <summary>
         /// Received not facing target update
         /// </summary>
         /// <param name="angle"></param>
@@ -232,9 +184,71 @@ namespace Populus.GroupBot.Combat
                 BotHandler.BotOwner.FaceTarget(BotHandler.CombatState.CurrentTarget.Guid);
         }
 
+        /// <summary>
+        /// Gets the id of level appropriate food for the bot
+        /// </summary>
+        public uint GetFood()
+        {
+            var level = BotHandler.BotOwner.Level;
+            if (level >= 60)
+                return ConjuredFood.FOOD_LVL_65;
+            if (level >= 55)
+                return ConjuredFood.FOOD_LVL_55;
+            if (level >= 45)
+                return ConjuredFood.FOOD_LVL_45;
+            if (level >= 35)
+                return ConjuredFood.FOOD_LVL_35;
+            if (level >= 25)
+                return ConjuredFood.FOOD_LVL_25;
+            if (level >= 15)
+                return ConjuredFood.FOOD_LVL_15;
+            return ConjuredFood.FOOD_LVL_5;
+        }
+
+        /// <summary>
+        /// Gets the id of level appropriate water for the bot
+        /// </summary>
+        public uint GetWater()
+        {
+            // If bot does not use mana, return 0 for water
+            if (BotHandler.BotOwner.PowerType != Powers.POWER_MANA) return 0;
+            var level = BotHandler.BotOwner.Level;
+            if (level >= 60)
+                return ConjuredWater.WATER_LVL_65;
+            if (level >= 55)
+                return ConjuredWater.WATER_LVL_55;
+            if (level >= 45)
+                return ConjuredWater.WATER_LVL_45;
+            if (level >= 35)
+                return ConjuredWater.WATER_LVL_35;
+            if (level >= 25)
+                return ConjuredWater.WATER_LVL_25;
+            if (level >= 15)
+                return ConjuredWater.WATER_LVL_15;
+            return ConjuredWater.WATER_LVL_5;
+        }
+
         #endregion
 
         #region Private Methods
+
+        /// <summary>
+        /// Update combat logic
+        /// </summary>
+        /// <param name="deltaTime"></param>
+        public void CombatUpdate(float deltaTime)
+        {
+            this.mCombatBehavior?.Tick(new TimeData(deltaTime));
+        }
+
+        /// <summary>
+        /// Update out of combat logic
+        /// </summary>
+        /// <param name="deltaTime"></param>
+        public void OutOfCombatUpdate(float deltaTime)
+        {
+            this.mOutOfCombatBehavior?.Tick(new TimeData(deltaTime));
+        }
 
         /// <summary>
         /// Gets whether or not the bot is in melee range of it's target
@@ -316,98 +330,62 @@ namespace Populus.GroupBot.Combat
         }
 
         /// <summary>
-        /// Attacks a unit with melee attacks
+        /// Initialize out of combat behavior
         /// </summary>
-        /// <param name="unit"></param>
-        protected void AttackMelee(Unit unit)
-        {
-            if (unit == null) return;
-            if (mAttackingUnit == null || unit.Guid != mAttackingUnit.Guid)
-            {
-                BotHandler.CombatState.AttackMelee(unit);
-                mIsAttacking = true;
-                mAttackingUnit = unit;
-            }
-        }
+        protected abstract IBehaviourTreeNode InitializeOutOfCombatBehavior();
 
         /// <summary>
-        /// Attacks a unit with wand attacks
+        /// Initialize combat related behavior
         /// </summary>
-        /// <param name="unit"></param>
-        protected bool AttackWand(Unit unit)
-        {
-            if (unit == null) return false;
-            if (BotHandler.BotOwner.CanUseWands && BotHandler.BotOwner.GetEquippedItemsByInventoryType(InventoryType.INVTYPE_RANGED) != null)
-            {
-                if (mAttackingUnit == null || unit.Guid != mAttackingUnit.Guid)
-                {
-                    BotHandler.CombatState.SpellCast(unit, WAND_SHOOT);
-                    mIsAttacking = true;
-                    return true;
-                }
+        protected abstract IBehaviourTreeNode InitializeCombatBehaivor();
 
-                // We are already attacking with wand
-                return true;
-            }
+        #endregion
 
-            return false;
-        }
+        #region Common Behaviors
 
         /// <summary>
-        /// Performs a combat action
+        /// Creates a behavior tree node that melee attacks the current target
         /// </summary>
-        /// <param name="unit"></param>
-        private void DoCombatAction(Unit target)
-        {
-            CombatActionResult result;
-            // now we need to get a combat action. get the first one if needed
-            if (!mIsFirstCombatActionDone)
-            {
-                result = DoFirstCombatAction(target);
-                if (result == CombatActionResult.ACTION_OK || 
-                    result == CombatActionResult.NO_ACTION_OK ||
-                    result == CombatActionResult.ACTION_OK_CONTINUE_FIRST)
-                {
-                    if (result != CombatActionResult.ACTION_OK_CONTINUE_FIRST)
-                        mIsFirstCombatActionDone = true;
-
-                    // If we did an action, don't continue
-                    if (result == CombatActionResult.ACTION_OK || result == CombatActionResult.ACTION_OK_CONTINUE_FIRST)
-                        return;
-                }
-            }
-
-            // need an action as part of our rotation
-            result = DoNextCombatAction(target);
-        }
-
-        /// <summary>
-        /// Performs the first combat action
-        /// </summary>
-        /// <param name="unit"></param>
-        protected virtual CombatActionResult DoFirstCombatAction(Unit unit)
-        {
-            // If we are a melee class, start melee attacks. Otherwise start ranged attacks
-            if (IsMelee)
-                AttackMelee(unit);
-            else
-                AttackWand(unit);
-
-            return CombatActionResult.ACTION_OK;
-        }
-
-        /// <summary>
-        /// Performs the next combat action
-        /// </summary>
-        /// <param name="unit"></param>
         /// <returns></returns>
-        protected virtual CombatActionResult DoNextCombatAction(Unit unit)
+        internal static IBehaviourTreeNode MeleeAttack(GroupBotHandler handler)
         {
-            // If we are not attacking and we are melee, attack our target
-            if (!IsAttacking && IsMelee)
-                AttackMelee(unit);
+            // Should fail if we do not or can not regenreate health
+            var builder = new BehaviourTreeBuilder();
+            builder.Sequence("Melee Attack")
+                        .Do("Start Melee Attack", t => StartMeleeSwing(handler))
+                        .Do("Move to target", t => MoveToTarget(handler))
+                   .End();
+            return builder.Build();
+        }
 
-            return CombatActionResult.NO_ACTION_OK;
+        private static BehaviourTreeStatus StartMeleeSwing(GroupBotHandler handler)
+        {
+            if (handler.CombatState.CurrentTarget == null) return BehaviourTreeStatus.Failure;
+
+            // If we are not already melee attacking, start
+            if (!handler.CombatState.IsMeleeAttacking)
+                handler.BotOwner.Attack(handler.CombatState.CurrentTarget.Guid);
+
+            return BehaviourTreeStatus.Success;
+        }
+
+        private static BehaviourTreeStatus MoveToTarget(GroupBotHandler handler)
+        {
+            if (handler.CombatState.CurrentTarget == null) return BehaviourTreeStatus.Failure;
+
+            // Make sure the target is our follow target
+            if (handler.BotOwner.FollowTarget.Guid != handler.CombatState.CurrentTarget.Guid)
+            {
+                handler.BotOwner.SetFollow(handler.CombatState.CurrentTarget.Guid);
+                return BehaviourTreeStatus.Running;
+            }
+
+            // If we are not close enough to follow target then we are still running
+            var distance = MathUtility.CalculateDistance(handler.BotOwner.Position, handler.CombatState.CurrentTarget.Position);
+            if (distance > MELEE_RANGE_DISTANCE)
+                return BehaviourTreeStatus.Running;
+            
+            return BehaviourTreeStatus.Success;
         }
 
         #endregion

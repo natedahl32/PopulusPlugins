@@ -1,4 +1,4 @@
-﻿using Populus.GroupBot.Combat;
+﻿using Populus.GroupBot.Triggers;
 
 namespace Populus.GroupBot.States
 {
@@ -21,12 +21,18 @@ namespace Populus.GroupBot.States
 
         public override void Update(GroupBotHandler handler, float deltaTime)
         {
-            // Check for out of combat actions to be performed
-            if (handler.CombatHandler.DoOutOfCombatAction() == CombatActionResult.ACTION_OK)
+            // If we are in combat, transition to the combat state
+            if (handler.CombatState.IsInCombat)
+            {
+                handler.TriggerState(StateTriggers.Combat);
                 return;
+            }
+
+            // Check for out of combat actions to be performed
+            handler.CombatHandler.OutOfCombatUpdate(deltaTime);
 
             // Follow the group leader if we aren't already and we can
-            handler.FollowGroupLeader();
+            //handler.FollowGroupLeader();
         }
     }
 }

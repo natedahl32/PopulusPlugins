@@ -15,17 +15,17 @@ namespace Populus.GroupBot.Combat.Mage
 
         #region Private Methods
 
-        protected override CombatActionResult DoNextCombatAction(Unit unit)
-        {
-            if (HasSpellAndCanCast(FIREBALL))
-            {
-                BotHandler.CombatState.SpellCast(FIREBALL);
-                return CombatActionResult.ACTION_OK;
-            }
+        //protected override CombatActionResult DoNextCombatAction(Unit unit)
+        //{
+        //    if (HasSpellAndCanCast(FIREBALL))
+        //    {
+        //        BotHandler.CombatState.SpellCast(FIREBALL);
+        //        return CombatActionResult.ACTION_OK;
+        //    }
 
-            AttackWand(unit);
-            return base.DoNextCombatAction(unit);
-        }
+        //    AttackWand(unit);
+        //    return base.DoNextCombatAction(unit);
+        //}
 
         #endregion
     }

@@ -1,4 +1,5 @@
-﻿using Populus.Core.World.Objects;
+﻿using FluentBehaviourTree;
+using Populus.Core.World.Objects;
 using System.Collections.Generic;
 
 namespace Populus.GroupBot.Combat.Rogue
@@ -141,29 +142,39 @@ namespace Populus.GroupBot.Combat.Rogue
 
         #region Private Methods
 
-        protected override CombatActionResult DoFirstCombatAction(Unit unit)
+        protected override IBehaviourTreeNode InitializeCombatBehaivor()
         {
-            AttackMelee(unit);
-            return base.DoFirstCombatAction(unit);
+            return null;
         }
 
-        protected override CombatActionResult DoNextCombatAction(Unit unit)
+        protected override IBehaviourTreeNode InitializeOutOfCombatBehavior()
         {
-            // TODO: Build up rogue combat logic
-            if (BotHandler.BotOwner.ComboPoints >= 4 && HasSpellAndCanCast(EVISCERATE))
-            {
-                BotHandler.CombatState.SpellCast(EVISCERATE);
-                return CombatActionResult.ACTION_OK;
-            }
-
-            if (HasSpellAndCanCast(SINISTER_STRIKE))
-            {
-                BotHandler.CombatState.SpellCast(SINISTER_STRIKE);
-                return CombatActionResult.ACTION_OK;
-            }
-
-            return base.DoNextCombatAction(unit);
+            return null;
         }
+
+        //protected override CombatActionResult DoFirstCombatAction(Unit unit)
+        //{
+        //    AttackMelee(unit);
+        //    return base.DoFirstCombatAction(unit);
+        //}
+
+        //protected override CombatActionResult DoNextCombatAction(Unit unit)
+        //{
+        //    // TODO: Build up rogue combat logic
+        //    if (BotHandler.BotOwner.ComboPoints >= 4 && HasSpellAndCanCast(EVISCERATE))
+        //    {
+        //        BotHandler.CombatState.SpellCast(EVISCERATE);
+        //        return CombatActionResult.ACTION_OK;
+        //    }
+
+        //    if (HasSpellAndCanCast(SINISTER_STRIKE))
+        //    {
+        //        BotHandler.CombatState.SpellCast(SINISTER_STRIKE);
+        //        return CombatActionResult.ACTION_OK;
+        //    }
+
+        //    return base.DoNextCombatAction(unit);
+        //}
 
         #endregion
 

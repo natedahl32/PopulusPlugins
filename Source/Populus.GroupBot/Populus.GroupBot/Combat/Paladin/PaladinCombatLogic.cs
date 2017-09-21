@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using FluentBehaviourTree;
+using System.Collections.Generic;
 
 namespace Populus.GroupBot.Combat.Paladin
 {
@@ -152,6 +153,20 @@ namespace Populus.GroupBot.Combat.Paladin
             SEAL_OF_THE_CRUSADER = InitSpell(Spells.SEAL_OF_THE_CRUSADER_1);
             SENSE_UNDEAD = InitSpell(Spells.SENSE_UNDEAD_1);
             SHADOW_RESISTANCE_AURA = InitSpell(Spells.SHADOW_RESISTANCE_AURA_1);
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        protected override IBehaviourTreeNode InitializeCombatBehaivor()
+        {
+            return null;
+        }
+
+        protected override IBehaviourTreeNode InitializeOutOfCombatBehavior()
+        {
+            return null;
         }
 
         #endregion

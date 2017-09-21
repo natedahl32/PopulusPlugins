@@ -134,24 +134,6 @@ namespace Populus.GroupBot
         {
             // Update the current state
             mCurrentState.Update(this, deltaTime);
-
-            //// If we are in combat, do combat logic
-            //if (mCombatState.IsInCombat)
-            //{
-            //    mCombatLogic.Update(deltaTime);
-            //    return;
-            //}   
-            
-            //// Do not update if we already have actions we need to process
-            //if (!mActionQueue.IsEmpty) return;
-
-            //// Check for out of combat actions to be performed
-            //if (mCombatLogic.DoOutOfCombatAction() == CombatActionResult.ACTION_OK)
-            //    return;
-
-            //// Follow the group leader if we aren't already and we can
-            //if (mCanFollow)
-            //    FollowGroupLeader();
         }
 
         /// <summary>
@@ -223,7 +205,7 @@ namespace Populus.GroupBot
         internal void TeleportToGroupMember(GroupMember member)
         {
             mBotOwner.ChatSay($".go {member.Name}");
-            //mBotOwner.ChatParty($"I can't follow {member.Name} you are too far away!");
+            mBotOwner.Logger.Log($"Teleporting to group member {member.Name}");
             IsOutOfRangeOfLeader = true;
             TeleportingTo = member.Position;
             TriggerState(StateTriggers.Teleporting);
@@ -296,6 +278,26 @@ namespace Populus.GroupBot
                     LearnSpell(spell);
         }
 
+        /// <summary>
+        /// Creates some food for the bot to regenerate health
+        /// </summary>
+        internal void CreateFood()
+        {
+            var food = CombatHandler.GetFood();
+            if (food > 0)
+                BotOwner.ChatSay($".additem {food} 10");
+        }
+
+        /// <summary>
+        /// Creates some water for the bot to regenerate mana
+        /// </summary
+        internal void CreateWater()
+        {
+            var water = CombatHandler.GetWater();
+            if (water > 0)
+                BotOwner.ChatSay($".additem {water} 10");
+        }
+
         #endregion
 
         #region Private Methods
@@ -316,9 +318,13 @@ namespace Populus.GroupBot
         private void BuildStateMachine()
         {
             mStateMachine.Configure(Idle.Instance)
-                .Permit(StateTriggers.Teleporting, Teleport.Instance);
+                .Permit(StateTriggers.Teleporting, Teleport.Instance)
+                .Permit(StateTriggers.Combat, States.Combat.Instance);
 
             mStateMachine.Configure(Teleport.Instance)
+                .Permit(StateTriggers.Idle, Idle.Instance);
+
+            mStateMachine.Configure(States.Combat.Instance)
                 .Permit(StateTriggers.Idle, Idle.Instance);
         }
 

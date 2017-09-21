@@ -32,6 +32,9 @@ namespace Populus.CombatManager
         // for the current spell to be cast before it can be used.
         private uint mQueuedSpellId = 0;
 
+        // Flag that holds whether or not the bot is melee attacking
+        private bool mIsMeleeAttacking = false;
+
         #endregion
 
         #region Constructors
@@ -97,6 +100,14 @@ namespace Populus.CombatManager
             get { return mQueuedSpellId > 0; }
         }
 
+        /// <summary>
+        /// Gets whether or not the bot is currently melee attacking
+        /// </summary>
+        public bool IsMeleeAttacking
+        {
+            get { return mIsMeleeAttacking; }
+        }
+
         #endregion
 
         #region Public Methods
@@ -132,24 +143,6 @@ namespace Populus.CombatManager
                 return mBotOwner.GetUnitByGuid(target);
             // Unable to get, return null
             return null;
-        }
-
-        /// <summary>
-        /// Sends commands to attack the specified target with melee attacks. This will move the bot into melee range and keep the target on
-        /// follow while continuing to attack the target until another command is given or the target is dead.
-        /// </summary>
-        public void AttackMelee(Unit target)
-        {
-            // Set our target and it to our aggro list
-            mTarget = target;
-            AddToAggroList(target);
-            mBotOwner.SetTarget(target.Guid);
-
-            // Follow the target to move to it
-            mBotOwner.SetFollow(target.Guid);
-
-            // Attack the target with melee!
-            mBotOwner.Attack(target.Guid);
         }
 
         /// <summary>
@@ -229,7 +222,9 @@ namespace Populus.CombatManager
         public void AddToAggroList(Unit unit)
         {
             // Log if this starts combat
-            if (!IsInCombat) mBotOwner.Logger.Log($"Unit {unit.Name} added to aggro. Combat is started!");
+            mBotOwner.Logger.Log($"Unit guid {unit.Guid} added to aggro. Combat is started!");
+            if (!IsInCombat)
+                mBotOwner.Logger.Log("Combat is now started due to mob in my aggro list!");
             // Shouldn't need to check if already exists, will update if it does
             mAggroList.AddOrUpdate(unit.Guid, unit);
         }
@@ -246,14 +241,7 @@ namespace Populus.CombatManager
         {
             // Remove from our aggro list
             mAggroList.Remove(guid);
-            if (!IsInCombat) mBotOwner.Logger.Log("Combat has ended");
-
-            // If this was our target, remove our target
-            if (mTarget != null && mTarget.Guid == guid)
-            {
-                CancelSpellCast();
-                mTarget = null;
-            }
+            mBotOwner.Logger.Log($"Removed unit with guid {guid} from aggro list. Aggro list currently contains {mAggroList.Count} mobs");
         }
 
         /// <summary>
@@ -324,20 +312,19 @@ namespace Populus.CombatManager
         }
 
         /// <summary>
-        /// Cancels all combat
+        /// Turns on the melee attacking flag
         /// </summary>
-        internal void CancelCombat()
+        internal void StartAttack()
         {
-            mAggroList.Clear();
-            mBotOwner.Logger.Log("Combat was canceled. Removing units from aggro list.");
+            mIsMeleeAttacking = true;
+        }
 
-            if (mTarget != null)
-            {
-                // If our current target is dead cancel any casts.
-                if (mTarget.IsDead)
-                    CancelSpellCast();
-                mTarget = null;
-            }
+        /// <summary>
+        /// Sets the melee attacking flag to false
+        /// </summary>
+        internal void StopAttack()
+        {
+            mIsMeleeAttacking = false;
         }
 
         #endregion

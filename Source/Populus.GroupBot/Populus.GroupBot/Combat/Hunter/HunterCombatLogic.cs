@@ -1,4 +1,5 @@
-﻿using Populus.Core.World.Objects;
+﻿using FluentBehaviourTree;
+using Populus.Core.World.Objects;
 using System.Collections.Generic;
 
 namespace Populus.GroupBot.Combat.Hunter
@@ -168,6 +169,16 @@ namespace Populus.GroupBot.Combat.Hunter
         #endregion
 
         #region Private Methods
+
+        protected override IBehaviourTreeNode InitializeCombatBehaivor()
+        {
+            return null;
+        }
+
+        protected override IBehaviourTreeNode InitializeOutOfCombatBehavior()
+        {
+            return null;
+        }
 
         /// <summary>
         /// Commands the hunters pet to attack, if one is summoned
