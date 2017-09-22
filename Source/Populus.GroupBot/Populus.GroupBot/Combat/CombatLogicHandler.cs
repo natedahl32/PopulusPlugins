@@ -347,7 +347,7 @@ namespace Populus.GroupBot.Combat
         /// Creates a behavior tree node that melee attacks the current target
         /// </summary>
         /// <returns></returns>
-        internal static IBehaviourTreeNode MeleeAttack(GroupBotHandler handler)
+        internal IBehaviourTreeNode MeleeAttack(GroupBotHandler handler)
         {
             // Should fail if we do not or can not regenreate health
             var builder = new BehaviourTreeBuilder();
@@ -358,7 +358,7 @@ namespace Populus.GroupBot.Combat
             return builder.Build();
         }
 
-        private static BehaviourTreeStatus StartMeleeSwing(GroupBotHandler handler)
+        private BehaviourTreeStatus StartMeleeSwing(GroupBotHandler handler)
         {
             if (handler.CombatState.CurrentTarget == null) return BehaviourTreeStatus.Failure;
 
@@ -369,7 +369,7 @@ namespace Populus.GroupBot.Combat
             return BehaviourTreeStatus.Success;
         }
 
-        private static BehaviourTreeStatus MoveToTarget(GroupBotHandler handler)
+        private BehaviourTreeStatus MoveToTarget(GroupBotHandler handler)
         {
             if (handler.CombatState.CurrentTarget == null) return BehaviourTreeStatus.Failure;
 
@@ -393,7 +393,7 @@ namespace Populus.GroupBot.Combat
         /// </summary>
         /// <param name="handler"></param>
         /// <returns></returns>
-        internal static IBehaviourTreeNode WandAttack(GroupBotHandler handler)
+        internal IBehaviourTreeNode WandAttack(GroupBotHandler handler)
         {
             // Should fail if we do not have a wand to attack with
             var builder = new BehaviourTreeBuilder();
@@ -404,14 +404,14 @@ namespace Populus.GroupBot.Combat
             return builder.Build();
         }
 
-        private static BehaviourTreeStatus HasWandToAttackWith(GroupBotHandler handler)
+        private BehaviourTreeStatus HasWandToAttackWith(GroupBotHandler handler)
         {
             if (!handler.BotOwner.CanUseWands || !handler.BotOwner.HasWandEquipped)
                 return BehaviourTreeStatus.Failure;
             return BehaviourTreeStatus.Success;
         }
 
-        private static BehaviourTreeStatus StartWanding(GroupBotHandler handler)
+        private BehaviourTreeStatus StartWanding(GroupBotHandler handler)
         {
             if (handler.CombatState.CurrentTarget == null) return BehaviourTreeStatus.Failure;
 
@@ -419,6 +419,50 @@ namespace Populus.GroupBot.Combat
             if (!handler.CombatState.IsAttacking)
                 handler.CombatState.SpellCast(WAND_SHOOT);
 
+            return BehaviourTreeStatus.Success;
+        }
+
+        /// <summary>
+        /// Checks that a buff can be cast and is not already on the bot
+        /// </summary>
+        /// <param name="spellAndAura">Spell and aura to check</param>
+        /// <returns></returns>
+        protected BehaviourTreeStatus SelfBuff(uint spellAndAura)
+        {
+            // If does not have spell or cannot cast, fail
+            if (!HasSpellAndCanCast(spellAndAura))
+                return BehaviourTreeStatus.Failure;
+            // If already has the aura, fail
+            if (BotHandler.BotOwner.HasAura(spellAndAura))
+                return BehaviourTreeStatus.Failure;
+
+            BotHandler.CombatState.SpellCast(BotHandler.BotOwner, spellAndAura);
+            return BehaviourTreeStatus.Success;
+        }
+
+        /// <summary>
+        /// Checks that a buff can be cast and someone in the group needs it
+        /// </summary>
+        /// <param name="spellAndAura">Spell and aura to check</param>
+        /// <returns></returns>
+        protected BehaviourTreeStatus GroupBuff(uint spellAndAura)
+        {
+            // If we are not in a group, self buff instead
+            if (BotHandler.Group == null) return SelfBuff(spellAndAura);
+
+            // If does not have spell or cannot cast, fail
+            if (!HasSpellAndCanCast(spellAndAura))
+                return BehaviourTreeStatus.Failure;
+            // If everyone in the group already has the aura
+            if (!BotHandler.Group.Members.Any(m => !m.HasAura((ushort)spellAndAura)))
+                return BehaviourTreeStatus.Failure;
+
+            // Get the first member in the group that needs the aura
+            var needs = BotHandler.Group.Members.Where(m => !m.HasAura((ushort)spellAndAura)).FirstOrDefault();
+            if (needs == null)
+                return BehaviourTreeStatus.Failure;
+
+            BotHandler.CombatState.SpellCast(BotHandler.BotOwner.GetPlayerByGuid(needs.Guid), spellAndAura);
             return BehaviourTreeStatus.Success;
         }
 

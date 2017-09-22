@@ -178,7 +178,11 @@ namespace Populus.GroupBot.Combat.Warrior
         {
             var builder = new BehaviourTreeBuilder();
             builder.Selector("Combat Behavior")
-                        .Splice(CombatLogicHandler.MeleeAttack(BotHandler))
+                        .Inverter("If Melee Attack Succeeds, Move On")
+                            .Splice(MeleeAttack(BotHandler))
+                        .End()
+                        .Condition("Not casting", t => BotHandler.CombatState.IsCasting)
+                        .Splice(CombatRotationTree())
                    .End();
             return builder.Build();
         }
@@ -188,9 +192,60 @@ namespace Populus.GroupBot.Combat.Warrior
             var builder = new BehaviourTreeBuilder();
             builder.Selector("OOC Behavior")
                         .Splice(OutOfCombatLogic.OutOfCombatHealthRegen(BotHandler))
+                        .Splice(OutOfCombatBuffsTree())
                         .Do("Follow Group Leader", t => OutOfCombatLogic.FollowGroupLeader(BotHandler))
                    .End();
             return builder.Build();
+        }
+
+        /// <summary>
+        /// Creates a behavior tree with the combat rotation for the warrior class
+        /// </summary>
+        /// <returns></returns>
+        protected virtual IBehaviourTreeNode CombatRotationTree()
+        {
+            var builder = new BehaviourTreeBuilder();
+            builder.Selector("Warrior Rotation")
+                        .Do("Battle Stance", t => SelfBuff(BATTLE_STANCE))
+                        .Do("Battle Shout", t => SelfBuff(BATTLE_SHOUT))        // We might not have the rage to do this until combat
+                        .Do("Heroic Strike", t => HeroicStrike(40f))
+                   .End();
+            return builder.Build();
+        }
+
+        /// <summary>
+        /// Creates a behavior tree that handles out of combat buffs for the warrior class
+        /// </summary>
+        /// <returns></returns>
+        protected virtual IBehaviourTreeNode OutOfCombatBuffsTree()
+        {
+            var builder = new BehaviourTreeBuilder();
+            builder.Selector("Warrior Buffs")
+                        .Do("Battle Stance", t => SelfBuff(BATTLE_STANCE))
+                        .Do("Battle Shout", t => GroupBuff(BATTLE_SHOUT))
+                   .End();
+            return builder.Build();
+        }
+
+        /// <summary>
+        /// Casts heroic strike at a certain rage level
+        /// </summary>
+        /// <param name="atRageLevel">At or above the rage level to cast Heroic Strike</param>
+        /// <returns></returns>
+        protected BehaviourTreeStatus HeroicStrike(float atRageLevel)
+        {
+            // If it's already prepared for the next melee swing, fail
+            if (mHeroicStrikePrepared)
+                return BehaviourTreeStatus.Failure;
+            // If we can't cast it, fail
+            if (!HasSpellAndCanCast(HEROIC_STRIKE))
+                return BehaviourTreeStatus.Failure;
+            // If we are not at or above the specified rage level, fail
+            if (BotHandler.BotOwner.PowerPercentage < atRageLevel)
+                return BehaviourTreeStatus.Failure;
+
+            CastHeroicStrike();
+            return BehaviourTreeStatus.Success;
         }
 
         //public override CombatActionResult DoOutOfCombatAction()
@@ -249,10 +304,9 @@ namespace Populus.GroupBot.Combat.Warrior
                 mHeroicStrikePrepared = false;
         }
 
-        protected void CastHeroicStrike()
+        private void CastHeroicStrike()
         {
             mHeroicStrikePrepared = true;
-            //Log.WriteLine(LogType.Debug, "Using HEROIC_STIRKE");
             BotHandler.CombatState.SpellCast(HEROIC_STRIKE);
         }
 

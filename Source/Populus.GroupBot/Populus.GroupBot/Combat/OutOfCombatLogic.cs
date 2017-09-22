@@ -99,8 +99,9 @@ namespace Populus.GroupBot.Combat
                 return BehaviourTreeStatus.Failure;
             }
 
-            // Use the food we have to eat
+            // Use the food we have to eat. Clear follow targets while we eat so we don't keep standing up
             handler.BotOwner.UseItem(handler.CombatHandler.GetFood());
+            handler.BotOwner.RemoveFollow();
             return BehaviourTreeStatus.Success;
         }
 
@@ -118,6 +119,7 @@ namespace Populus.GroupBot.Combat
 
             // Use the water we have to drink
             handler.BotOwner.UseItem(handler.CombatHandler.GetWater());
+            handler.BotOwner.RemoveFollow();
             return BehaviourTreeStatus.Success;
         }
 

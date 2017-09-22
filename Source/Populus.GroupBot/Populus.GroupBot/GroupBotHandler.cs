@@ -325,6 +325,12 @@ namespace Populus.GroupBot
                 .Permit(StateTriggers.Idle, Idle.Instance);
 
             mStateMachine.Configure(States.Combat.Instance)
+                .OnEntry(() =>
+                {
+                    // Remove follow target for range when combat starts
+                    if (!CombatHandler.IsMelee)
+                        BotOwner.RemoveFollow();
+                })
                 .Permit(StateTriggers.Idle, Idle.Instance);
         }
 
