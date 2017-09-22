@@ -1,4 +1,5 @@
-﻿using Populus.Core.World.Objects;
+﻿using FluentBehaviourTree;
+using Populus.Core.World.Objects;
 
 namespace Populus.GroupBot.Combat.Warrior
 {
@@ -21,57 +22,29 @@ namespace Populus.GroupBot.Combat.Warrior
 
         #region Private Methods
 
-        //protected override CombatActionResult DoFirstCombatAction(Unit unit)
-        //{
-        //    // Get in berserker stance if we are not already
-        //    if (!BotHandler.BotOwner.HasAura(BERSERKER_STANCE) && HasSpellAndCanCast(BERSERKER_STANCE))
-        //    {
-        //        BotHandler.CombatState.SpellCast(BotHandler.BotOwner, BERSERKER_STANCE);
-        //        // Continue with first combat action if we hit this
-        //        return CombatActionResult.ACTION_OK_CONTINUE_FIRST;
-        //    }
+        protected override IBehaviourTreeNode OutOfCombatBuffsTree()
+        {
+            var builder = new BehaviourTreeBuilder();
+            builder.Selector("Fury Warrior Buffs")
+                        .Do("Berserker Stance", t => SelfBuff(BERSERKER_STANCE))
+                        .Do("Battle Shout", t => GroupBuff(BATTLE_SHOUT))
+                   .End();
+            return builder.Build();
+        }
 
-        //    AttackMelee(unit);
-
-        //    return base.DoFirstCombatAction(unit);
-        //}
-
-        //protected override CombatActionResult DoNextCombatAction(Unit unit)
-        //{
-        //    // TODO: Build up fury warrior combat logic
-        //    AttackMelee(unit);
-
-        //    // Use execute if we can
-        //    if (unit.HealthPercentage < 20f && HasSpellAndCanCast(EXECUTE))
-        //    {
-        //        BotHandler.CombatState.SpellCast(EXECUTE);
-        //        return CombatActionResult.ACTION_OK;
-        //    }
-
-        //    // Use bloodthrist if off cooldown
-        //    if (HasSpellAndCanCast(BLOODTHIRST))
-        //    {
-        //        BotHandler.CombatState.SpellCast(BLOODTHIRST);
-        //        return CombatActionResult.ACTION_OK;
-        //    }
-
-        //    // Use whirlwind if off cooldown
-        //    if (HasSpellAndCanCast(WHIRLWIND))
-        //    {
-        //        BotHandler.CombatState.SpellCast(WHIRLWIND);
-        //        return CombatActionResult.ACTION_OK;
-        //    }
-
-        //    // Use overpower if it procced
-        //    if (mOverpowerProcced && HasSpellAndCanCast(OVERPOWER) && (BotHandler.BotOwner.CurrentPower <= 45 || (BotHandler.BotOwner.SpellIsOnCooldown(BLOODTHIRST) && BotHandler.BotOwner.SpellIsOnCooldown(WHIRLWIND))))
-        //    {
-        //        BotHandler.CombatState.SpellCast(OVERPOWER);
-        //        mOverpowerProcced = false;
-        //        return CombatActionResult.ACTION_OK;
-        //    }
-
-        //    return base.DoNextCombatAction(unit);
-        //}
+        protected override IBehaviourTreeNode CombatRotationTree()
+        {
+            var builder = new BehaviourTreeBuilder();
+            builder.Selector("Fury Warrior Rotation")
+                        .Do("Berserker Stance", t => SelfBuff(BERSERKER_STANCE))
+                        .Do("Battle Shout", t => SelfBuff(BATTLE_SHOUT))        // We might not have the rage to do this until combat
+                        .Do("Execute", t => Execute())
+                        .Do("Bloodthirst", t => CastMeleeSpell(BLOODTHIRST))
+                        .Do("Whirlwind", t => CastMeleeSpell(WHIRLWIND))
+                        .Do("Overpower", t=> Overpower())
+                   .End();
+            return builder.Build();
+        }
 
         protected override void CombatAttackUpdate(Bot bot, Core.World.Objects.Events.CombatAttackUpdateArgs eventArgs)
         {
@@ -85,6 +58,46 @@ namespace Populus.GroupBot.Combat.Warrior
 
             // process base
             base.CombatAttackUpdate(bot, eventArgs);
+        }
+
+        #endregion
+
+        #region Combat Behaviors
+
+        /// <summary>
+        /// Casts execute if we can use it
+        /// </summary>
+        /// <returns></returns>
+        private BehaviourTreeStatus Execute()
+        {
+            // If target health is not below 20%, fail
+            if (BotHandler.CombatState.CurrentTarget.HealthPercentage >= 20f)
+                return BehaviourTreeStatus.Failure;
+            return CastMeleeSpell(EXECUTE);
+        }
+
+        /// <summary>
+        /// Casts overpower if we can use it
+        /// </summary>
+        /// <returns></returns>
+        private BehaviourTreeStatus Overpower()
+        {
+            // If overpower has not procced, fail
+            if (!mOverpowerProcced)
+                return BehaviourTreeStatus.Failure;
+            // If conditions are not right, fail
+            if (!(BotHandler.BotOwner.CurrentPower <= 45 || (BotHandler.BotOwner.SpellIsOnCooldown(BLOODTHIRST) && BotHandler.BotOwner.SpellIsOnCooldown(WHIRLWIND))))
+                return BehaviourTreeStatus.Failure;
+            // If we are not within range
+            if (!IsInMeleeRange(BotHandler.CombatState.CurrentTarget))
+                return BehaviourTreeStatus.Failure;
+            // If we can't cast, fail
+            if (!HasSpellAndCanCast(OVERPOWER))
+                return BehaviourTreeStatus.Failure;
+
+            mOverpowerProcced = false;
+            BotHandler.CombatState.SpellCast(OVERPOWER);
+            return BehaviourTreeStatus.Success;
         }
 
         #endregion

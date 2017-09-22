@@ -423,6 +423,34 @@ namespace Populus.GroupBot.Combat
         }
 
         /// <summary>
+        /// Behavior that casts a spell that requires melee range
+        /// </summary>
+        /// <param name="spellId"></param>
+        /// <returns></returns>
+        protected BehaviourTreeStatus CastMeleeSpell(uint spellId)
+        {
+            // If we are not within range
+            if (!IsInMeleeRange(BotHandler.CombatState.CurrentTarget))
+                return BehaviourTreeStatus.Failure;
+            return CastSpell(spellId);
+        }
+
+        /// <summary>
+        /// Behavior that casts a spell on current target
+        /// </summary>
+        /// <param name="spellId"></param>
+        /// <returns></returns>
+        protected BehaviourTreeStatus CastSpell(uint spellId)
+        {
+            // If we can't cast it, fail
+            if (!HasSpellAndCanCast(spellId))
+                return BehaviourTreeStatus.Failure;
+
+            BotHandler.CombatState.SpellCast(spellId);
+            return BehaviourTreeStatus.Success;
+        }
+
+        /// <summary>
         /// Checks that a buff can be cast and is not already on the bot
         /// </summary>
         /// <param name="spellAndAura">Spell and aura to check</param>

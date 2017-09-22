@@ -247,7 +247,8 @@ namespace Populus.GroupBot.Combat.Warrior
             if (BotHandler.BotOwner.PowerPercentage < atRageLevel)
                 return BehaviourTreeStatus.Failure;
 
-            CastHeroicStrike();
+            mHeroicStrikePrepared = true;
+            BotHandler.CombatState.SpellCast(HEROIC_STRIKE);
             return BehaviourTreeStatus.Success;
         }
 
@@ -256,12 +257,6 @@ namespace Populus.GroupBot.Combat.Warrior
             // Reset heroic strike flag on each attack
             if (bot.Guid == BotHandler.BotOwner.Guid && eventArgs.AttackerGuid == BotHandler.BotOwner.Guid && mHeroicStrikePrepared)
                 mHeroicStrikePrepared = false;
-        }
-
-        private void CastHeroicStrike()
-        {
-            mHeroicStrikePrepared = true;
-            BotHandler.CombatState.SpellCast(HEROIC_STRIKE);
         }
 
         #endregion

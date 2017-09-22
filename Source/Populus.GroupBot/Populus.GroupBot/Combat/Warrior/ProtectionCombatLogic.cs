@@ -105,17 +105,10 @@ namespace Populus.GroupBot.Combat.Warrior
         {
             // Check if the target already has 3 stacks
             var sunderAura = BotHandler.CombatState.CurrentTarget.GetAuraForSpell(SUNDER_ARMOR);
-            if (sunderAura != null && sunderAura.Stacks >= 3)
-                return BehaviourTreeStatus.Failure;
-            // If not in melee range, fail
-            if (!IsInMeleeRange(BotHandler.CombatState.CurrentTarget))
-                return BehaviourTreeStatus.Failure;
-            // We cannot cast it, fail
-            if (!HasSpellAndCanCast(REVENGE))
+            if (sunderAura != null && sunderAura.Stacks >= stacks)
                 return BehaviourTreeStatus.Failure;
 
-            BotHandler.CombatState.SpellCast(SUNDER_ARMOR);
-            return BehaviourTreeStatus.Success;
+            return CastMeleeSpell(SUNDER_ARMOR);
         }
 
         #endregion
