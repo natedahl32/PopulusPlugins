@@ -1,4 +1,5 @@
-﻿using Populus.Core.Shared;
+﻿using FluentBehaviourTree;
+using Populus.Core.Shared;
 using Populus.Core.World.Objects;
 
 namespace Populus.GroupBot.Combat.Warrior
@@ -21,58 +22,27 @@ namespace Populus.GroupBot.Combat.Warrior
 
         #region Private Methods
 
-        //protected override CombatActionResult DoFirstCombatAction(Unit unit)
-        //{
-        //    // Get in defensive stance if we are not already
-        //    if (!BotHandler.BotOwner.HasAura(DEFENSIVE_STANCE) && HasSpellAndCanCast(DEFENSIVE_STANCE))
-        //    {
-        //        //Log.WriteLine(LogType.Debug, "Using DEFENSIVE_STANCE");
-        //        BotHandler.CombatState.SpellCast(BotHandler.BotOwner, DEFENSIVE_STANCE);
-        //        // Continue with first combat action if we hit this
-        //        return CombatActionResult.ACTION_OK_CONTINUE_FIRST;
-        //    }
+        protected override IBehaviourTreeNode CombatRotationTree()
+        {
+            var builder = new BehaviourTreeBuilder();
+            builder.Selector("Protection Warrior Rotation")
+                        .Do("Defensive Stance", t => SelfBuff(DEFENSIVE_STANCE))
+                        .Do("Bloodrage", t => Bloodrage())        // We might not have the rage to do this until combat
+                        .Do("Revenge", t => Revenge())
+                        .Do("Sunder Armors", t => SunderArmors(3))
+                   .End();
+            return builder.Build();
+        }
 
-        //    AttackMelee(unit);
-
-        //    return base.DoFirstCombatAction(unit);
-        //}
-
-        //protected override CombatActionResult DoNextCombatAction(Unit unit)
-        //{
-        //    // TODO: Build up prot warrior combat logic
-        //    AttackMelee(unit);
-
-        //    // Use bloodrage if it's available and we are below a certain amount of rage
-        //    if (!BotHandler.BotOwner.HasAura(BLOODRAGE) && BotHandler.BotOwner.CurrentPower < 20 && HasSpellAndCanCast(BLOODRAGE))
-        //    {
-        //        //Log.WriteLine(LogType.Debug, "Using BLOODRAGE");
-        //        BotHandler.CombatState.SpellCast(BotHandler.BotOwner, BLOODRAGE);
-        //        return CombatActionResult.ACTION_OK;
-        //    }
-
-        //    // If revenge procced, use that
-        //    if (mRevengeProcced && HasSpellAndCanCast(REVENGE) && IsInMeleeRange(unit))
-        //    {
-        //        //Log.WriteLine(LogType.Debug, "Using REVENGE");
-        //        BotHandler.CombatState.SpellCast(REVENGE);
-        //        mRevengeProcced = false;
-        //        return CombatActionResult.ACTION_OK;
-        //    }
-
-        //    // Get stacks of sunder armor up on current target
-        //    if (unit.GetAuraForSpell(SUNDER_ARMOR) == null || 
-        //        unit.GetAuraForSpell(SUNDER_ARMOR).Stacks < 3)
-        //    {
-        //        if (HasSpellAndCanCast(SUNDER_ARMOR) && IsInMeleeRange(unit))
-        //        {
-        //            //Log.WriteLine(LogType.Debug, "Using SUNDER_ARMOR");
-        //            BotHandler.CombatState.SpellCast(SUNDER_ARMOR);
-        //            return CombatActionResult.ACTION_OK;
-        //        }
-        //    }
-
-        //    return base.DoNextCombatAction(unit);
-        //}
+        protected override IBehaviourTreeNode OutOfCombatBuffsTree()
+        {
+            var builder = new BehaviourTreeBuilder();
+            builder.Selector("Protection Warrior Buffs")
+                        .Do("Defensive Stance", t => SelfBuff(DEFENSIVE_STANCE))
+                        .Do("Battle Shout", t => GroupBuff(BATTLE_SHOUT))
+                   .End();
+            return builder.Build();
+        }
 
         protected override void CombatAttackUpdate(Bot bot, Core.World.Objects.Events.CombatAttackUpdateArgs eventArgs)
         {
@@ -87,6 +57,65 @@ namespace Populus.GroupBot.Combat.Warrior
 
             // process base
             base.CombatAttackUpdate(bot, eventArgs);
+        }
+
+        #endregion
+
+        #region Combat Behaviors
+
+        /// <summary>
+        /// Casts bloodrage if we can use it
+        /// </summary>
+        /// <returns></returns>
+        private BehaviourTreeStatus Bloodrage()
+        {
+            // Only use bloodrage if we are below 20 rage
+            if (BotHandler.BotOwner.CurrentPower >= 20)
+                return BehaviourTreeStatus.Failure;
+
+            return SelfBuff(BLOODRAGE);
+        }
+
+        /// <summary>
+        /// Casts revenge if we can use it
+        /// </summary>
+        /// <returns></returns>
+        private BehaviourTreeStatus Revenge()
+        {
+            // Not available, fail
+            if (!mRevengeProcced)
+                return BehaviourTreeStatus.Failure;
+            // If not in melee range, fail
+            if (!IsInMeleeRange(BotHandler.CombatState.CurrentTarget))
+                return BehaviourTreeStatus.Failure;
+            // We cannot cast it, fail
+            if (!HasSpellAndCanCast(REVENGE))
+                return BehaviourTreeStatus.Failure;
+
+            BotHandler.CombatState.SpellCast(REVENGE);
+            mRevengeProcced = false;
+            return BehaviourTreeStatus.Success;
+        }
+
+        /// <summary>
+        /// Gets sunder armor stacks up on the current target
+        /// </summary>
+        /// <returns></returns>
+        private BehaviourTreeStatus SunderArmors(int stacks)
+        {
+            // Check if the target already has 3 stacks
+            var sunderAura = BotHandler.CombatState.CurrentTarget.GetAuraForSpell(SUNDER_ARMOR);
+            if (sunderAura != null && sunderAura.Stacks >= 3)
+                return BehaviourTreeStatus.Failure;
+            // If not in melee range, fail
+            if (!IsInMeleeRange(BotHandler.CombatState.CurrentTarget))
+                return BehaviourTreeStatus.Failure;
+            // We cannot cast it, fail
+            if (!HasSpellAndCanCast(REVENGE))
+                return BehaviourTreeStatus.Failure;
+
+            BotHandler.CombatState.SpellCast(SUNDER_ARMOR);
+            return BehaviourTreeStatus.Success;
         }
 
         #endregion

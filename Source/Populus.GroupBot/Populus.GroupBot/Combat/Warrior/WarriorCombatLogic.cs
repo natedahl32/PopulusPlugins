@@ -237,6 +237,9 @@ namespace Populus.GroupBot.Combat.Warrior
             // If it's already prepared for the next melee swing, fail
             if (mHeroicStrikePrepared)
                 return BehaviourTreeStatus.Failure;
+            // If we are not within range
+            if (!IsInMeleeRange(BotHandler.CombatState.CurrentTarget))
+                return BehaviourTreeStatus.Failure;
             // If we can't cast it, fail
             if (!HasSpellAndCanCast(HEROIC_STRIKE))
                 return BehaviourTreeStatus.Failure;
@@ -247,55 +250,6 @@ namespace Populus.GroupBot.Combat.Warrior
             CastHeroicStrike();
             return BehaviourTreeStatus.Success;
         }
-
-        //public override CombatActionResult DoOutOfCombatAction()
-        //{
-        //    // If we are not in battle stance, get in it
-        //    if (HasSpellAndCanCast(BATTLE_STANCE) && !BotHandler.BotOwner.HasAura(BATTLE_STANCE))
-        //    {
-        //        BotHandler.CombatState.SpellCast(BotHandler.BotOwner, BATTLE_STANCE);
-        //        // Continue with first combat action if we hit this
-        //        return CombatActionResult.ACTION_OK;
-        //    }
-
-        //    // If we don't have Battle Shout on us, cast it
-        //    if (HasSpellAndCanCast(BATTLE_SHOUT) && !BotHandler.BotOwner.HasAura(BATTLE_SHOUT))
-        //    {
-        //        BotHandler.CombatState.SpellCast(BotHandler.BotOwner, BATTLE_SHOUT);
-        //        // Continue with first combat action if we hit this
-        //        return CombatActionResult.ACTION_OK;
-        //    }
-
-        //    return base.DoOutOfCombatAction();
-        //}
-
-        //protected override CombatActionResult DoFirstCombatAction(Unit unit)
-        //{
-        //    AttackMelee(unit);
-
-        //    // TOOD: Fix charge, this break moving into melee
-        //    //if (HasSpellAndCanCast(CHARGE))
-        //    //{
-        //    //    BotHandler.CombatState.SpellCast(CHARGE);
-        //    //    return CombatActionResult.ACTION_OK;
-        //    //}
-
-        //    return base.DoFirstCombatAction(unit);
-        //}
-
-        //protected override CombatActionResult DoNextCombatAction(Unit unit)
-        //{
-        //    AttackMelee(unit);
-
-        //    // Heroic strike is excess rage spender
-        //    if (!mHeroicStrikePrepared && IsInMeleeRange(unit) && HasSpellAndCanCast(HEROIC_STRIKE) && BotHandler.BotOwner.CurrentPower >= mUseHeroicStrikeRageThreshold)
-        //    {
-        //        CastHeroicStrike();
-        //        return CombatActionResult.ACTION_OK;
-        //    }
-
-        //    return base.DoNextCombatAction(unit);
-        //}
 
         protected virtual void CombatAttackUpdate(Bot bot, Core.World.Objects.Events.CombatAttackUpdateArgs eventArgs)
         {
