@@ -188,6 +188,7 @@ namespace Populus.GroupBot.Combat.Warrior
             var builder = new BehaviourTreeBuilder();
             builder.Selector("OOC Behavior")
                         .Splice(OutOfCombatLogic.OutOfCombatHealthRegen(BotHandler))
+                        .Do("Follow Group Leader", t => OutOfCombatLogic.FollowGroupLeader(BotHandler))
                    .End();
             return builder.Build();
         }

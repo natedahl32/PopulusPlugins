@@ -161,6 +161,7 @@ namespace Populus.GroupBot.Combat.Mage
             builder.Selector("Combat Behavior")
                         .Condition("Not casting", t => BotHandler.CombatState.IsCasting)
                         .Do("Cast Fireball", t => CastFireball())
+                        .Splice(WandAttack(BotHandler))
                    .End();
             return builder.Build();
         }
@@ -173,6 +174,7 @@ namespace Populus.GroupBot.Combat.Mage
                             .Splice(OutOfCombatLogic.OutOfCombatHealthRegen(BotHandler))
                             .Splice(OutOfCombatLogic.OutOfCombatManaRegen(BotHandler))
                         .End()
+                        .Do("Follow Group Leader", t => OutOfCombatLogic.FollowGroupLeader(BotHandler))
                    .End();
             return builder.Build();
         }

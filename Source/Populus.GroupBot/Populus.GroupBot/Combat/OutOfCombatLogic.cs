@@ -44,6 +44,15 @@ namespace Populus.GroupBot.Combat
 
         #region Nodes
 
+        internal static BehaviourTreeStatus FollowGroupLeader(GroupBotHandler handler)
+        {
+            if (handler.Group == null) return BehaviourTreeStatus.Failure;
+            if (handler.BotOwner.FollowTarget != null && handler.Group.Leader.Guid == handler.BotOwner.FollowTarget.Guid) return BehaviourTreeStatus.Failure;
+
+            handler.FollowGroupLeader();
+            return BehaviourTreeStatus.Success;
+        }
+
         private static BehaviourTreeStatus CheckHealthLevel(GroupBotHandler handler)
         {
             if (handler.BotOwner.HealthPercentage <= handler.CombatHandler.OutOfCombatHealthRegenLevel)

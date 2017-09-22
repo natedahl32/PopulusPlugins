@@ -17,6 +17,7 @@ namespace Populus.CombatManager
 
         private const float MAX_CAST_DISTANCE = 80.0f;
         private const float CAST_RANGE_BUFFER = 1.5f;
+        public const uint WAND_SHOOT = 5019;
 
         // holds the current objects marked with raid targets
         private ConcurrentDictionary<RaidTargetMarkers, WoWGuid> mMarkedTargets = new ConcurrentDictionary<RaidTargetMarkers, WoWGuid>();
@@ -32,8 +33,8 @@ namespace Populus.CombatManager
         // for the current spell to be cast before it can be used.
         private uint mQueuedSpellId = 0;
 
-        // Flag that holds whether or not the bot is melee attacking
-        private bool mIsMeleeAttacking = false;
+        // Flag that holds whether or not the bot is attacking
+        private bool mIsAttacking = false;
 
         #endregion
 
@@ -101,11 +102,11 @@ namespace Populus.CombatManager
         }
 
         /// <summary>
-        /// Gets whether or not the bot is currently melee attacking
+        /// Gets whether or not the bot is currently attacking
         /// </summary>
-        public bool IsMeleeAttacking
+        public bool IsAttacking
         {
-            get { return mIsMeleeAttacking; }
+            get { return mIsAttacking; }
         }
 
         #endregion
@@ -202,6 +203,9 @@ namespace Populus.CombatManager
             {
                 if (spell.CastTime > 0 || spell.CastingTimeIndex > 1)
                     mCastingSpellId = spellId;
+                // If the spell we are casting is WAND_SHOOT, start attacking flag
+                if (spellId == WAND_SHOOT)
+                    StartAttack();
             }
             ActionQueue.Add(new CastSpellAbility(mBotOwner, target, spellId));
         }
@@ -222,7 +226,7 @@ namespace Populus.CombatManager
         public void AddToAggroList(Unit unit)
         {
             // Log if this starts combat
-            mBotOwner.Logger.Log($"Unit guid {unit.Guid} added to aggro. Combat is started!");
+            mBotOwner.Logger.Log($"Unit guid {unit.Guid} added to aggro.");
             if (!IsInCombat)
                 mBotOwner.Logger.Log("Combat is now started due to mob in my aggro list!");
             // Shouldn't need to check if already exists, will update if it does
@@ -312,19 +316,19 @@ namespace Populus.CombatManager
         }
 
         /// <summary>
-        /// Turns on the melee attacking flag
+        /// Turns on the attacking flag
         /// </summary>
         internal void StartAttack()
         {
-            mIsMeleeAttacking = true;
+            mIsAttacking = true;
         }
 
         /// <summary>
-        /// Sets the melee attacking flag to false
+        /// Sets the attacking flag to false
         /// </summary>
         internal void StopAttack()
         {
-            mIsMeleeAttacking = false;
+            mIsAttacking = false;
         }
 
         #endregion

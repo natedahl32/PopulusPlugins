@@ -363,7 +363,7 @@ namespace Populus.GroupBot.Combat
             if (handler.CombatState.CurrentTarget == null) return BehaviourTreeStatus.Failure;
 
             // If we are not already melee attacking, start
-            if (!handler.CombatState.IsMeleeAttacking)
+            if (!handler.CombatState.IsAttacking)
                 handler.BotOwner.Attack(handler.CombatState.CurrentTarget.Guid);
 
             return BehaviourTreeStatus.Success;
@@ -385,6 +385,40 @@ namespace Populus.GroupBot.Combat
             if (distance > MELEE_RANGE_DISTANCE)
                 return BehaviourTreeStatus.Running;
             
+            return BehaviourTreeStatus.Success;
+        }
+
+        /// <summary>
+        /// Creates a behavior tree that wand attacks the current target
+        /// </summary>
+        /// <param name="handler"></param>
+        /// <returns></returns>
+        internal static IBehaviourTreeNode WandAttack(GroupBotHandler handler)
+        {
+            // Should fail if we do not have a wand to attack with
+            var builder = new BehaviourTreeBuilder();
+            builder.Sequence("Wand Attack")
+                        .Do("Has Wand to Attack With", t => HasWandToAttackWith(handler))
+                        .Do("Start Wand Attack", t => StartWanding(handler))
+                   .End();
+            return builder.Build();
+        }
+
+        private static BehaviourTreeStatus HasWandToAttackWith(GroupBotHandler handler)
+        {
+            if (!handler.BotOwner.CanUseWands || !handler.BotOwner.HasWandEquipped)
+                return BehaviourTreeStatus.Failure;
+            return BehaviourTreeStatus.Success;
+        }
+
+        private static BehaviourTreeStatus StartWanding(GroupBotHandler handler)
+        {
+            if (handler.CombatState.CurrentTarget == null) return BehaviourTreeStatus.Failure;
+
+            // If we are not already attacking, start
+            if (!handler.CombatState.IsAttacking)
+                handler.CombatState.SpellCast(WAND_SHOOT);
+
             return BehaviourTreeStatus.Success;
         }
 
