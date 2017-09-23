@@ -1,6 +1,7 @@
 ﻿using FluentBehaviourTree;
 using Populus.Core.World.Objects;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Populus.GroupBot.Combat.Mage
 {
@@ -174,9 +175,65 @@ namespace Populus.GroupBot.Combat.Mage
                             .Splice(OutOfCombatLogic.OutOfCombatHealthRegen(BotHandler))
                             .Splice(OutOfCombatLogic.OutOfCombatManaRegen(BotHandler))
                         .End()
+                        .Splice(OutOfCombatBuffsTree())
                         .Do("Follow Group Leader", t => OutOfCombatLogic.FollowGroupLeader(BotHandler))
                    .End();
             return builder.Build();
+        }
+
+        /// <summary>
+        /// Creates a behavior tree that handles out of combat buffs for the warrior class
+        /// </summary>
+        /// <returns></returns>
+        protected virtual IBehaviourTreeNode OutOfCombatBuffsTree()
+        {
+            var builder = new BehaviourTreeBuilder();
+            builder.Selector("Mage Buffs")
+                        .Do("Arcane Brilliance", t => GroupBuff(ARCANE_BRILLIANCE))
+                        .Do("Arcane Intellect", t => ArcaneIntellect())
+                        .Inverter("Invert Armor Buff")      // Armor buff will return success if we already have it or cannot cast it
+                            .Splice(ArmorBuff())
+                        .End()
+                   .End();
+            return builder.Build();
+        }
+
+        /// <summary>
+        /// Creates a behavior tree that handles the armor buff for a mage
+        /// </summary>
+        /// <returns></returns>
+        protected virtual IBehaviourTreeNode ArmorBuff()
+        {
+            var builder = new BehaviourTreeBuilder();
+            builder.Selector("Armor Buff")
+                        .Do("Mage Armor", t => CheckForAndCastArmor(MAGE_ARMOR))
+                        .Do("Ice Armor", t => CheckForAndCastArmor(ICE_ARMOR))
+                        .Do("Frost Armor", t => CheckForAndCastArmor(FROST_ARMOR))
+                   .End();
+            return builder.Build();
+        }
+
+        /// <summary>
+        /// Checks for an armor spell buff and if has the aura, returns success. Fails if
+        /// the buff is not found and we cannot cast the buff.
+        /// </summary>
+        /// <param name="armorSpell">Armor spell to check</param>
+        /// <returns></returns>
+        protected BehaviourTreeStatus CheckForAndCastArmor(uint armorSpell)
+        {
+            // If we already have the armor, succeed
+            if (BotHandler.BotOwner.HasAura(armorSpell))
+                return BehaviourTreeStatus.Success;
+
+            // If we have the spell and can cast it, succeed
+            if (HasSpellAndCanCast(armorSpell))
+            {
+                BotHandler.CombatState.SpellCast(armorSpell);
+                return BehaviourTreeStatus.Success;
+            }
+
+            // If we can't cast we fail
+            return BehaviourTreeStatus.Failure;
         }
 
         private BehaviourTreeStatus CastFireball()
@@ -187,6 +244,29 @@ namespace Populus.GroupBot.Combat.Mage
                 return BehaviourTreeStatus.Success;
             }
             return BehaviourTreeStatus.Failure;
+        }
+
+        private BehaviourTreeStatus ArcaneIntellect()
+        {
+            // If we are not in a group, self buff instead
+            if (BotHandler.Group == null)
+                if (!BotHandler.BotOwner.HasAura(ARCANE_BRILLIANCE))
+                    return SelfBuff(ARCANE_INTELLECT);
+
+            // If does not have spell or cannot cast, fail
+            if (!HasSpellAndCanCast(ARCANE_INTELLECT))
+                return BehaviourTreeStatus.Failure;
+            // If everyone in the group already has the aura
+            if (!BotHandler.Group.Members.Any(m => !m.HasAura((ushort)ARCANE_INTELLECT) && !m.HasAura((ushort)ARCANE_BRILLIANCE)))
+                return BehaviourTreeStatus.Failure;
+
+            // Get the first member in the group that needs the aura
+            var needs = BotHandler.Group.Members.Where(m => !m.HasAura((ushort)ARCANE_INTELLECT) && !m.HasAura((ushort)ARCANE_BRILLIANCE)).FirstOrDefault();
+            if (needs == null)
+                return BehaviourTreeStatus.Failure;
+
+            BotHandler.CombatState.SpellCast(BotHandler.BotOwner.GetPlayerByGuid(needs.Guid), ARCANE_INTELLECT);
+            return BehaviourTreeStatus.Success;
         }
 
         //protected override CombatActionResult DoFirstCombatAction(Unit unit)
