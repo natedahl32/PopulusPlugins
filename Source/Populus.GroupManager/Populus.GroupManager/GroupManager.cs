@@ -1,6 +1,8 @@
 ﻿using Populus.Core.Plugins;
+using Populus.Core.Shared;
 using Populus.Core.World.Objects;
 using Populus.Core.World.Objects.Events;
+using Populus.Core.World.Spells;
 using System.Linq;
 using static Populus.Core.World.Objects.Bot;
 
@@ -14,6 +16,8 @@ namespace Populus.GroupManager
         #region Declarations
 
         // handlers
+        BotEventDelegate<WoWGuid> objectUpdated = null;
+        BotEventDelegate<AuraHolder> auraDurationUpdated = null;
         BotEventDelegate<MovementUpdateEventArgs> objectMovementHandler = null;
         BotEventDelegate<GroupMemberUpdateEventArgs> groupMemberUpdateHandler = null;
         BotEventDelegate<GroupListEventArgs> groupListHandler = null;
@@ -128,11 +132,39 @@ namespace Populus.GroupManager
                     group.ChangeLeader(args.LeaderName);
             };
             Bot.GroupLeaderChange += groupLeaderChangeHandler;
+
+            // Handle aura duration being updated
+            auraDurationUpdated = (bot, args) =>
+            {
+                Group group = mGroupsCollection.GetCharacterGroup(bot.Guid);
+                if (group != null)
+                {
+                    var member = group.GetMember(bot.Guid);
+                    if (member != null)
+                        member.UpdateAura(args);
+                }
+            };
+            Bot.AuraDurationUpdated += auraDurationUpdated;
+
+            // Handle object updates if they are in our group
+            objectUpdated = (bot, args) =>
+            {
+                Group group = mGroupsCollection.GetCharacterGroup(bot.Guid);
+                if (group != null)
+                {
+                    var memberByGuid = group.GetMember(args);
+                    if (memberByGuid != null)
+                        memberByGuid.UpdateFromObject(bot);
+                }
+            };
+            Bot.ObjectUpdated += objectUpdated;
         }
 
         public override void Unload()
         {
             // Remove handlers to avoid memory leaks
+            Bot.ObjectUpdated -= objectUpdated;
+            Bot.AuraDurationUpdated -= auraDurationUpdated;
             Bot.GroupLeaderChange -= groupLeaderChangeHandler;
             Bot.GroupDisbanded -= disbandHandler;
             Bot.GroupUninvite -= disbandHandler;

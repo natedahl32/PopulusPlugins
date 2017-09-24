@@ -7,37 +7,60 @@ namespace Populus.GroupBot.Combat
         #region Sub Trees
 
         /// <summary>
-        /// Creates a behavior tree node that regenerates health out of combat. Fails if health cannot or should not
-        /// be regenerated out of combat.
+        /// This action handles out of combat health regen for the bot. If it succeeds, the bot is eating to regen health.
+        /// If it fails, the bot either cannot or should not regenerate health.
         /// </summary>
         /// <returns></returns>
-        internal static IBehaviourTreeNode OutOfCombatHealthRegen(GroupBotHandler handler)
+        internal static BehaviourTreeStatus OutOfCombatHealthRegen(GroupBotHandler handler)
         {
-            // Should fail if we do not or can not regenreate health
-            var builder = new BehaviourTreeBuilder();
-            builder.Sequence("Out of Combat Health Regen")
-                        .Do("Check Health Level", t => CheckHealthLevel(handler))
-                        .Do("Does bot have food", t => CheckForFood(handler))
-                        .Do("Eat food", t => EatFood(handler))
-                   .End();
-            return builder.Build();
+            // If we are already eating and not at full health yet, keep eating
+            if (handler.BotOwner.IsEating && handler.BotOwner.HealthPercentage < 100f)
+                return BehaviourTreeStatus.Running;
+
+            // If the health level of the bot is not below the threshold, fail
+            if (handler.BotOwner.HealthPercentage > handler.CombatHandler.OutOfCombatHealthRegenLevel)
+                return BehaviourTreeStatus.Failure;
+
+            // If the bot does not have food, create some food and fail
+            if (!handler.CombatHandler.HasFood)
+            {
+                handler.CreateFood();
+                return BehaviourTreeStatus.Failure;
+            }
+
+            // Time to eat! Make sure to remove follow so we don't get up prematurely
+            handler.BotOwner.UseItem(handler.CombatHandler.GetFood());
+            handler.BotOwner.RemoveFollow();
+            return BehaviourTreeStatus.Success;
         }
 
         /// <summary>
-        /// Creates a behavior tree node that regenerates mana out of combat. Fails if mana cannot or should not
-        /// be regenerated out of combat.
+        /// Creates a behavior tree node that regenerates mana out of combat. 
+        /// Fails if mana cannot or should not be regenerated out of combat.
+        /// Succeeds or Running if mana is currently be restored.
         /// </summary>
         /// <returns></returns>
-        internal static IBehaviourTreeNode OutOfCombatManaRegen(GroupBotHandler handler)
+        internal static BehaviourTreeStatus OutOfCombatManaRegen(GroupBotHandler handler)
         {
-            // Should fail if we do not or can not regenreate mana
-            var builder = new BehaviourTreeBuilder();
-            builder.Sequence("Out of Combat Mana Regen")
-                        .Do("Check Mana Level", t => CheckManaLevel(handler))
-                        .Do("Does bot have water", t => CheckForWater(handler))
-                        .Do("Drink water", t => DrinkWater(handler))
-                   .End();
-            return builder.Build();
+            // If we are already drinking and not at full mana yet, keep drinking
+            if (handler.BotOwner.IsDrinking && handler.BotOwner.PowerPercentage < 100f)
+                return BehaviourTreeStatus.Running;
+
+            // If the mana level of the bot is not below the threshold, fail
+            if (handler.BotOwner.PowerPercentage > handler.CombatHandler.OutOfCombatManaRegenLevel)
+                return BehaviourTreeStatus.Failure;
+
+            // If the bot does not have water, create some water and fail
+            if (!handler.CombatHandler.HasWater)
+            {
+                handler.CreateWater();
+                return BehaviourTreeStatus.Failure;
+            }
+
+            // Time to drink! Make sure to remove follow so we don't get up prematurely
+            handler.BotOwner.UseItem(handler.CombatHandler.GetWater());
+            handler.BotOwner.RemoveFollow();
+            return BehaviourTreeStatus.Success;
         }
 
         #endregion
@@ -52,77 +75,7 @@ namespace Populus.GroupBot.Combat
             handler.FollowGroupLeader();
             return BehaviourTreeStatus.Success;
         }
-
-        private static BehaviourTreeStatus CheckHealthLevel(GroupBotHandler handler)
-        {
-            if (handler.BotOwner.HealthPercentage <= handler.CombatHandler.OutOfCombatHealthRegenLevel)
-                return BehaviourTreeStatus.Success;
-            return BehaviourTreeStatus.Failure;
-        }
-
-        private static BehaviourTreeStatus CheckManaLevel(GroupBotHandler handler)
-        {
-            if (handler.BotOwner.PowerPercentage <= handler.CombatHandler.OutOfCombatManaRegenLevel)
-                return BehaviourTreeStatus.Success;
-            return BehaviourTreeStatus.Failure;
-        }
-
-        private static BehaviourTreeStatus CheckForFood(GroupBotHandler handler)
-        {
-            if (handler.CombatHandler.HasFood)
-                return BehaviourTreeStatus.Success;
-
-            // No food, so summon some but return failure
-            handler.CreateFood();
-            return BehaviourTreeStatus.Failure;
-        }
-
-        private static BehaviourTreeStatus CheckForWater(GroupBotHandler handler)
-        {
-            if (handler.CombatHandler.HasWater)
-                return BehaviourTreeStatus.Success;
-
-            // No food, so summon some but return failure
-            handler.CreateWater();
-            return BehaviourTreeStatus.Failure;
-        }
-
-        private static BehaviourTreeStatus EatFood(GroupBotHandler handler)
-        {
-            // If we are currently eating, we don't need to eat anymore
-            if (handler.BotOwner.IsEating)
-            {
-                // If we don't have full health yet, keep eating
-                if (handler.BotOwner.HealthPercentage < 100) return BehaviourTreeStatus.Running;
-
-                // Fail if we are done eating
-                return BehaviourTreeStatus.Failure;
-            }
-
-            // Use the food we have to eat. Clear follow targets while we eat so we don't keep standing up
-            handler.BotOwner.UseItem(handler.CombatHandler.GetFood());
-            handler.BotOwner.RemoveFollow();
-            return BehaviourTreeStatus.Success;
-        }
-
-        private static BehaviourTreeStatus DrinkWater(GroupBotHandler handler)
-        {
-            // If we are currently drinking, we don't need to drink anymore
-            if (handler.BotOwner.IsDrinking)
-            {
-                // If we don't have full mana yet, keep drinking
-                if (handler.BotOwner.PowerPercentage < 100) return BehaviourTreeStatus.Running;
-
-                // Fail if we are done drinking
-                return BehaviourTreeStatus.Failure;
-            }
-
-            // Use the water we have to drink
-            handler.BotOwner.UseItem(handler.CombatHandler.GetWater());
-            handler.BotOwner.RemoveFollow();
-            return BehaviourTreeStatus.Success;
-        }
-
+        
         #endregion
     }
 }

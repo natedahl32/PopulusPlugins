@@ -284,6 +284,9 @@ namespace Populus.GroupBot.Combat
             if (spell == null)
                 return false;
 
+            // Do we even have this spell?
+            if (!BotHandler.BotOwner.HasSpell((ushort)spellId)) return false;
+
             // Is it on cooldown?
             if (BotHandler.BotOwner.SpellIsOnCooldown(spellId)) return false;
 

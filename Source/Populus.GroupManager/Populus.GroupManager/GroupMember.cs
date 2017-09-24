@@ -1,6 +1,8 @@
 ﻿using Populus.Core.Constants;
 using Populus.Core.Shared;
+using Populus.Core.World.Objects;
 using Populus.Core.World.Objects.Events;
+using Populus.Core.World.Spells;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,6 +17,9 @@ namespace Populus.GroupManager
 
         // Contains pet data for this group member
         private GroupMember mPet;
+        // Contains aura data for this group member
+        private List<ushort> mAuraIds = new List<ushort>();
+        private object mAuraLock = new object();
 
         #endregion
 
@@ -23,6 +28,22 @@ namespace Populus.GroupManager
         public GroupMember()
         {
             AuraIds = new List<ushort>();
+        }
+
+        public GroupMember(Bot bot) : this()
+        {
+            AuraIds = bot.Auras.Select(a => (ushort)a.Spell.SpellId).ToList();
+            Guid = bot.Guid;
+            Name = bot.Name;
+            IsOnline = true;
+            CurrentHealth = (ushort)bot.CurrentHealth;
+            MaxHealth = (ushort)bot.MaxHealth;
+            PowerType = bot.PowerType;
+            CurrentPower = (ushort)bot.CurrentPower;
+            MaxPower = (ushort)bot.MaximumPower;
+            Level = (ushort)bot.Level;
+            MapId = bot.MapId;
+            Position = bot.Position;
         }
 
         #endregion
@@ -142,7 +163,15 @@ namespace Populus.GroupManager
         /// <summary>
         /// List of all aura ids this group member has
         /// </summary>
-        public IEnumerable<ushort> AuraIds { get; private set; }
+        public IEnumerable<ushort> AuraIds
+        {
+            get { return mAuraIds; }
+            private set
+            {
+                lock(mAuraLock)
+                    mAuraIds = value.ToList();
+            }
+        }
 
         /// <summary>
         /// Gets the pet this group member controls. Null if no pet
@@ -160,7 +189,30 @@ namespace Populus.GroupManager
         /// <returns></returns>
         public bool HasAura(ushort auraId)
         {
-            return AuraIds.Contains(auraId);
+            lock (mAuraLock)
+                return AuraIds.Contains(auraId);
+        }
+
+        /// <summary>
+        /// Updates an aura from a holder
+        /// </summary>
+        /// <param name="aura"></param>
+        public void UpdateAura(AuraHolder aura)
+        {
+            lock (mAuraLock)
+            {
+                // If we do not have this aura, add it if the duration is greater than 0
+                if (!mAuraIds.Contains((ushort)aura.Spell.SpellId))
+                {
+                    if (aura.Duration > 0)
+                        mAuraIds.Add((ushort)aura.Spell.SpellId);
+                }
+                else
+                {
+                    if (aura.Duration <= 0)
+                        mAuraIds.Remove((ushort)aura.Spell.SpellId);
+                }
+            }
         }
 
         /// <summary>
@@ -197,6 +249,25 @@ namespace Populus.GroupManager
         }
 
         /// <summary>
+        /// Objects the group member data for this bot from an object. Called when an object is updated
+        /// </summary>
+        internal void UpdateFromObject(Bot bot)
+        {
+            var player = bot.GetPlayerByGuid(Guid);
+            CurrentHealth = (ushort)player.CurrentHealth;
+            MaxHealth = (ushort)player.MaxHealth;
+            PowerType = player.PowerType;
+            CurrentPower = (ushort)player.CurrentPower;
+            MaxPower = (ushort)player.MaximumPower;
+            Level = (ushort)player.Level;
+            // Zone id and MapId ????
+            Position = player.Position;
+            AuraIds = player.Auras.Select(a => (ushort)a.Spell.SpellId).ToList();
+
+            // Pet data ????
+        }
+
+        /// <summary>
         /// Updates the group member data from an event
         /// </summary>
         /// <param name="args"></param>
@@ -228,7 +299,8 @@ namespace Populus.GroupManager
             if (args.Position != null)
                 Position = args.Position;
             if (args.AuraIds != null)
-                AuraIds = args.AuraIds;
+                lock(mAuraLock)
+                    AuraIds = args.AuraIds;
 
             // Pets
             if (args.PetGuid != null)

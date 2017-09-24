@@ -160,8 +160,9 @@ namespace Populus.GroupBot.Combat.Mage
         {
             var builder = new BehaviourTreeBuilder();
             builder.Selector("Combat Behavior")
-                        .Condition("Not casting", t => BotHandler.CombatState.IsCasting)
-                        .Do("Cast Fireball", t => CastFireball())
+                        .Do("Is Casting", t => BotHandler.CombatState.IsCasting ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
+                        .Do("Cast Frostbolt", t => CastSpell(FROSTBOLT))
+                        .Do("Cast Fireball", t => CastSpell(FIREBALL))
                         .Splice(WandAttack(BotHandler))
                    .End();
             return builder.Build();
@@ -171,9 +172,10 @@ namespace Populus.GroupBot.Combat.Mage
         {
             var builder = new BehaviourTreeBuilder();
             builder.Selector("OOC Behavior")
-                        .Parallel("Eat and Drink", 2, 2)    // Run eat and drink in paralell until both either fail or succeed
-                            .Splice(OutOfCombatLogic.OutOfCombatHealthRegen(BotHandler))
-                            .Splice(OutOfCombatLogic.OutOfCombatManaRegen(BotHandler))
+                        .Do("Is Casting", t => BotHandler.CombatState.IsCasting ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
+                        .Parallel("Eat and Drink", 2, 2)    // Run eat and drink in paralell until both fail
+                            .Do("Eat", t => OutOfCombatLogic.OutOfCombatHealthRegen(BotHandler))
+                            .Do("Drink", t => OutOfCombatLogic.OutOfCombatManaRegen(BotHandler))
                         .End()
                         .Splice(OutOfCombatBuffsTree())
                         .Do("Follow Group Leader", t => OutOfCombatLogic.FollowGroupLeader(BotHandler))
@@ -191,9 +193,8 @@ namespace Populus.GroupBot.Combat.Mage
             builder.Selector("Mage Buffs")
                         .Do("Arcane Brilliance", t => GroupBuff(ARCANE_BRILLIANCE))
                         .Do("Arcane Intellect", t => ArcaneIntellect())
-                        .Inverter("Invert Armor Buff")      // Armor buff will return success if we already have it or cannot cast it
-                            .Splice(ArmorBuff())
-                        .End()
+                        .Splice(ArmorBuff())
+                        .Splice(SummonManaGems())
                    .End();
             return builder.Build();
         }
@@ -214,6 +215,50 @@ namespace Populus.GroupBot.Combat.Mage
         }
 
         /// <summary>
+        /// Creates a behavior tree that handles the mage summoning mana gems
+        /// </summary>
+        /// <returns></returns>
+        protected virtual IBehaviourTreeNode SummonManaGems()
+        {
+            var builder = new BehaviourTreeBuilder();
+            builder.Selector("Summon Mana Gems")
+                        .Do("Mana Ruby", t => CheckForAndCastManaGem(Spells.CONJURE_MANA_GEM_4))
+                        .Do("Mana Citrine", t => CheckForAndCastManaGem(Spells.CONJURE_MANA_GEM_3))
+                        .Do("Mana Jade", t => CheckForAndCastManaGem(Spells.CONJURE_MANA_GEM_2))
+                        .Do("Mana Agate", t => CheckForAndCastManaGem(Spells.CONJURE_MANA_GEM_1))
+                   .End();
+            return builder.Build();
+        }
+
+        /// <summary>
+        /// Checks for existance of a mana gem in inventory and cast the spell if it is not found
+        /// </summary>
+        /// <param name="manaGemSpell"></param>
+        /// <returns></returns>
+        protected BehaviourTreeStatus CheckForAndCastManaGem(uint manaGemSpell)
+        {
+            // If we can't cast the spell, fail
+            if (!HasSpellAndCanCast(manaGemSpell))
+                return BehaviourTreeStatus.Failure;
+
+            // If we can't find the mana gem spell, fail
+            var spell = Spell(manaGemSpell);
+            if (spell == null)
+                return BehaviourTreeStatus.Failure;
+
+            // If we can't find the mana gem in inventory, cast and succeed
+            var itemInInv = BotHandler.BotOwner.GetInventoryItem(spell.CreatesItemId);
+            if (itemInInv == null)
+            {
+                BotHandler.CombatState.SpellCast(BotHandler.BotOwner, manaGemSpell);
+                return BehaviourTreeStatus.Success;
+            }
+
+            // Otherwise, we have the mana gem in inventory, so succeed
+            return BehaviourTreeStatus.Failure;
+        }
+
+        /// <summary>
         /// Checks for an armor spell buff and if has the aura, returns success. Fails if
         /// the buff is not found and we cannot cast the buff.
         /// </summary>
@@ -221,14 +266,10 @@ namespace Populus.GroupBot.Combat.Mage
         /// <returns></returns>
         protected BehaviourTreeStatus CheckForAndCastArmor(uint armorSpell)
         {
-            // If we already have the armor, succeed
-            if (BotHandler.BotOwner.HasAura(armorSpell))
-                return BehaviourTreeStatus.Success;
-
-            // If we have the spell and can cast it, succeed
-            if (HasSpellAndCanCast(armorSpell))
+            // If we do not have the armor aura and we have the spell and can cast it, succeed
+            if (!BotHandler.BotOwner.HasAura(armorSpell) && HasSpellAndCanCast(armorSpell))
             {
-                BotHandler.CombatState.SpellCast(armorSpell);
+                BotHandler.CombatState.SpellCast(BotHandler.BotOwner, armorSpell);
                 return BehaviourTreeStatus.Success;
             }
 
@@ -236,63 +277,29 @@ namespace Populus.GroupBot.Combat.Mage
             return BehaviourTreeStatus.Failure;
         }
 
-        private BehaviourTreeStatus CastFireball()
-        {
-            if (HasSpellAndCanCast(FIREBALL))
-            {
-                BotHandler.CombatState.SpellCast(FIREBALL);
-                return BehaviourTreeStatus.Success;
-            }
-            return BehaviourTreeStatus.Failure;
-        }
-
         private BehaviourTreeStatus ArcaneIntellect()
         {
             // If we are not in a group, self buff instead
             if (BotHandler.Group == null)
-                if (!BotHandler.BotOwner.HasAura(ARCANE_BRILLIANCE))
+                if (!BotHandler.BotOwner.HasAura(Spells.ARCANE_BRILLIANCE_1))
                     return SelfBuff(ARCANE_INTELLECT);
 
             // If does not have spell or cannot cast, fail
             if (!HasSpellAndCanCast(ARCANE_INTELLECT))
                 return BehaviourTreeStatus.Failure;
-            // If everyone in the group already has the aura
-            if (!BotHandler.Group.Members.Any(m => !m.HasAura((ushort)ARCANE_INTELLECT) && !m.HasAura((ushort)ARCANE_BRILLIANCE)))
-                return BehaviourTreeStatus.Failure;
 
             // Get the first member in the group that needs the aura
-            var needs = BotHandler.Group.Members.Where(m => !m.HasAura((ushort)ARCANE_INTELLECT) && !m.HasAura((ushort)ARCANE_BRILLIANCE)).FirstOrDefault();
+            var needs = BotHandler.Group.Members.Where(m => !m.HasAura((ushort)ARCANE_INTELLECT) && !m.HasAura((ushort)Spells.ARCANE_BRILLIANCE_1)).FirstOrDefault();
             if (needs == null)
                 return BehaviourTreeStatus.Failure;
 
-            BotHandler.CombatState.SpellCast(BotHandler.BotOwner.GetPlayerByGuid(needs.Guid), ARCANE_INTELLECT);
+            var player = BotHandler.BotOwner.GetPlayerByGuid(needs.Guid);
+            if (player == null)
+                return BehaviourTreeStatus.Failure;
+
+            BotHandler.CombatState.SpellCast(player, ARCANE_INTELLECT);
             return BehaviourTreeStatus.Success;
         }
-
-        //protected override CombatActionResult DoFirstCombatAction(Unit unit)
-        //{
-        //    return CombatActionResult.NO_ACTION_OK;
-        //}
-
-        //protected override CombatActionResult DoNextCombatAction(Unit unit)
-        //{
-        //    // Default leveling logic for a mage
-        //    if (HasSpellAndCanCast(FROSTBOLT))
-        //    {
-        //        BotHandler.CombatState.SpellCast(FROSTBOLT);
-        //        return CombatActionResult.ACTION_OK;
-        //    }
-
-        //    if (HasSpellAndCanCast(FIREBALL))
-        //    {
-        //        BotHandler.CombatState.SpellCast(FIREBALL);
-        //        return CombatActionResult.ACTION_OK;
-        //    }
-
-        //    // Wand if we get here
-        //    AttackWand(unit);
-        //    return CombatActionResult.NO_ACTION_OK;
-        //}
 
         #endregion
 

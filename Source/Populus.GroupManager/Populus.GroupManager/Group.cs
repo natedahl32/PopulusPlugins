@@ -1,5 +1,6 @@
 ﻿using Populus.Core.Constants;
 using Populus.Core.Shared;
+using Populus.Core.World.Objects;
 using Populus.Core.World.Objects.Events;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,6 +29,11 @@ namespace Populus.GroupManager
         public Group()
         {
             mGroupMembers = new List<GroupMember>();
+        }
+
+        public Group(Bot bot) : this()
+        {
+            mGroupMembers.Add(new GroupMember(bot));
         }
 
         #endregion

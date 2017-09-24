@@ -61,7 +61,8 @@ namespace Populus.GroupManager
                 }
 
                 if (group == null)
-                    group = new Group();
+                    group = new Group(bot);
+                    
 
                 // Add the group for this bot
                 AddOrUpdate(bot.Guid, group);
