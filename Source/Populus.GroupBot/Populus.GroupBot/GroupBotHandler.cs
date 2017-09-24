@@ -283,6 +283,8 @@ namespace Populus.GroupBot
         /// </summary>
         internal void CreateFood()
         {
+            // Clear the target so we get the food
+            BotOwner.ClearTarget();
             var food = CombatHandler.GetFood();
             if (food > 0)
                 BotOwner.ChatSay($".additem {food} 10");
@@ -293,9 +295,29 @@ namespace Populus.GroupBot
         /// </summary
         internal void CreateWater()
         {
+            // Clear the target so we get the water
+            BotOwner.ClearTarget();
             var water = CombatHandler.GetWater();
             if (water > 0)
                 BotOwner.ChatSay($".additem {water} 10");
+        }
+
+        /// <summary>
+        /// Tries to automatically assign a role to the group member based on talent spec
+        /// </summary>
+        internal void AssignGroupRole()
+        {
+            if (Group == null)
+                return;
+
+            var member = Group.GetMember(BotOwner.Guid);
+            if (member == null)
+                return;
+
+            if (CombatHandler.IsTank)
+                member.AssignRole(GroupMember.ROLE_TANK);
+            else if (CombatHandler.IsHealer)
+                member.AssignRole(GroupMember.ROLE_HEALER);
         }
 
         #endregion

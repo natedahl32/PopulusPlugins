@@ -21,6 +21,8 @@
             get { return false; }
         }
 
+        public override bool IsHealer => true;
+
         #endregion
     }
 }

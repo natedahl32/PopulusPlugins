@@ -100,6 +100,16 @@ namespace Populus.GroupBot.Combat
         public abstract bool IsMelee { get; }
 
         /// <summary>
+        /// Gets whether or not combat logic for the bot is a Tank
+        /// </summary>
+        public virtual bool IsTank { get { return false; } }
+
+        /// <summary>
+        /// Gets whether or not combat logic for the bot is a Healer
+        /// </summary>
+        public virtual bool IsHealer { get { return false; } }
+
+        /// <summary>
         /// Gets all spells available to the class for all levels
         /// </summary>
         protected abstract Dictionary<int, List<uint>> SpellsByLevel { get; }

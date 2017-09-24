@@ -20,6 +20,12 @@ namespace Populus.GroupBot.Combat.Warrior
 
         #endregion
 
+        #region Properties
+
+        public override bool IsTank => true;
+
+        #endregion
+
         #region Private Methods
 
         protected override IBehaviourTreeNode CombatRotationTree()

@@ -1,11 +1,14 @@
 ﻿using Populus.Core.Plugins;
+using Populus.Core.Shared;
 using Populus.Core.World.Objects;
 using Populus.Core.World.Objects.Events;
 using Populus.GroupBot.Talents;
+using Populus.GroupManager;
 using System;
 using System.Linq;
 using System.Timers;
 using static Populus.Core.World.Objects.Bot;
+using static Populus.GroupManager.Group;
 using GroupMgr = Populus.GroupManager.GroupManager;
 
 namespace Populus.GroupBot
@@ -226,6 +229,7 @@ namespace Populus.GroupBot
                     handler = new GroupBotHandler(bot);
                     mBotHandlerCollection.AddOrUpdate(bot.Guid, handler);
                     handler.LearnLevelSpells(bot.Level);
+                    handler.AssignGroupRole();
                 }
 
                 // Update the handler

@@ -10,7 +10,7 @@ namespace Populus.GroupManager
     /// <summary>
     /// Represents a player group in the world
     /// </summary>
-    public class Group
+    public partial class Group
     {
         #region Declarations
 
@@ -182,15 +182,20 @@ namespace Populus.GroupManager
             {
                 // Get member in the group if they exist
                 var member = Members.Where(m => m.Guid.GetOldGuid() == memberData.Guid.GetOldGuid()).SingleOrDefault();
+                var added = false;
                 if (member == null)
                 {
                     member = new GroupMember();
                     lock (mGroupMembersLock)
                         mGroupMembers.Add(member);
+                    added = true;
                 }
 
                 // Update the group member
                 member.Update(memberData);
+                // Fire event if the member was added
+                if (added)
+                    this.OnMemberAddedToGroup(this, member.Guid);
             }
         }
 

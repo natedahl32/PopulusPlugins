@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Group.cs" />
+    <Compile Include="Group.Events.cs" />
     <Compile Include="GroupManager.cs" />
     <Compile Include="GroupMember.cs" />
     <Compile Include="GroupsCollection.cs" />

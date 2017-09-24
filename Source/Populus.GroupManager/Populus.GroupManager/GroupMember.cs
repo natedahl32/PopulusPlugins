@@ -15,11 +15,19 @@ namespace Populus.GroupManager
     {
         #region Declarations
 
+        // Role constants
+        public const string ROLE_TANK = "Tank";
+        public const string ROLE_HEALER = "Healer";
+        public const string ROLE_ASSIST = "Assist";
+
         // Contains pet data for this group member
         private GroupMember mPet;
         // Contains aura data for this group member
         private List<ushort> mAuraIds = new List<ushort>();
         private object mAuraLock = new object();
+
+        // Role of the group member
+        private string mRoleName;
 
         #endregion
 
@@ -161,6 +169,19 @@ namespace Populus.GroupManager
         public Coordinate Position { get; private set; }
 
         /// <summary>
+        /// Gets the role this group member is in
+        /// </summary>
+        public string Role
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(mRoleName))
+                    return "None";
+                return mRoleName.ToUpper();
+            }
+        }
+
+        /// <summary>
         /// List of all aura ids this group member has
         /// </summary>
         public IEnumerable<ushort> AuraIds
@@ -213,6 +234,15 @@ namespace Populus.GroupManager
                         mAuraIds.Remove((ushort)aura.Spell.SpellId);
                 }
             }
+        }
+
+        /// <summary>
+        /// Assigns a role to the group member
+        /// </summary>
+        /// <param name="role"></param>
+        public void AssignRole(string role)
+        {
+            mRoleName = role;
         }
 
         /// <summary>

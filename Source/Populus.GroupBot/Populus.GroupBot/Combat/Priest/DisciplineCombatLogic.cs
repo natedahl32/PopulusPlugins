@@ -10,5 +10,11 @@
         }
 
         #endregion
+
+        #region Properties
+
+        public override bool IsHealer => true;
+
+        #endregion
     }
 }
