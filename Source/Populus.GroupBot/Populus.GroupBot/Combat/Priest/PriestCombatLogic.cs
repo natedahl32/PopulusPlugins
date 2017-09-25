@@ -143,6 +143,12 @@ namespace Populus.GroupBot.Combat.Priest
             VAMPIRIC_EMBRACE = InitSpell(Spells.VAMPIRIC_EMBRACE_1);
         }
 
+        public override bool Pull(Unit unit)
+        {
+            // TODO: Pull logic
+            return false;
+        }
+
         //public override CombatActionResult DoOutOfCombatAction()
         //{
         //    // Inner Fire if not on self

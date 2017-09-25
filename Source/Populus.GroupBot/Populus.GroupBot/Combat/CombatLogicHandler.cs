@@ -238,6 +238,13 @@ namespace Populus.GroupBot.Combat
             return ConjuredWater.WATER_LVL_5;
         }
 
+        /// <summary>
+        /// Tells the bot to pull a target
+        /// </summary>
+        /// <param name="unit"></param>
+        /// <returns></returns>
+        public abstract bool Pull(Unit unit);
+
         #endregion
 
         #region Private Methods

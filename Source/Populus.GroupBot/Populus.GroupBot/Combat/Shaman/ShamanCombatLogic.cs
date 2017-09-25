@@ -180,6 +180,12 @@ namespace Populus.GroupBot.Combat.Shaman
             EARTHBIND_EFFECT = InitSpell(Spells.EARTHBIND_EFFECT_1);
         }
 
+        public override bool Pull(Unit unit)
+        {
+            // TODO: Pull logic
+            return false;
+        }
+
         #endregion
 
         #region Private Methods

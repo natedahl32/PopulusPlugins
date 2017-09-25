@@ -138,6 +138,12 @@ namespace Populus.GroupBot.Combat.Rogue
             VANISH = InitSpell(Spells.VANISH_1);
         }
 
+        public override bool Pull(Unit unit)
+        {
+            // TODO: Pull logic
+            return false;
+        }
+
         #endregion
 
         #region Private Methods

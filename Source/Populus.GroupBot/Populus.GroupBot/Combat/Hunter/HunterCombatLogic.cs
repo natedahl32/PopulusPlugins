@@ -166,6 +166,12 @@ namespace Populus.GroupBot.Combat.Hunter
             WYVERN_STING = InitSpell(Spells.WYVERN_STING_1);
         }
 
+        public override bool Pull(Unit unit)
+        {
+            // TODO: Pull logic
+            return false;
+        }
+
         #endregion
 
         #region Private Methods

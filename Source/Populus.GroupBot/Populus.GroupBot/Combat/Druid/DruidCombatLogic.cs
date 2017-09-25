@@ -1,4 +1,5 @@
 ﻿using FluentBehaviourTree;
+using Populus.Core.World.Objects;
 using System.Collections.Generic;
 
 namespace Populus.GroupBot.Combat.Druid
@@ -173,6 +174,12 @@ namespace Populus.GroupBot.Combat.Druid
             ECLIPSE_LUNAR = InitSpell(Procs.ECLIPSE_LUNAR_1);
             ECLIPSE_SOLAR = InitSpell(Procs.ECLIPSE_SOLAR_1);
 
+        }
+
+        public override bool Pull(Unit unit)
+        {
+            // TODO: Pull logic
+            return false;
         }
 
         #endregion

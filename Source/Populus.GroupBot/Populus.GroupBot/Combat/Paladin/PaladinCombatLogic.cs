@@ -1,4 +1,5 @@
 ﻿using FluentBehaviourTree;
+using Populus.Core.World.Objects;
 using System.Collections.Generic;
 
 namespace Populus.GroupBot.Combat.Paladin
@@ -153,6 +154,12 @@ namespace Populus.GroupBot.Combat.Paladin
             SEAL_OF_THE_CRUSADER = InitSpell(Spells.SEAL_OF_THE_CRUSADER_1);
             SENSE_UNDEAD = InitSpell(Spells.SENSE_UNDEAD_1);
             SHADOW_RESISTANCE_AURA = InitSpell(Spells.SHADOW_RESISTANCE_AURA_1);
+        }
+
+        public override bool Pull(Unit unit)
+        {
+            // TODO: Pull logic
+            return false;
         }
 
         #endregion

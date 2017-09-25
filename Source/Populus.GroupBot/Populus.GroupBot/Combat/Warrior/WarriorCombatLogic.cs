@@ -170,6 +170,12 @@ namespace Populus.GroupBot.Combat.Warrior
             SUDDEN_DEATH = InitSpell(Procs.SUDDEN_DEATH_1);
         }
 
+        public override bool Pull(Unit unit)
+        {
+            // TODO: Pull logic
+            return false;
+        }
+
         #endregion
 
         #region Private Methods

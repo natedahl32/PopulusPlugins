@@ -137,20 +137,11 @@ namespace Populus.GroupBot.Combat.Mage
             SLOW = InitSpell(Spells.SLOW_1);
         }
 
-        //public override CombatActionResult DoOutOfCombatAction()
-        //{
-        //    // TODO: Check for drinks, if none found summon some
-        //    // TODO: Check for food, if non found summon some
-
-        //    // Ice barrier if not on self
-        //    if (HasSpellAndCanCast(ICE_BARRIER) && !BotHandler.BotOwner.HasAura(ICE_BARRIER))
-        //    {
-        //        BotHandler.CombatState.SpellCast(BotHandler.BotOwner, ICE_BARRIER);
-        //        return CombatActionResult.ACTION_OK;
-        //    }
-
-        //    return base.DoOutOfCombatAction();
-        //}
+        public override bool Pull(Unit unit)
+        {
+            // TODO: Pull logic
+            return false;
+        }
 
         #endregion
 

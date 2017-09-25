@@ -176,6 +176,12 @@ namespace Populus.GroupBot.Combat.Warlock
             UNENDING_BREATH = InitSpell(Spells.UNENDING_BREATH_1);
         }
 
+        public override bool Pull(Unit unit)
+        {
+            // TODO: Pull logic
+            return false;
+        }
+
         #endregion
 
         #region Private Methods
