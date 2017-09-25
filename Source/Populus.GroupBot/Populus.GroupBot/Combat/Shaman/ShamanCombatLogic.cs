@@ -1,4 +1,5 @@
 ﻿using FluentBehaviourTree;
+using Populus.Core.World.Objects;
 using System.Collections.Generic;
 
 namespace Populus.GroupBot.Combat.Shaman
