@@ -8,6 +8,8 @@ namespace Populus.GroupBot.Combat.Warlock
     {
         #region Declarations
 
+        protected const uint SOUL_SHARD = 6265;
+
         // CURSES
         protected uint CURSE_OF_WEAKNESS,
                CURSE_OF_AGONY,
@@ -187,7 +189,58 @@ namespace Populus.GroupBot.Combat.Warlock
 
         protected override IBehaviourTreeNode InitializeOutOfCombatBehavior()
         {
-            return null;
+            var builder = new BehaviourTreeBuilder();
+            builder.Selector("OOC Behavior")
+                        .Do("Is Casting", t => BotHandler.CombatState.IsCasting ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
+                        .Parallel("Eat and Drink", 2, 2)    // Run eat and drink in paralell until both fail
+                            .Do("Eat", t => OutOfCombatLogic.OutOfCombatHealthRegen(BotHandler))
+                            .Do("Drink", t => OutOfCombatLogic.OutOfCombatManaRegen(BotHandler))
+                        .End()
+                        .Do("Summon Demon", t => SummonDemon())
+                        .Splice(OutOfCombatBuffsTree())
+                        .Do("Follow Group Leader", t => OutOfCombatLogic.FollowGroupLeader(BotHandler))
+                   .End();
+            return builder.Build();
+        }
+
+        /// <summary>
+        /// Creates a behavior tree that handles out of combat buffs for the warrior class
+        /// </summary>
+        /// <returns></returns>
+        protected virtual IBehaviourTreeNode OutOfCombatBuffsTree()
+        {
+            var builder = new BehaviourTreeBuilder();
+            builder.Selector("Mage Buffs")
+                        .Do("Arcane Brilliance", t => GroupBuff(ARCANE_BRILLIANCE))
+                        .Do("Arcane Intellect", t => ArcaneIntellect())
+                        .Splice(ArmorBuff())
+                        .Splice(SummonManaGems())
+                   .End();
+            return builder.Build();
+        }
+
+        /// <summary>
+        /// Action to summon demon if not already out
+        /// </summary>
+        /// <returns></returns>
+        protected virtual BehaviourTreeStatus SummonDemon()
+        {
+            // If we already have a demon out, fail
+            if (BotHandler.BotOwner.Pet != null)
+                return BehaviourTreeStatus.Failure;
+
+            // If we don't have a soul shard, summon one, but fail. We will try to summon next pass
+
+            // Try casting void walker first
+            if (CastSpell(SUMMON_VOIDWALKER) == BehaviourTreeStatus.Success)
+                return BehaviourTreeStatus.Success;
+
+            // Try casting imp next
+            if (CastSpell(SUMMON_IMP) == BehaviourTreeStatus.Success)
+                return BehaviourTreeStatus.Success;
+
+            // Can't summon
+            return BehaviourTreeStatus.Failure;
         }
 
         /// <summary>
@@ -199,6 +252,14 @@ namespace Populus.GroupBot.Combat.Warlock
             {
                 // TODO: Need to figure this one out
             }
+        }
+
+        /// <summary>
+        /// Creates a soul shard for the warlock
+        /// </summary
+        protected void CreateSoulShard()
+        {
+            BotHandler.BotOwner.ChatSay($".additem {SOUL_SHARD} 1");
         }
 
         //protected override CombatActionResult DoFirstCombatAction(Unit unit)
