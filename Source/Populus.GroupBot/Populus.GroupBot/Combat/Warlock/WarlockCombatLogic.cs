@@ -8,6 +8,8 @@ namespace Populus.GroupBot.Combat.Warlock
     {
         #region Declarations
 
+        protected const uint SOUL_SHARD = 6265;
+
         // CURSES
         protected uint CURSE_OF_WEAKNESS,
                CURSE_OF_AGONY,
@@ -110,6 +112,18 @@ namespace Populus.GroupBot.Combat.Warlock
         }
 
         /// <summary>
+        /// Gets the demon preference for the warlock. First summon spell in the list is the first preference.
+        /// Etc.
+        /// </summary>
+        public virtual IEnumerable<uint> DemonPreference
+        {
+            get
+            {
+                return new List<uint>() { SUMMON_VOIDWALKER, SUMMON_IMP };
+            }
+        }
+
+        /// <summary>
         /// Gets all warlock spells and abilities available by level
         /// </summary>
         protected override Dictionary<int, List<uint>> SpellsByLevel => mSpellsByLevel;
@@ -188,12 +202,98 @@ namespace Populus.GroupBot.Combat.Warlock
 
         protected override IBehaviourTreeNode InitializeCombatBehaivor()
         {
-            return null;
+            var builder = new BehaviourTreeBuilder();
+            builder.Selector("Combat Behavior")
+                        .Do("Is Casting", t => BotHandler.CombatState.IsCasting ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
+                        .Do("Lifetap", t => Lifetap(75, 40))
+                        .Do("Cast Curse of Agony", t => CastDOT(CURSE_OF_AGONY))
+                        .Do("Cast Corruption", t => CastDOT(CORRUPTION))
+                        .Do("Cast Shadowbolt", t => CastSpell(SHADOW_BOLT))
+                        .Splice(WandAttack(BotHandler))
+                   .End();
+            return builder.Build();
         }
 
         protected override IBehaviourTreeNode InitializeOutOfCombatBehavior()
         {
-            return null;
+            var builder = new BehaviourTreeBuilder();
+            builder.Selector("OOC Behavior")
+                        .Do("Is Casting", t => BotHandler.CombatState.IsCasting ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
+                        .Parallel("Eat and Drink", 2, 2)    // Run eat and drink in paralell until both fail
+                            .Do("Eat", t => OutOfCombatLogic.OutOfCombatHealthRegen(BotHandler))
+                            .Do("Drink", t => OutOfCombatLogic.OutOfCombatManaRegen(BotHandler))
+                        .End()
+                        .Do("Summon Demon", t => SummonDemon())
+                        .Splice(OutOfCombatBuffsTree())
+                        .Do("Follow Group Leader", t => OutOfCombatLogic.FollowGroupLeader(BotHandler))
+                   .End();
+            return builder.Build();
+        }
+
+        /// <summary>
+        /// Creates a behavior tree that handles out of combat buffs for the warrior class
+        /// </summary>
+        /// <returns></returns>
+        protected virtual IBehaviourTreeNode OutOfCombatBuffsTree()
+        {
+            var builder = new BehaviourTreeBuilder();
+            builder.Selector("Warlock Buffs")
+                        .Do("Demon Skin/Armor", t => DemonSkinArmor())
+                   .End();
+            return builder.Build();
+        }
+
+        /// <summary>
+        /// Buffs Demon Skin/Armor for the warlock
+        /// </summary>
+        /// <returns></returns>
+        protected BehaviourTreeStatus DemonSkinArmor()
+        {
+            // If we have Demon Armor, fail
+            if (DEMON_ARMOR > 0 && BotHandler.BotOwner.HasAura(DEMON_ARMOR))
+                return BehaviourTreeStatus.Failure;
+
+            // Try to cast Demon Armor
+            if (CastSpell(DEMON_ARMOR) == BehaviourTreeStatus.Success)
+                return BehaviourTreeStatus.Success;
+
+            // If we have Demon Skin, fail
+            if (DEMON_SKIN > 0 && BotHandler.BotOwner.HasAura(DEMON_SKIN))
+                return BehaviourTreeStatus.Failure;
+
+            // Try to cast Demon Skin
+            if (CastSpell(DEMON_SKIN) == BehaviourTreeStatus.Success)
+                return BehaviourTreeStatus.Success;
+
+            return BehaviourTreeStatus.Failure;
+        }
+
+        /// <summary>
+        /// Action to summon demon if not already out
+        /// </summary>
+        /// <returns></returns>
+        protected BehaviourTreeStatus SummonDemon()
+        {
+            // If we already have a demon out, fail
+            if (BotHandler.BotOwner.Pet != null)
+                return BehaviourTreeStatus.Failure;
+
+            // If we don't have a soul shard, summon one, but fail. We will try to summon next pass
+            if (!BotHandler.BotOwner.HasItemInInventory(SOUL_SHARD))
+            {
+                CreateSoulShard();
+                return BehaviourTreeStatus.Failure;
+            }
+
+            // For each demon in the prefences
+            foreach (var demon in DemonPreference)
+            {
+                if (CastSpell(demon) == BehaviourTreeStatus.Success)
+                    return BehaviourTreeStatus.Success;
+            }
+
+            // Can't summon
+            return BehaviourTreeStatus.Failure;
         }
 
         /// <summary>
@@ -205,6 +305,32 @@ namespace Populus.GroupBot.Combat.Warlock
             {
                 // TODO: Need to figure this one out
             }
+        }
+
+        /// <summary>
+        /// Creates a soul shard for the warlock
+        /// </summary
+        protected void CreateSoulShard()
+        {
+            BotHandler.BotOwner.ClearTarget();
+            BotHandler.BotOwner.ChatSay($".additem {SOUL_SHARD} 1");
+        }
+
+        /// <summary>
+        /// Lifetaps when at or above a health percentage AND at or below a mana percentage
+        /// </summary>
+        /// <param name="aboveHealth"></param>
+        /// <param name="belowMana"></param>
+        /// <returns></returns>
+        protected BehaviourTreeStatus Lifetap(float aboveHealth, float belowMana)
+        {
+            if (BotHandler.BotOwner.HealthPercentage >= aboveHealth &&
+                BotHandler.BotOwner.PowerPercentage <= belowMana)
+            {
+                return CastSpell(LIFE_TAP);
+            }
+
+            return BehaviourTreeStatus.Failure;
         }
 
         //protected override CombatActionResult DoFirstCombatAction(Unit unit)

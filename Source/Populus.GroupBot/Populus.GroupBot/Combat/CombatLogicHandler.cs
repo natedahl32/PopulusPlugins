@@ -74,6 +74,25 @@ namespace Populus.GroupBot.Combat
             public const uint WATER_LVL_65 = 8079;
         }
 
+        private static List<uint> Healthstones = new List<uint>
+        {
+            5512,
+            19004,
+            19005,
+            5511,
+            19006,
+            19007,
+            5509,
+            19008,
+            19009,
+            5510,
+            19010,
+            19011,
+            9412,
+            19012,
+            19013
+        };
+
         #endregion
 
         #region Constructors
@@ -468,6 +487,35 @@ namespace Populus.GroupBot.Combat
 
             BotHandler.CombatState.SpellCast(spellId);
             return BehaviourTreeStatus.Success;
+        }
+
+        /// <summary>
+        /// Behavior that casts a DOT spell on current target if it is not already present
+        /// </summary>
+        /// <param name="spellId"></param>
+        /// <returns></returns>
+        protected BehaviourTreeStatus CastDOT(uint spellId)
+        {
+            return CastDOT(spellId, 0f);
+        }
+
+        /// <summary>
+        /// Behavior that casts a DOT spell on current target if it is not already present and if
+        /// the targets health is above a certain percentage
+        /// </summary>
+        /// <param name="spellId"></param>
+        /// <returns></returns>
+        protected BehaviourTreeStatus CastDOT(uint spellId, float aboveHealth)
+        {
+            // Make sure health percentage is at or above threshold for the dot spell
+            if (BotHandler.CombatState.CurrentTarget.HealthPercentage < aboveHealth)
+                return BehaviourTreeStatus.Failure;
+
+            // Make sure the target does not already have the dot aura
+            if (BotHandler.CombatState.CurrentTarget.HasAura(spellId))
+                return BehaviourTreeStatus.Failure;
+
+            return CastSpell(spellId);
         }
 
         /// <summary>
