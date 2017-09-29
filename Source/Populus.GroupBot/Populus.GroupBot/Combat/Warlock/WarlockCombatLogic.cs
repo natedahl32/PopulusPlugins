@@ -204,6 +204,7 @@ namespace Populus.GroupBot.Combat.Warlock
         {
             var builder = new BehaviourTreeBuilder();
             builder.Selector("Combat Behavior")
+                        .Do("Is Dead", t => BotHandler.BotOwner.IsDead ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
                         .Do("Is Casting", t => BotHandler.CombatState.IsCasting ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
                         .Do("Lifetap", t => Lifetap(75, 40))
                         .Do("Cast Curse of Agony", t => CastDOT(CURSE_OF_AGONY))
@@ -218,6 +219,7 @@ namespace Populus.GroupBot.Combat.Warlock
         {
             var builder = new BehaviourTreeBuilder();
             builder.Selector("OOC Behavior")
+                        .Do("Is Dead", t => BotHandler.BotOwner.IsDead ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
                         .Do("Is Casting", t => BotHandler.CombatState.IsCasting ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
                         .Parallel("Eat and Drink", 2, 2)    // Run eat and drink in paralell until both fail
                             .Do("Eat", t => OutOfCombatLogic.OutOfCombatHealthRegen(BotHandler))
@@ -225,6 +227,7 @@ namespace Populus.GroupBot.Combat.Warlock
                         .End()
                         .Do("Summon Demon", t => SummonDemon())
                         .Splice(OutOfCombatBuffsTree())
+                        .Do("Spend Talent Points", t => OutOfCombatLogic.UseFreeTalentPoints(BotHandler))
                         .Do("Follow Group Leader", t => OutOfCombatLogic.FollowGroupLeader(BotHandler))
                    .End();
             return builder.Build();
@@ -249,23 +252,10 @@ namespace Populus.GroupBot.Combat.Warlock
         /// <returns></returns>
         protected BehaviourTreeStatus DemonSkinArmor()
         {
-            // If we have Demon Armor, fail
-            if (DEMON_ARMOR > 0 && BotHandler.BotOwner.HasAura(DEMON_ARMOR))
-                return BehaviourTreeStatus.Failure;
-
-            // Try to cast Demon Armor
-            if (CastSpell(DEMON_ARMOR) == BehaviourTreeStatus.Success)
+            if (SelfBuff(DEMON_ARMOR) == BehaviourTreeStatus.Success)
                 return BehaviourTreeStatus.Success;
 
-            // If we have Demon Skin, fail
-            if (DEMON_SKIN > 0 && BotHandler.BotOwner.HasAura(DEMON_SKIN))
-                return BehaviourTreeStatus.Failure;
-
-            // Try to cast Demon Skin
-            if (CastSpell(DEMON_SKIN) == BehaviourTreeStatus.Success)
-                return BehaviourTreeStatus.Success;
-
-            return BehaviourTreeStatus.Failure;
+            return SelfBuff(DEMON_SKIN);
         }
 
         /// <summary>
@@ -288,7 +278,7 @@ namespace Populus.GroupBot.Combat.Warlock
             // For each demon in the prefences
             foreach (var demon in DemonPreference)
             {
-                if (CastSpell(demon) == BehaviourTreeStatus.Success)
+                if (CastSpell(demon, BotHandler.BotOwner) == BehaviourTreeStatus.Success)
                     return BehaviourTreeStatus.Success;
             }
 

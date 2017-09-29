@@ -4,13 +4,10 @@ using Populus.GroupManager;
 using System;
 using GroupMgr = Populus.GroupManager.GroupManager;
 using CombatMgr = Populus.CombatManager.CombatManager;
-using ActionMgr = Populus.ActionManager.ActionManager;
-using Populus.ActionManager;
 using Populus.CombatManager;
 using Populus.Core.Shared;
 using System.Linq;
 using Populus.GroupBot.Talents;
-using Populus.GroupBot.Actions;
 using Populus.Core.World.Objects.Events;
 using Populus.Core.Constants;
 using Populus.GroupBot.States;
@@ -23,14 +20,13 @@ namespace Populus.GroupBot
     {
         #region Declarations
 
-        private const float MAX_FOLLOW_DISTANCE = 40.0f;
+        internal const float MAX_FOLLOW_DISTANCE = 40.0f;
 
         private readonly Bot mBotOwner;
         private readonly GroupBotData mGroupBotData;
         private readonly GroupBotChatHandler mChatHandler;
         private readonly BotCombatState mCombatState;
         private CombatLogicHandler mCombatLogic;
-        private readonly ActionQueue mActionQueue;
         private Group mGroup;
 
         private Coordinate mLastKnownFollowPosition;
@@ -48,7 +44,6 @@ namespace Populus.GroupBot
             if (bot == null) throw new ArgumentNullException("bot");
             mBotOwner = bot;
             mChatHandler = new GroupBotChatHandler(this);
-            mActionQueue = ActionMgr.GetActionQueue(mBotOwner.Guid);
             mCombatState = CombatMgr.GetCombatState(mBotOwner.Guid);
             mGroupBotData = GroupBotData.LoadData(bot.Guid.GetOldGuid());
             // Occurs after data so we can get spec if one is specified
@@ -226,22 +221,6 @@ namespace Populus.GroupBot
         }
 
         /// <summary>
-        /// Handles any free talent points the bot has saved up
-        /// </summary>
-        internal void HandleFreeTalentPoints()
-        {
-            if (mBotOwner.FreeTalentPoints > 0 && CurrentTalentSpec != null)
-                mActionQueue.Add(
-                    new SpendFreeTalentPoints(BotOwner, 
-                                              CurrentTalentSpec, 
-                                              () => 
-                                              {
-                                                  mCombatLogic = CombatLogicHandler.Create(this, mBotOwner.Class, CurrentTalentSpec);
-                                                  mCombatLogic.InitializeSpells();
-                                              }));
-        }
-
-        /// <summary>
         /// Handles a loot roll start event
         /// </summary>
         /// <param name="update"></param>
@@ -341,7 +320,8 @@ namespace Populus.GroupBot
         {
             mStateMachine.Configure(Idle.Instance)
                 .Permit(StateTriggers.Teleporting, Teleport.Instance)
-                .Permit(StateTriggers.Combat, States.Combat.Instance);
+                .Permit(StateTriggers.Combat, States.Combat.Instance)
+                .Permit(StateTriggers.Died, Dead.Instance);
 
             mStateMachine.Configure(Teleport.Instance)
                 .Permit(StateTriggers.Idle, Idle.Instance);
@@ -353,7 +333,17 @@ namespace Populus.GroupBot
                     if (!CombatHandler.IsMelee)
                         BotOwner.RemoveFollow();
                 })
-                .Permit(StateTriggers.Idle, Idle.Instance);
+                .Permit(StateTriggers.Idle, Idle.Instance)
+                .Permit(StateTriggers.Died, Dead.Instance);
+                
+
+            mStateMachine.Configure(Dead.Instance)
+                .OnEntry(() =>
+                {
+                    // Remove follow target when dead
+                    BotOwner.RemoveFollow();
+                })
+                .Permit(StateTriggers.Resurrected, Idle.Instance);
         }
 
         /// <summary>

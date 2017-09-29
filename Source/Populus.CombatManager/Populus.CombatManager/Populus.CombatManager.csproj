@@ -50,7 +50,6 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Actions\CastSpellAbility.cs" />
     <Compile Include="AggroList.cs" />
     <Compile Include="BotCombatState.cs" />
     <Compile Include="CombatManager.cs" />
@@ -61,11 +60,5 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
-  <ItemGroup>
-    <ProjectReference Include="..\..\Populus.ActionManager\Populus.ActionManager.csproj">
-      <Project>{96a31c3f-4c29-4cd4-b053-43bb1ab44234}</Project>
-      <Name>Populus.ActionManager</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -38,7 +38,8 @@ namespace Populus.GroupBot.Chat
                     }
             }
 
-            // Ignore any other sub commands and follow the group leader
+            // Ignore any other sub commands and follow the group leader. Trigger idle state when we issue follow command in case we are stuck in another state
+            botHandler.TriggerState(Triggers.StateTriggers.Idle);
             botHandler.FollowGroupLeader();
         }
     }

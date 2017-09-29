@@ -1,7 +1,4 @@
-﻿using Populus.ActionManager;
-using Populus.ActionManager.Actions;
-using Populus.CombatManager.Actions;
-using Populus.Core.Constants;
+﻿using Populus.Core.Constants;
 using Populus.Core.DBC;
 using Populus.Core.Shared;
 using Populus.Core.World.Objects;
@@ -23,7 +20,6 @@ namespace Populus.CombatManager
         private ConcurrentDictionary<RaidTargetMarkers, WoWGuid> mMarkedTargets = new ConcurrentDictionary<RaidTargetMarkers, WoWGuid>();
 
         private readonly Bot mBotOwner;
-        private ActionQueue mActionQueue;
         private readonly AggroList mAggroList = new AggroList();
         private Unit mTarget;
 
@@ -49,19 +45,6 @@ namespace Populus.CombatManager
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// Gets the action queue for this bot combat state
-        /// </summary>
-        private ActionQueue ActionQueue
-        {
-            get
-            {
-                if (mActionQueue == null)
-                    mActionQueue = ActionManager.ActionManager.GetActionQueue(mBotOwner.Guid);
-                return mActionQueue;
-            }
-        }
 
         /// <summary>
         /// Whether or not the bot is in combat
@@ -185,7 +168,14 @@ namespace Populus.CombatManager
                     return;
 
                 // Move to a spot that is within range
-                ActionQueue.Add(new MoveTowardsObject(mBotOwner, mTarget, spell.MaximumRange.Value - CAST_RANGE_BUFFER));
+                if (mBotOwner.FollowTarget == null || mBotOwner.FollowTarget.Guid != mTarget.Guid)
+                    mBotOwner.SetFollow(mTarget.Guid);
+            }
+            else
+            {
+                // If we are now within range, remove our target from follow
+                if (mBotOwner.FollowTarget != null && mBotOwner.FollowTarget.Guid == mTarget.Guid)
+                    mBotOwner.RemoveFollow();
             }
 
             // Check if hostile or not friendly (handles neutral enemy factions, like boars)
@@ -203,11 +193,12 @@ namespace Populus.CombatManager
             {
                 if (spell.CastTime > 0 || spell.CastingTimeIndex > 1)
                     mCastingSpellId = spellId;
-                // If the spell we are casting is WAND_SHOOT, start attacking flag
+                // If the spell we are casting is WAND_SHOOT, start attacking flag (this does not cast the SHOOT spell!)
                 if (spellId == WAND_SHOOT)
                     StartAttack();
             }
-            ActionQueue.Add(new CastSpellAbility(mBotOwner, target, spellId));
+
+            CastSpell(target, spellId);
         }
 
         /// <summary>
@@ -231,6 +222,16 @@ namespace Populus.CombatManager
                 mBotOwner.Logger.Log("Combat is now started due to mob in my aggro list!");
             // Shouldn't need to check if already exists, will update if it does
             mAggroList.AddOrUpdate(unit.Guid, unit);
+        }
+
+        public void StopCombat()
+        {
+            // Clear our aggro list
+            mAggroList.Clear();
+            // Clear our current target
+            mTarget = null;
+            // Stop attacking anything
+            StopAttack();
         }
 
         #endregion
@@ -258,6 +259,11 @@ namespace Populus.CombatManager
 
             // Remove any dead units from aggro
             mAggroList.RemoveDeadUnits();
+
+            // TODO: If these are resurrection spells, we don't want to stop
+            // If we are currently casting and our target is dead, stop casting
+            if (IsCasting && (CurrentTarget == null || CurrentTarget.IsDead))
+                CancelSpellCast();
 
             // If we were in combat, but we are no longer.
             if (inCombat && !IsInCombat) mBotOwner.Logger.Log("Combat has ended");
@@ -351,6 +357,25 @@ namespace Populus.CombatManager
             if (target == null)
                 target = GetMarkedUnit(RaidTargetMarkers.SQUARE);
             return target;
+        }
+
+        /// <summary>
+        /// Cast a spell at a target
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="spellId"></param>
+        private void CastSpell(Unit target, uint spellId)
+        {
+            // Face the target before we cast
+            mBotOwner.FaceTarget(mTarget.Guid);
+
+            // Cast the spell
+            mBotOwner.CastSpellAbility(mTarget.Guid, spellId);
+
+            // Log what we are casting
+            var spell = SpellTable.Instance.getSpell(spellId);
+            if (spell != null)
+                mBotOwner.Logger.Log($"Casting spell {spell.SpellName}");
         }
 
         #endregion

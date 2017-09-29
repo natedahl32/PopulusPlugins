@@ -25,13 +25,6 @@ namespace Populus.GroupBot.Chat
                 return;
             }
 
-            // Learn talents if bot has free points
-            if (chat.MessageTokenized.Length > 1 && chat.MessageTokenized[1].ToLower() == "learn")
-            {
-                botHandler.HandleFreeTalentPoints();
-                return;
-            }
-
             ListTalents(botHandler);
         }
 
@@ -53,7 +46,6 @@ namespace Populus.GroupBot.Chat
                     {
                         var specToAssign = specsAvailable[index - 1]; // Our index we get from chat is 1-based
                         botHandler.BotData.SpecName = specToAssign.Name;
-                        botHandler.HandleFreeTalentPoints();
                         return;
                     }
                 }

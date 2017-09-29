@@ -4,6 +4,8 @@
     {
         Idle,
         Teleporting,
-        Combat
+        Combat,
+        Died,
+        Resurrected
     }
 }

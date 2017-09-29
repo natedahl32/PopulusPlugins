@@ -19,6 +19,13 @@
 
         public override void Update(GroupBotHandler handler, float deltaTime)
         {
+            // If we are dead, trigger dead state
+            if (handler.BotOwner.IsDead)
+            {
+                handler.TriggerState(Triggers.StateTriggers.Died);
+                return;
+            }
+
             // If we are no longer in combat, trigger the idle state
             if (!handler.CombatState.IsInCombat)
             {

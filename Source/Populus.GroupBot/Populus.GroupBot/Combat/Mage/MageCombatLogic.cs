@@ -151,6 +151,7 @@ namespace Populus.GroupBot.Combat.Mage
         {
             var builder = new BehaviourTreeBuilder();
             builder.Selector("Combat Behavior")
+                        .Do("Is Dead", t => BotHandler.BotOwner.IsDead ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
                         .Do("Is Casting", t => BotHandler.CombatState.IsCasting ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
                         .Do("Cast Frostbolt", t => CastSpell(FROSTBOLT))
                         .Do("Cast Fireball", t => CastSpell(FIREBALL))
@@ -163,12 +164,14 @@ namespace Populus.GroupBot.Combat.Mage
         {
             var builder = new BehaviourTreeBuilder();
             builder.Selector("OOC Behavior")
+                        .Do("Is Dead", t => BotHandler.BotOwner.IsDead ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
                         .Do("Is Casting", t => BotHandler.CombatState.IsCasting ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
                         .Parallel("Eat and Drink", 2, 2)    // Run eat and drink in paralell until both fail
                             .Do("Eat", t => OutOfCombatLogic.OutOfCombatHealthRegen(BotHandler))
                             .Do("Drink", t => OutOfCombatLogic.OutOfCombatManaRegen(BotHandler))
                         .End()
                         .Splice(OutOfCombatBuffsTree())
+                        .Do("Spend Talent Points", t => OutOfCombatLogic.UseFreeTalentPoints(BotHandler))
                         .Do("Follow Group Leader", t => OutOfCombatLogic.FollowGroupLeader(BotHandler))
                    .End();
             return builder.Build();

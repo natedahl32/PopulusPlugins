@@ -172,8 +172,9 @@ namespace Populus.GroupBot.Combat
         {
             // Add this unit to the aggro list and set it as the current target. This will start combat
             // if it's not already started. And also immediately start attacking the unit.
-            BotHandler.CombatState.AddToAggroList(unit);
+            BotHandler.StopFollow();
             BotHandler.CombatState.SetTarget(unit);
+            BotHandler.CombatState.AddToAggroList(unit);
         }
 
         /// <summary>
@@ -486,6 +487,21 @@ namespace Populus.GroupBot.Combat
                 return BehaviourTreeStatus.Failure;
 
             BotHandler.CombatState.SpellCast(spellId);
+            return BehaviourTreeStatus.Success;
+        }
+
+        /// <summary>
+        /// Behavior that casts a spell on a target
+        /// </summary>
+        /// <param name="spellId"></param>
+        /// <returns></returns>
+        protected BehaviourTreeStatus CastSpell(uint spellId, Unit target)
+        {
+            // If we can't cast it, fail
+            if (!HasSpellAndCanCast(spellId))
+                return BehaviourTreeStatus.Failure;
+
+            BotHandler.CombatState.SpellCast(target, spellId);
             return BehaviourTreeStatus.Success;
         }
 

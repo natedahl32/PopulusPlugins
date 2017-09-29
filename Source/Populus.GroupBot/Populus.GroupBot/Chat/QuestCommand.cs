@@ -4,8 +4,6 @@ using Populus.Core.World.Objects.Events;
 using Populus.Core.World.Quest;
 using System.Linq;
 using Populus.Core.World.Objects;
-using ActionMgr = Populus.ActionManager.ActionManager;
-using Populus.ActionManager.Actions;
 
 namespace Populus.GroupBot.Chat
 {
@@ -190,9 +188,9 @@ namespace Populus.GroupBot.Chat
         /// <param name="wo"></param>
         private void AcceptQuestFromObject(GroupBotHandler botHandler, WorldObject wo)
         {
-            var actionQueue = ActionMgr.GetActionQueue(botHandler.BotOwner.Guid);
-            actionQueue.Add(new MoveTowardsObject(botHandler.BotOwner, wo, 1.0f));
-            actionQueue.Add(new AcceptQuests(botHandler.BotOwner, wo));
+            //var actionQueue = ActionMgr.GetActionQueue(botHandler.BotOwner.Guid);
+            //actionQueue.Add(new MoveTowardsObject(botHandler.BotOwner, wo, 1.0f));
+            //actionQueue.Add(new AcceptQuests(botHandler.BotOwner, wo));
         }
 
         /// <summary>
@@ -202,9 +200,9 @@ namespace Populus.GroupBot.Chat
         /// <param name="wo"></param>
         private void CompleteQuestFromObject(GroupBotHandler botHandler, WorldObject wo)
         {
-            var actionQueue = ActionMgr.GetActionQueue(botHandler.BotOwner.Guid);
-            actionQueue.Add(new MoveTowardsObject(botHandler.BotOwner, wo, 1.0f));
-            actionQueue.Add(new AcceptQuests(botHandler.BotOwner, wo));
+            //var actionQueue = ActionMgr.GetActionQueue(botHandler.BotOwner.Guid);
+            //actionQueue.Add(new MoveTowardsObject(botHandler.BotOwner, wo, 1.0f));
+            //actionQueue.Add(new AcceptQuests(botHandler.BotOwner, wo));
         }
     }
 }

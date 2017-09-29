@@ -21,6 +21,13 @@ namespace Populus.GroupBot.States
 
         public override void Update(GroupBotHandler handler, float deltaTime)
         {
+            // If we are dead, trigger dead state
+            if (handler.BotOwner.IsDead)
+            {
+                handler.TriggerState(Triggers.StateTriggers.Died);
+                return;
+            }
+
             // If we are in combat, transition to the combat state
             if (handler.CombatState.IsInCombat)
             {
@@ -30,9 +37,6 @@ namespace Populus.GroupBot.States
 
             // Check for out of combat actions to be performed
             handler.CombatHandler.OutOfCombatUpdate(deltaTime);
-
-            // Follow the group leader if we aren't already and we can
-            //handler.FollowGroupLeader();
         }
     }
 }

@@ -92,10 +92,7 @@ namespace Populus.GroupBot
             {
                 var handler = mBotHandlerCollection.Get(bot.Guid);
                 if (handler != null)
-                {
                     handler.LearnLevelSpells(level);
-                    handler.HandleFreeTalentPoints();
-                }
             };
             Bot.LevelUp += levelUpHandler;
 

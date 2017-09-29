@@ -184,6 +184,7 @@ namespace Populus.GroupBot.Combat.Warrior
         {
             var builder = new BehaviourTreeBuilder();
             builder.Selector("Combat Behavior")
+                        .Do("Is Dead", t => BotHandler.BotOwner.IsDead ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
                         .Inverter("If Melee Attack Succeeds, Move On")
                             .Splice(MeleeAttack(BotHandler))
                         .End()
@@ -197,8 +198,10 @@ namespace Populus.GroupBot.Combat.Warrior
         {
             var builder = new BehaviourTreeBuilder();
             builder.Selector("OOC Behavior")
+                        .Do("Is Dead", t => BotHandler.BotOwner.IsDead ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
                         .Do("Regenerate Health", t => OutOfCombatLogic.OutOfCombatHealthRegen(BotHandler))
                         .Splice(OutOfCombatBuffsTree())
+                        .Do("Spend Talent Points", t => OutOfCombatLogic.UseFreeTalentPoints(BotHandler))
                         .Do("Follow Group Leader", t => OutOfCombatLogic.FollowGroupLeader(BotHandler))
                    .End();
             return builder.Build();

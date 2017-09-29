@@ -155,7 +155,15 @@ namespace Populus.GroupBot.Combat.Rogue
 
         protected override IBehaviourTreeNode InitializeOutOfCombatBehavior()
         {
-            return null;
+            var builder = new BehaviourTreeBuilder();
+            builder.Selector("OOC Behavior")
+                        .Do("Is Dead", t => BotHandler.BotOwner.IsDead ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
+                        .Do("Regenerate Health", t => OutOfCombatLogic.OutOfCombatHealthRegen(BotHandler))
+                        //.Splice(OutOfCombatBuffsTree())
+                        .Do("Spend Talent Points", t => OutOfCombatLogic.UseFreeTalentPoints(BotHandler))
+                        .Do("Follow Group Leader", t => OutOfCombatLogic.FollowGroupLeader(BotHandler))
+                   .End();
+            return builder.Build();
         }
 
         //protected override CombatActionResult DoFirstCombatAction(Unit unit)

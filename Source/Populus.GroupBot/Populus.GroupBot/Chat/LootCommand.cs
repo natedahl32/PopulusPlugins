@@ -4,8 +4,6 @@ using Populus.Core.World.Objects.Events;
 using Populus.Core.World.Objects;
 using System.Collections.Generic;
 using System.Linq;
-using ActionMgr = Populus.ActionManager.ActionManager;
-using Populus.ActionManager.Actions;
 
 namespace Populus.GroupBot.Chat
 {
@@ -98,9 +96,9 @@ namespace Populus.GroupBot.Chat
         /// <param name="wo">World Object to loot</param>
         private void Loot(GroupBotHandler botHandler, WorldObject wo)
         {
-            var actionQueue = ActionMgr.GetActionQueue(botHandler.BotOwner.Guid);
-            actionQueue.Add(new MoveTowardsObject(botHandler.BotOwner, wo, 1.0f));
-            actionQueue.Add(new LootObject(botHandler.BotOwner, wo));
+            //var actionQueue = ActionMgr.GetActionQueue(botHandler.BotOwner.Guid);
+            //actionQueue.Add(new MoveTowardsObject(botHandler.BotOwner, wo, 1.0f));
+            //actionQueue.Add(new LootObject(botHandler.BotOwner, wo));
         }
     }
 }

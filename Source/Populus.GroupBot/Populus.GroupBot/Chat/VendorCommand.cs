@@ -1,7 +1,5 @@
 ﻿using System;
 using Populus.Core.World.Objects.Events;
-using ActionMgr = Populus.ActionManager.ActionManager;
-using Populus.ActionManager.Actions;
 using Populus.Core.World.Objects;
 
 namespace Populus.GroupBot.Chat
@@ -38,9 +36,9 @@ namespace Populus.GroupBot.Chat
 
         private void HandleSpellTrainer(GroupBotHandler botHandler, Unit unit)
         {
-            var actionQueue = ActionMgr.GetActionQueue(botHandler.BotOwner.Guid);
-            actionQueue.Add(new MoveTowardsObject(botHandler.BotOwner, unit, 1.0f));
-            actionQueue.Add(new BuySpellsFromTrainer(botHandler.BotOwner, unit));
+            //var actionQueue = ActionMgr.GetActionQueue(botHandler.BotOwner.Guid);
+            //actionQueue.Add(new MoveTowardsObject(botHandler.BotOwner, unit, 1.0f));
+            //actionQueue.Add(new BuySpellsFromTrainer(botHandler.BotOwner, unit));
         }
     }
 }

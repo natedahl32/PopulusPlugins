@@ -17,6 +17,15 @@ namespace Populus.GroupBot.Chat
             // Any attack command must come from the leader of the group
             if (chat.SenderGuid != botHandler.Group.Leader.Guid) return;
 
+            // TODO: Maybe add subcommand objects?
+
+            // Turn follow off
+            if (chat.MessageTokenized.Length > 1 && chat.MessageTokenized[1].ToLower() == "stop")
+            {
+                StopAttack(botHandler);
+                return;
+            }
+
             // Get the leaders target
             var leaderObj = botHandler.BotOwner.GetPlayerByGuid(botHandler.Group.Leader.Guid);
             if (leaderObj == null) return;
@@ -31,8 +40,31 @@ namespace Populus.GroupBot.Chat
                 return;
             }
 
+            // If the target is friendly, send a message back and don't attack
+            if (botHandler.BotOwner.IsFriendlyTo(target))
+            {
+                botHandler.BotOwner.ChatParty($"I can't attack that target, it is friendly to me.");
+                return;
+            }
+
+            // If the target is dead, send a message back and don't attack
+            if (target.IsDead)
+            {
+                botHandler.BotOwner.ChatParty($"I can't attack that target, it is already dead.");
+                return;
+            }
+
             // Attack!
             botHandler.CombatHandler.Attack(target);
+        }
+
+        /// <summary>
+        /// Stops a bots current attack
+        /// </summary>
+        private void StopAttack(GroupBotHandler botHandler)
+        {
+            botHandler.CombatState.StopCombat();
+            botHandler.StopFollow();
         }
     }
 }
