@@ -57,9 +57,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Chat\AttackCommand.cs" />
+    <Compile Include="Chat\ChatCommand.cs" />
     <Compile Include="Chat\ChatCommandKeyAttribute.cs" />
+    <Compile Include="Chat\ChatEventArgExtensions.cs" />
     <Compile Include="Chat\FollowCommand.cs" />
     <Compile Include="Chat\GroupCommand.cs" />
+    <Compile Include="Chat\GroupRoleCommand.cs" />
     <Compile Include="Chat\IChatCommand.cs" />
     <Compile Include="Chat\ItemCommand.cs" />
     <Compile Include="Chat\LootCommand.cs" />

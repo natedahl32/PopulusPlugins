@@ -77,7 +77,7 @@ namespace Populus.GroupBot
             if (!File.Exists(filePath)) return new GroupBotData() { mGuid = guid };
 
             var data = File.ReadAllText(filePath);
-            var botData = new GroupBotData();
+            var botData = new GroupBotData() { mGuid = guid };
             if (!string.IsNullOrEmpty(data) && !string.IsNullOrEmpty(data.Trim()))
                 botData = JsonConvert.DeserializeObject<GroupBotData>(data);
             botData.mGuid = guid;

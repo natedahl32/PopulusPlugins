@@ -4,76 +4,56 @@ using System;
 namespace Populus.GroupBot.Chat
 {
     [ChatCommandKey("group")]
-    public class GroupCommand : IChatCommand
+    public class GroupCommand : ChatCommand, IChatCommand
     {
+        public GroupCommand()
+        {
+            AddActionHandler(string.Empty, Help);
+            AddActionHandler("drop", LeaveGroup);
+            AddActionHandler("leave", LeaveGroup);
+            AddActionHandler("disband", LeaveGroup);
+            AddActionHandler("roles", Roles);
+        }
+
         public void ProcessCommand(GroupBotHandler botHandler, ChatEventArgs chat)
         {
             if (botHandler == null) throw new ArgumentNullException("botHandler");
             if (chat == null) throw new ArgumentNullException("chat");
 
-            // TODO: Maybe add subcommand objects?
-
-            // Turn follow off
-            if (chat.MessageTokenized.Length > 1 && chat.MessageTokenized[1].ToLower() == "drop")
-            {
-                botHandler.BotOwner.LeaveGroup();
-                return;
-            }
-
-            // Group role commands
-            if (chat.MessageTokenized.Length > 1 && chat.MessageTokenized[1].ToLower() == "roles")
-            {
-                if (chat.MessageTokenized.Length > 2 && chat.MessageTokenized[2].ToLower() == "set")
-                {
-                    if (chat.MessageTokenized.Length < 3)
-                    {
-                        botHandler.BotOwner.ChatSay("Provide a role name to set!");
-                        return;
-                    }
-
-                    var role = chat.MessageTokenized[3];
-                    if (botHandler.Group == null) return;
-                    var member = botHandler.Group.GetMember(botHandler.BotOwner.Guid);
-                    if (member == null)
-                        return;
-
-                    member.AssignRole(role);
-                    return;
-                }
-
-                if (chat.MessageTokenized.Length > 2 && chat.MessageTokenized[2].ToLower() == "clear")
-                {
-                    if (botHandler.Group == null) return;
-                    var member = botHandler.Group.GetMember(botHandler.BotOwner.Guid);
-                    if (member == null)
-                        return;
-
-                    member.AssignRole(string.Empty);
-                    return;
-                }
-
-                if (chat.MessageTokenized.Length > 2 && chat.MessageTokenized[2].ToLower() == "auto")
-                {
-                    botHandler.AssignGroupRole();
-                    return;
-                }
-
-                ListAllRolesInGroup(botHandler);
-                return;
-            }
+            // Handle chat commands
+            HandleCommands(botHandler, chat);
         }
 
-        private void ListAllRolesInGroup(GroupBotHandler botHandler)
+        /// <summary>
+        /// Default action for group command
+        /// </summary>
+        /// <param name="botHandler"></param>
+        /// <param name="chat"></param>
+        private void Help(GroupBotHandler botHandler, ChatEventArgs chat)
         {
-            if (botHandler.Group == null) return;
-            var member = botHandler.Group.GetMember(botHandler.BotOwner.Guid);
-            if (member == null)
-                return;
 
-            if (string.IsNullOrEmpty(member.Role) || member.Role.ToLower() == "none")
-                botHandler.BotOwner.ChatSay("I am not in a role");
-            else
-                botHandler.BotOwner.ChatSay($"I am in role {member.Role}");
+        }
+
+        /// <summary>
+        /// Commands bot to leave their current group
+        /// </summary>
+        /// <param name="botHandler"></param>
+        /// <param name="chat"></param>
+        private void LeaveGroup(GroupBotHandler botHandler, ChatEventArgs chat)
+        {
+            botHandler.BotOwner.LeaveGroup();
+        }
+
+        /// <summary>
+        /// Sub commands for roles command
+        /// </summary>
+        /// <param name="botHandler"></param>
+        /// <param name="chat"></param>
+        private void Roles(GroupBotHandler botHandler, ChatEventArgs chat)
+        {
+            var roleCommand = new GroupRoleCommand();
+            chat.RemoveToken();
+            roleCommand.ProcessCommand(botHandler, chat);
         }
     }
 }

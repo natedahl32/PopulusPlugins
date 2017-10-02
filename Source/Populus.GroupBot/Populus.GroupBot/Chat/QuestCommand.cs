@@ -11,9 +11,16 @@ namespace Populus.GroupBot.Chat
     /// Chat command for listing, accepting, dropping and turning in quests.
     /// </summary>
     [ChatCommandKey("quest")]
-    public class QuestCommand : IChatCommand
+    public class QuestCommand : ChatCommand, IChatCommand
     {
         private const float MAX_QUESTGIVER_DISTANCE = 40.0f;
+
+        public QuestCommand()
+        {
+            AddActionHandler(string.Empty, ListQuests);
+            AddActionHandler("accept", AcceptQuests);
+            AddActionHandler("complete", CompleteQuests);
+        }
 
         public void ProcessCommand(GroupBotHandler botHandler, ChatEventArgs chat)
         {
@@ -23,23 +30,8 @@ namespace Populus.GroupBot.Chat
             // Any quest command must come from the leader of the group
             if (chat.SenderGuid != botHandler.Group.Leader.Guid) return;
 
-            // TODO: Maybe add subcommand objects?
-
-            // Accept quests
-            if (chat.MessageTokenized.Length > 1 && chat.MessageTokenized[1].ToLower() == "accept")
-            {
-                AcceptQuests(botHandler, chat);
-                return;
-            }
-
-            // Complete quests
-            if (chat.MessageTokenized.Length > 1 && chat.MessageTokenized[1].ToLower() == "complete")
-            {
-                CompleteQuests(botHandler, chat);
-                return;
-            }
-
-            ListQuests(botHandler);
+            // Handle chat commands
+            HandleCommands(botHandler, chat);
         }
 
         /// <summary>
@@ -164,7 +156,7 @@ namespace Populus.GroupBot.Chat
         /// Lists all quests the bot currently has
         /// </summary>
         /// <param name="botHandler"></param>
-        private void ListQuests(GroupBotHandler botHandler)
+        private void ListQuests(GroupBotHandler botHandler, ChatEventArgs chat)
         {
             if (botHandler.BotOwner.Quests.Count() == 0)
             {

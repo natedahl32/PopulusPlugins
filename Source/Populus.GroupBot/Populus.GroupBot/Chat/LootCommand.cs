@@ -8,9 +8,15 @@ using System.Linq;
 namespace Populus.GroupBot.Chat
 {
     [ChatCommandKey("loot")]
-    public class LootCommand : IChatCommand
+    public class LootCommand : ChatCommand, IChatCommand
     {
         private const float MAX_LOOT_DISTANCE = 40.0f;
+
+        public LootCommand()
+        {
+            AddActionHandler(string.Empty, Loot);
+            AddActionHandler("all", LootAll);
+        }
 
         public void ProcessCommand(GroupBotHandler botHandler, ChatEventArgs chat)
         {
@@ -20,18 +26,47 @@ namespace Populus.GroupBot.Chat
             // Any loot command must come from the leader of the group
             if (chat.SenderGuid != botHandler.Group.Leader.Guid) return;
 
-            // TODO: Maybe add subcommand objects?
+            // Handle chat commands
+            HandleCommands(botHandler, chat);
+        }
 
-            // Loot all corpses that we can when the sub command is "all"
-            if (chat.MessageTokenized.Length > 1 && chat.MessageTokenized[1].ToLower() == "all")
-            {
-                var lootList = FindCloseLootables(botHandler);
-                foreach (var lootable in lootList)
-                    Loot(botHandler, lootable);
-                return;
-            }
+        /// <summary>
+        /// Find lootables that within range of us
+        /// </summary>
+        /// <returns></returns>
+        private List<WorldObject> FindCloseLootables(GroupBotHandler botHandler)
+        {
+            List<WorldObject> lootables = new List<WorldObject>();
 
+            // Check for any dead units and see if we can loot them
+            var units = botHandler.BotOwner.GetUnitsInRange(MAX_LOOT_DISTANCE).Where(u => u.IsDead);
+            lootables.AddRange(units);
 
+            // Check for any gameobjects that are lootable
+            var GOs = botHandler.BotOwner.GetGameObjectsInRange(MAX_LOOT_DISTANCE).Where(go => go.CanInteract);
+            lootables.AddRange(GOs);
+
+            return lootables;
+        }
+
+        /// <summary>
+        /// Loots all possible corpses and world objects
+        /// </summary>
+        /// <param name="botHandler"></param>
+        /// <param name="chat"></param>
+        private void LootAll(GroupBotHandler botHandler, ChatEventArgs chat)
+        {
+            var lootList = FindCloseLootables(botHandler);
+            foreach (var lootable in lootList)
+                Loot(botHandler, lootable);
+        }
+
+        /// <summary>
+        /// Attempts to loot a world object
+        /// </summary>
+        /// <param name="wo">World Object to loot</param>
+        private void Loot(GroupBotHandler botHandler, ChatEventArgs chat)
+        {
             // Get the leaders target
             var leaderObj = botHandler.BotOwner.GetPlayerByGuid(botHandler.Group.Leader.Guid);
             if (leaderObj == null) return;
@@ -67,33 +102,14 @@ namespace Populus.GroupBot.Chat
                 return;
             }
 
-            // Loot the object
             Loot(botHandler, target);
         }
 
         /// <summary>
-        /// Find lootables that within range of us
+        /// Loots a world object
         /// </summary>
-        /// <returns></returns>
-        private List<WorldObject> FindCloseLootables(GroupBotHandler botHandler)
-        {
-            List<WorldObject> lootables = new List<WorldObject>();
-
-            // Check for any dead units and see if we can loot them
-            var units = botHandler.BotOwner.GetUnitsInRange(MAX_LOOT_DISTANCE).Where(u => u.IsDead);
-            lootables.AddRange(units);
-
-            // Check for any gameobjects that are lootable
-            var GOs = botHandler.BotOwner.GetGameObjectsInRange(MAX_LOOT_DISTANCE).Where(go => go.CanInteract);
-            lootables.AddRange(GOs);
-
-            return lootables;
-        }
-
-        /// <summary>
-        /// Attempts to loot a world object
-        /// </summary>
-        /// <param name="wo">World Object to loot</param>
+        /// <param name="botHandler"></param>
+        /// <param name="wo"></param>
         private void Loot(GroupBotHandler botHandler, WorldObject wo)
         {
             //var actionQueue = ActionMgr.GetActionQueue(botHandler.BotOwner.Guid);

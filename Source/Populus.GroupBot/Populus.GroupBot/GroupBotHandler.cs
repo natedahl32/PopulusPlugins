@@ -221,6 +221,7 @@ namespace Populus.GroupBot
         /// <param name="trigger"></param>
         internal void TriggerState(StateTriggers trigger)
         {
+            BotOwner.Logger.Log($"Firing state trigger {trigger}");
             mStateMachine.Fire(trigger);
         }
 

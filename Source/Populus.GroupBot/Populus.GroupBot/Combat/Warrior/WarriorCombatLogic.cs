@@ -1,6 +1,8 @@
 ﻿using FluentBehaviourTree;
+using Populus.Core.Constants;
 using Populus.Core.World.Objects;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Populus.GroupBot.Combat.Warrior
 {
@@ -172,8 +174,49 @@ namespace Populus.GroupBot.Combat.Warrior
 
         public override bool Pull(Unit unit)
         {
-            // TODO: Pull logic
-            return false;
+            // Do I have a range weapon equipped?
+            var rangedItem = BotHandler.BotOwner.GetItemInEquipmentSlot(Core.Constants.EquipmentSlots.EQUIPMENT_SLOT_RANGED);
+            if (rangedItem == null)
+            {
+                BotHandler.BotOwner.ChatParty("I can't pull, I do not have a ranged weapon equipped!");
+                return false;
+            }
+
+            // Do I have ammo for this ranged weapon?
+            var ammo = BotHandler.BotOwner.AmmoEquipped;
+            if (ammo > 0)
+            {
+                // Make sure the ammo we have is the correct type. If it isn't, reset it so we can find the right type in inventory
+                var itm = BotHandler.BotOwner.GetInventoryItem(ammo);
+                if (itm.Item.BaseInfo.SubClass != rangedItem.BaseInfo.AmmoType)
+                    ammo = 0;
+            }
+
+            // Don't have ammo equipped, find the right type and equip it
+            if (ammo == 0)
+            {
+                // Find first projectile of the correct type in inventory
+                var projectile = BotHandler.BotOwner.InventoryItems.Where(i => i.Item.BaseInfo != null &&
+                                                                               i.Item.BaseInfo.ItemClass == Core.Constants.ItemClass.ITEM_CLASS_PROJECTILE &&
+                                                                               i.Item.BaseInfo.SubClass == rangedItem.BaseInfo.AmmoType).FirstOrDefault();
+                if (projectile == null)
+                {
+                    BotHandler.BotOwner.ChatParty("I don't have any ammo to pull, but I'm getting some now. I can try again in a second!");
+                    CreateAmmo(rangedItem);
+                    return false;
+                }
+
+                // Equip it
+                BotHandler.BotOwner.SetAmmo(projectile.Item.BaseInfo.ItemId);
+            }
+
+            // Set our target
+            BotHandler.CombatState.SetTarget(unit);
+
+            // Get correct spell based on weapon equipped
+            FireRangedWeapon(rangedItem);
+
+            return true;
         }
 
         /// <summary>
@@ -307,6 +350,51 @@ namespace Populus.GroupBot.Combat.Warrior
             // Reset heroic strike flag on each attack
             if (bot.Guid == BotHandler.BotOwner.Guid && eventArgs.AttackerGuid == BotHandler.BotOwner.Guid && mHeroicStrikePrepared)
                 mHeroicStrikePrepared = false;
+        }
+
+        /// <summary>
+        /// Create ammo for a ranged item
+        /// </summary>
+        /// <param name="rangedItem"></param>
+        private void CreateAmmo(Item rangedItem)
+        {
+            if (rangedItem.BaseInfo.SubClass == (uint)ItemSubclassWeapon.ITEM_SUBCLASS_WEAPON_BOW ||
+                rangedItem.BaseInfo.SubClass == (uint)ItemSubclassWeapon.ITEM_SUBCLASS_WEAPON_CROSSBOW)
+            {
+                if (BotHandler.BotOwner.Level >= 45)
+                    BotHandler.BotOwner.ChatSay(".additem 11285 100");
+                if (BotHandler.BotOwner.Level >= 30)
+                    BotHandler.BotOwner.ChatSay(".additem 3030 100");
+                if (BotHandler.BotOwner.Level >= 15)
+                    BotHandler.BotOwner.ChatSay(".additem 2515 100");
+                if (BotHandler.BotOwner.Level >= 1)
+                    BotHandler.BotOwner.ChatSay(".additem 2512 100");
+            }
+            else if (rangedItem.BaseInfo.SubClass == (uint)ItemSubclassWeapon.ITEM_SUBCLASS_WEAPON_GUN)
+            {
+                if (BotHandler.BotOwner.Level >= 45)
+                    BotHandler.BotOwner.ChatSay(".additem 11284 100");
+                if (BotHandler.BotOwner.Level >= 30)
+                    BotHandler.BotOwner.ChatSay(".additem 3033 100");
+                if (BotHandler.BotOwner.Level >= 15)
+                    BotHandler.BotOwner.ChatSay(".additem 2519 100");
+                if (BotHandler.BotOwner.Level >= 1)
+                    BotHandler.BotOwner.ChatSay(".additem 2516 100");
+            }
+        }
+
+        /// <summary>
+        /// Fires a ranged weapon at the current target
+        /// </summary>
+        /// <param name="rangedItem"></param>
+        private void FireRangedWeapon(Item rangedItem)
+        {
+            if (rangedItem.BaseInfo.SubClass == (uint)ItemSubclassWeapon.ITEM_SUBCLASS_WEAPON_BOW)
+                CastSpell(SHOOT_BOW);
+            else if (rangedItem.BaseInfo.SubClass == (uint)ItemSubclassWeapon.ITEM_SUBCLASS_WEAPON_CROSSBOW)
+                CastSpell(SHOOT_XBOW);
+            else if (rangedItem.BaseInfo.SubClass == (uint)ItemSubclassWeapon.ITEM_SUBCLASS_WEAPON_GUN)
+                CastSpell(SHOOT_GUN);
         }
 
         #endregion

@@ -170,7 +170,7 @@ namespace Populus.CombatManager
 
                 // Move to a spot that is within range
                 if (mBotOwner.FollowTarget == null || mBotOwner.FollowTarget.Guid != mTarget.Guid)
-                    mBotOwner.SetFollow(mTarget.Guid);
+                    mBotOwner.SetFollow(mTarget.Guid, spell.MaximumRange.Value - 0.5f);
             }
             else
             {
@@ -180,12 +180,12 @@ namespace Populus.CombatManager
             }
 
             // Check if hostile or not friendly (handles neutral enemy factions, like boars)
-            if (mBotOwner.IsHostileTo(target) ||
-                !mBotOwner.IsFriendlyTo(target))
-            {
-                // Add the target to the aggro list
-                AddToAggroList(target);
-            }
+            //if (mBotOwner.IsHostileTo(target) ||
+            //    !mBotOwner.IsFriendlyTo(target))
+            //{
+            //    // Add the target to the aggro list
+            //    AddToAggroList(target);
+            //}
 
             // Cast the spell
             if (mCastingSpellId > 0)
@@ -259,8 +259,8 @@ namespace Populus.CombatManager
         {
             var inCombat = IsInCombat;
 
-            // Remove any dead units from aggro
-            mAggroList.RemoveDeadUnits();
+            // Remove any dead units from aggro, or units that are no longer in our objects or too far away
+            mAggroList.RemoveUnits(mBotOwner);
 
             // TODO: If these are resurrection spells, we don't want to stop
             // If we are currently casting and our target is dead, stop casting

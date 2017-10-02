@@ -8,8 +8,14 @@ namespace Populus.GroupBot.Chat
     /// Chat commands for dealing with items
     /// </summary>
     [ChatCommandKey("item")]
-    public class ItemCommand : IChatCommand
+    public class ItemCommand : ChatCommand, IChatCommand
     {
+        public ItemCommand()
+        {
+            AddActionHandler(string.Empty, InventoryItems);
+            AddActionHandler("equip", EquipItem);
+        }
+
         public void ProcessCommand(GroupBotHandler botHandler, ChatEventArgs chat)
         {
             if (botHandler == null) throw new ArgumentNullException("botHandler");
@@ -18,16 +24,17 @@ namespace Populus.GroupBot.Chat
             // Any item command must come from the leader of the group
             if (chat.SenderGuid != botHandler.Group.Leader.Guid) return;
 
-            // TODO: Maybe add subcommand objects?
+            // Handle chat commands
+            HandleCommands(botHandler, chat);
+        }
 
-            // Auto equip an item that was linked
-            if (chat.MessageTokenized.Length > 1 && chat.MessageTokenized[1].ToLower() == "equip")
-            {
-                EquipItem(botHandler, chat);
-                return;
-            }
-
-            // List all items in inventory and equipped
+        /// <summary>
+        /// Displays the bots items in inventory
+        /// </summary>
+        /// <param name="botHandler"></param>
+        /// <param name="chat"></param>
+        private void InventoryItems(GroupBotHandler botHandler, ChatEventArgs chat)
+        {
             botHandler.BotOwner.ChatParty("My items in inventory are:");
             foreach (var invItem in botHandler.BotOwner.InventoryItems)
             {
@@ -38,6 +45,11 @@ namespace Populus.GroupBot.Chat
             }
         }
 
+        /// <summary>
+        /// Commands the bot to equip and item from inventory
+        /// </summary>
+        /// <param name="botHandler"></param>
+        /// <param name="chat"></param>
         private void EquipItem(GroupBotHandler botHandler, ChatEventArgs chat)
         {
             // Get the linked item id from chat
@@ -65,6 +77,15 @@ namespace Populus.GroupBot.Chat
                 botHandler.BotOwner.AutoEquipItem(linkedItemId, Core.Constants.EquipmentSlots.EQUIPMENT_SLOT_OFFHAND);
             else
             {
+                // Try and get the item from inventory
+                var itm = botHandler.BotOwner.GetInventoryItem(linkedItemId);
+                // Handle trying to equip ammo, this is done differently
+                if (itm != null && itm.Item.BaseInfo.InventoryType == Core.Constants.InventoryType.INVTYPE_AMMO)
+                {
+                    botHandler.BotOwner.SetAmmo(linkedItemId);
+                    return;
+                }
+
                 // By default, autoequip the item to any slot
                 botHandler.BotOwner.AutoEquipItem(linkedItemId);
             }

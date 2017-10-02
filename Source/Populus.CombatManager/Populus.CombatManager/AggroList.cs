@@ -1,5 +1,6 @@
 ﻿using Populus.Core.Plugins;
 using Populus.Core.Shared;
+using Populus.Core.Utils;
 using Populus.Core.World.Objects;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,12 @@ namespace Populus.CombatManager
     /// </summary>
     public class AggroList : WoWGuidCollection<Unit>
     {
+        #region Declarations
+
+        private const float MAX_AGGRO_DISTANCE = 100f;
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -42,14 +49,26 @@ namespace Populus.CombatManager
         #region Public Methods
 
         /// <summary>
-        /// Removes all dead units from the aggro list
+        /// Removes all units from the aggro list that should no longer be there.
+        /// - Units that are dead
+        /// - Units that are no longer found in objects
+        /// - Units that are too far away
         /// </summary>
-        internal void RemoveDeadUnits()
+        internal void RemoveUnits(Bot bot)
         {
             var copy = Data.Values.ToList();
             foreach (var mob in copy)
-                if (mob.IsDead)
+            {
+                var obj = bot.GetUnitByGuid(mob.Guid);
+                if (obj == null)
                     Remove(mob.Guid);
+                else
+                {
+                    var dist = MathUtility.CalculateDistance(bot.Position, obj.Position);
+                    if (mob.IsDead || dist > MAX_AGGRO_DISTANCE)
+                        Remove(mob.Guid);
+                }
+            }
         }
 
         /// <summary>
@@ -68,6 +87,10 @@ namespace Populus.CombatManager
         {
             return Data.ContainsKey(guid);
         }
+
+        #endregion
+
+        #region Private Methods
 
         #endregion
     }

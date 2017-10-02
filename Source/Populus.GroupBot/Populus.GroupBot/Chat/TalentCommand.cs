@@ -6,8 +6,14 @@ using System.Linq;
 namespace Populus.GroupBot.Chat
 {
     [ChatCommandKey("talent")]
-    public class TalentCommand : IChatCommand
+    public class TalentCommand : ChatCommand, IChatCommand
     {
+        public TalentCommand()
+        {
+            AddActionHandler(string.Empty, ListTalents);
+            AddActionHandler("assign", AssignTalentSpec);
+        }
+
         public void ProcessCommand(GroupBotHandler botHandler, ChatEventArgs chat)
         {
             if (botHandler == null) throw new ArgumentNullException("botHandler");
@@ -16,16 +22,8 @@ namespace Populus.GroupBot.Chat
             // Any talent command must come from the leader of the group
             if (chat.SenderGuid != botHandler.Group.Leader.Guid) return;
 
-            // TODO: Maybe add subcommand objects?
-
-            // Assign talent spec
-            if (chat.MessageTokenized.Length > 1 && chat.MessageTokenized[1].ToLower() == "assign")
-            {
-                AssignTalentSpec(botHandler, chat);
-                return;
-            }
-
-            ListTalents(botHandler);
+            // Handle chat commands
+            HandleCommands(botHandler, chat);
         }
 
         /// <summary>
@@ -58,7 +56,7 @@ namespace Populus.GroupBot.Chat
         /// Lists all talent specs available for this bots class. Also identifies the talent spec the bot is currently using.
         /// </summary>
         /// <param name="botHandler"></param>
-        private void ListTalents(GroupBotHandler botHandler)
+        private void ListTalents(GroupBotHandler botHandler, ChatEventArgs chat)
         {
             var currentTalentSpec = botHandler.CurrentTalentSpec;
             botHandler.BotOwner.ChatParty($"I have {botHandler.BotOwner.FreeTalentPoints} unspent talent points and my current talent spec is set to: {(currentTalentSpec == null ? "NONE" : currentTalentSpec.Name)}");

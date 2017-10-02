@@ -10,28 +10,26 @@ namespace Populus.GroupBot.Chat
     /// Chat command for a group bot that handles spell related tasks
     /// </summary>
     [ChatCommandKey("spells")]
-    public class SpellsCommand : IChatCommand
+    public class SpellsCommand : ChatCommand, IChatCommand
     {
+        public SpellsCommand()
+        {
+            AddActionHandler(string.Empty, ListAllSpells);
+        }
+
         public void ProcessCommand(GroupBotHandler botHandler, ChatEventArgs chat)
         {
             if (botHandler == null) throw new ArgumentNullException("botHandler");
             if (chat == null) throw new ArgumentNullException("chat");
 
-            // Turn follow off
-            if (chat.MessageTokenized.Length > 1 && chat.MessageTokenized[1].ToLower() == "off")
-            {
-                botHandler.StopFollow();
-                return;
-            }
-
-            // Default action is to list all spells the bot currently has
-            ListAllSpells(botHandler);
+            // Handle chat commands
+            HandleCommands(botHandler, chat);
         }
 
         /// <summary>
         /// List all spells the bot has
         /// </summary>
-        private void ListAllSpells(GroupBotHandler botHandler)
+        private void ListAllSpells(GroupBotHandler botHandler, ChatEventArgs chat)
         {
             var spellList = new List<SpellEntry>();
             foreach (var s in botHandler.BotOwner.Spells)
