@@ -54,6 +54,7 @@ namespace Populus.GroupBot
         /// </summary>
         internal void Serialize()
         {
+            if (mGuid == 0) return;
             var filePath = $"bot\\{mGuid}.bot";
             var serializer = this.Serializer;
             using (StreamWriter sw = new StreamWriter(filePath))

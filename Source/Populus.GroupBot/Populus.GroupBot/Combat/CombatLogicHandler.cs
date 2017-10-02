@@ -48,6 +48,8 @@ namespace Populus.GroupBot.Combat
         private Unit mAttackingUnit = null;
         private bool mIsFirstCombatActionDone = false;
 
+        private float? mCombatStartedTick;
+
         // Behavior trees
         private IBehaviourTreeNode mOutOfCombatBehavior;
         private IBehaviourTreeNode mCombatBehavior;
@@ -164,6 +166,26 @@ namespace Populus.GroupBot.Combat
         #region Public Methods
 
         /// <summary>
+        /// Update combat logic
+        /// </summary>
+        /// <param name="deltaTime"></param>
+        public void CombatUpdate(float deltaTime)
+        {
+            if (!mCombatStartedTick.HasValue) mCombatStartedTick = deltaTime;
+            this.mCombatBehavior?.Tick(new TimeData(deltaTime));
+        }
+
+        /// <summary>
+        /// Update out of combat logic
+        /// </summary>
+        /// <param name="deltaTime"></param>
+        public void OutOfCombatUpdate(float deltaTime)
+        {
+            if (mCombatStartedTick.HasValue) mCombatStartedTick = null;
+            this.mOutOfCombatBehavior?.Tick(new TimeData(deltaTime));
+        }
+
+        /// <summary>
         /// Starts an attack against a unit (we may already be attacking another unit). We leave it up to the combat logic
         /// to determine how to attack.
         /// </summary>
@@ -273,27 +295,14 @@ namespace Populus.GroupBot.Combat
             // Do nothing in base
         }
 
+        /// <summary>
+        /// Called when combat is over so any combat state can be reset
+        /// </summary>
+        public virtual void ResetCombatState() { }
+
         #endregion
 
         #region Private Methods
-
-        /// <summary>
-        /// Update combat logic
-        /// </summary>
-        /// <param name="deltaTime"></param>
-        public void CombatUpdate(float deltaTime)
-        {
-            this.mCombatBehavior?.Tick(new TimeData(deltaTime));
-        }
-
-        /// <summary>
-        /// Update out of combat logic
-        /// </summary>
-        /// <param name="deltaTime"></param>
-        public void OutOfCombatUpdate(float deltaTime)
-        {
-            this.mOutOfCombatBehavior?.Tick(new TimeData(deltaTime));
-        }
 
         /// <summary>
         /// Gets whether or not the bot is in melee range of it's target

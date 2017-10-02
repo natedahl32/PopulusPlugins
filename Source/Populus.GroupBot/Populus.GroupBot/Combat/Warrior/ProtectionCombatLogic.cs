@@ -9,6 +9,7 @@ namespace Populus.GroupBot.Combat.Warrior
         #region Declarations
 
         private bool mRevengeProcced = false;
+        private bool mHasHitTarget = false;
 
         #endregion
 
@@ -26,6 +27,20 @@ namespace Populus.GroupBot.Combat.Warrior
 
         #endregion
 
+        #region Public Methods
+
+        /// <summary>
+        /// Resets any combat state flags
+        /// </summary>
+        public override void ResetCombatState()
+        {
+            mHasHitTarget = false;
+            mHeroicStrikePrepared = false;
+            mRevengeProcced = false;
+        }
+
+        #endregion
+
         #region Private Methods
 
         protected override IBehaviourTreeNode CombatRotationTree()
@@ -33,9 +48,13 @@ namespace Populus.GroupBot.Combat.Warrior
             var builder = new BehaviourTreeBuilder();
             builder.Selector("Protection Warrior Rotation")
                         .Do("Defensive Stance", t => SelfBuff(DEFENSIVE_STANCE))
-                        .Do("Bloodrage", t => Bloodrage())        // We might not have the rage to do this until combat
+                        .Do("Mocking Blow", t => MockingBlow())
+                        .Do("Taunt", t => Taunt())
+                        .Do("Bloodrage", t => Bloodrage())
                         .Do("Revenge", t => Revenge())
                         .Do("Sunder Armors", t => SunderArmors(3))
+                        .Do("Shield Block", t => SelfBuff(SHIELD_BLOCK))
+                        .Do("Battle Shout", t => GroupBuff(BATTLE_SHOUT))   // Might not have the rage to do until combat
                    .End();
             return builder.Build();
         }
@@ -52,6 +71,10 @@ namespace Populus.GroupBot.Combat.Warrior
 
         protected override void CombatAttackUpdate(Bot bot, Core.World.Objects.Events.CombatAttackUpdateArgs eventArgs)
         {
+            // check if we are attacking the target
+            if (bot.Guid == BotHandler.BotOwner.Guid && eventArgs.AttackerGuid == BotHandler.BotOwner.Guid && eventArgs.Hit)
+                mHasHitTarget = true;
+
             // check for revenge procs
             if (bot.Guid == BotHandler.BotOwner.Guid && eventArgs.AttackerGuid == BotHandler.BotOwner.Guid)
             {
@@ -68,6 +91,37 @@ namespace Populus.GroupBot.Combat.Warrior
         #endregion
 
         #region Combat Behaviors
+
+        /// <summary>
+        /// Casts mocking blow if we don't have the attention of our target
+        /// </summary>
+        /// <returns></returns>
+        private BehaviourTreeStatus MockingBlow()
+        {
+            // If our target is targeting us, we are good
+            if (BotHandler.CombatState.CurrentTarget.TargetGuid == BotHandler.BotOwner.Guid)
+                return BehaviourTreeStatus.Failure;
+
+            return CastSpell(MOCKING_BLOW);
+        }
+
+        /// <summary>
+        /// Casts taunt if we do not have the attention of our target
+        /// </summary>
+        /// <returns></returns>
+        private BehaviourTreeStatus Taunt()
+        {
+            // TODO: Check if any target is hitting the healer. If they are, taunt off regardless of what else has happened.
+
+            // If our target is targeting us, we are good
+            if (BotHandler.CombatState.CurrentTarget.TargetGuid == BotHandler.BotOwner.Guid)
+                return BehaviourTreeStatus.Failure;
+            // If we haven't even hit the target yet, don't taunt
+            if (!mHasHitTarget)
+                return BehaviourTreeStatus.Failure;
+
+            return CastSpell(TAUNT);
+        }
 
         /// <summary>
         /// Casts bloodrage if we can use it

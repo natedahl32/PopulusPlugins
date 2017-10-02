@@ -29,6 +29,7 @@
             // If we are no longer in combat, trigger the idle state
             if (!handler.CombatState.IsInCombat)
             {
+                handler.CombatHandler.ResetCombatState();
                 handler.TriggerState(Triggers.StateTriggers.Idle);
                 return;
             }

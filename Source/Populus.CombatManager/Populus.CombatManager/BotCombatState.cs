@@ -25,9 +25,6 @@ namespace Populus.CombatManager
 
         // Id of the spell/ability that is currently being used (only set if the ability has a cast time)
         private uint mCastingSpellId = 0;
-        // Id of the spell/ability that will be used next after the current spell/ability is completed. Can still be set if no cast time, because it still has to wait
-        // for the current spell to be cast before it can be used.
-        private uint mQueuedSpellId = 0;
 
         // Flag that holds whether or not the bot is attacking
         private bool mIsAttacking = false;
@@ -74,14 +71,6 @@ namespace Populus.CombatManager
         public bool IsCasting
         {
             get { return mCastingSpellId > 0; }
-        }
-
-        /// <summary>
-        /// Gets whether or not a spell is currently queued up to cast after the current one is finished
-        /// </summary>
-        public bool HasSpellQueued
-        {
-            get { return mQueuedSpellId > 0; }
         }
 
         /// <summary>
@@ -148,17 +137,16 @@ namespace Populus.CombatManager
         /// <returns>Whether or not the cast was successful</returns>
         public bool SpellCast(Unit target, uint spellId)
         {
-            // If we have a spell we are casting and a spell that is queued up, we can't handle any more spell casts
-            if (mCastingSpellId > 0 && mQueuedSpellId > 0) return false;
+            // If we do not have a target, use ourselves as a target
+            if (target == null) target = mBotOwner;
+
+            // If we have a spell we are casting we can't cast another one
+            if (mCastingSpellId > 0) return false;
 
             // Get the spell
             var spell = SpellTable.Instance.getSpell(spellId);
             if (spell == null)
                 return false;
-
-            // Always set the target
-            mTarget = target;
-            mBotOwner.SetTarget(target.Guid);
 
             // If not within distance to cast, move to distance
             var dist = mBotOwner.DistanceFrom(target.Position);
@@ -169,36 +157,24 @@ namespace Populus.CombatManager
                     return false;
 
                 // Move to a spot that is within range
-                if (mBotOwner.FollowTarget == null || mBotOwner.FollowTarget.Guid != mTarget.Guid)
-                    mBotOwner.SetFollow(mTarget.Guid, spell.MaximumRange.Value - 0.5f);
+                if (mBotOwner.FollowTarget == null || mBotOwner.FollowTarget.Guid != target.Guid)
+                    mBotOwner.SetFollow(target.Guid, spell.MaximumRange.Value - 0.5f);
             }
             else
             {
                 // If we are now within range, remove our target from follow
-                if (mBotOwner.FollowTarget != null && mBotOwner.FollowTarget.Guid == mTarget.Guid)
+                if (mBotOwner.FollowTarget != null && mBotOwner.FollowTarget.Guid == target.Guid)
                     mBotOwner.RemoveFollow();
             }
 
-            // Check if hostile or not friendly (handles neutral enemy factions, like boars)
-            //if (mBotOwner.IsHostileTo(target) ||
-            //    !mBotOwner.IsFriendlyTo(target))
-            //{
-            //    // Add the target to the aggro list
-            //    AddToAggroList(target);
-            //}
+            // Set the casting spell if there is a cast time
+            if (spell.CastTime > 0 || spell.CastingTimeIndex > 1)
+                mCastingSpellId = spellId;
+            // If the spell we are casting is WAND_SHOOT, start attacking flag (this does not cast the SHOOT spell!)
+            if (spellId == WAND_SHOOT)
+                StartAttack();
 
             // Cast the spell
-            if (mCastingSpellId > 0)
-                mQueuedSpellId = spellId;
-            else
-            {
-                if (spell.CastTime > 0 || spell.CastingTimeIndex > 1)
-                    mCastingSpellId = spellId;
-                // If the spell we are casting is WAND_SHOOT, start attacking flag (this does not cast the SHOOT spell!)
-                if (spellId == WAND_SHOOT)
-                    StartAttack();
-            }
-
             CastSpell(target, spellId);
             return true;
         }
@@ -210,6 +186,7 @@ namespace Populus.CombatManager
         {
             if (!IsCasting) return;
             mBotOwner.CancelCast(mCastingSpellId);
+            mCastingSpellId = 0;
         }
 
         /// <summary>
@@ -305,22 +282,7 @@ namespace Populus.CombatManager
         {
             // If the current spell cast is complete
             if (mCastingSpellId == spellId)
-            {
-                if (mQueuedSpellId > 0)
-                {
-                    mCastingSpellId = mQueuedSpellId;
-                    mQueuedSpellId = 0;
-                }
-                else
-                    mCastingSpellId = 0;
-                return;
-            }
-
-            // If the queued spell cast is complete... huh? Maybe we are getting multiple completion events?
-            if (mQueuedSpellId == spellId)
-            {
-                mQueuedSpellId = 0;
-            }
+                mCastingSpellId = 0;
         }
 
         /// <summary>
@@ -369,10 +331,11 @@ namespace Populus.CombatManager
         private void CastSpell(Unit target, uint spellId)
         {
             // Face the target before we cast
-            mBotOwner.FaceTarget(mTarget.Guid);
+            if (target.Guid != mBotOwner.Guid)
+                mBotOwner.FaceTarget(target.Guid);
 
             // Cast the spell
-            mBotOwner.CastSpellAbility(mTarget.Guid, spellId);
+            mBotOwner.CastSpellAbility(target.Guid, spellId);
 
             // Log what we are casting
             var spell = SpellTable.Instance.getSpell(spellId);

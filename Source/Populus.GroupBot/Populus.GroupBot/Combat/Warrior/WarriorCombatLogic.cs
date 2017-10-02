@@ -206,9 +206,12 @@ namespace Populus.GroupBot.Combat.Warrior
                     return false;
                 }
 
-                // Equip it
-                BotHandler.BotOwner.SetAmmo(projectile.Item.BaseInfo.ItemId);
+                // Set ammo id to our projectile
+                ammo = projectile.Item.BaseInfo.ItemId;
             }
+
+            // Equip it just to make sure
+            BotHandler.BotOwner.SetAmmo(ammo);
 
             // Set our target
             BotHandler.CombatState.SetTarget(unit);
