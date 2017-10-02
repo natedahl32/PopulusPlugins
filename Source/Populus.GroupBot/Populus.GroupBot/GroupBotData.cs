@@ -9,12 +9,27 @@ namespace Populus.GroupBot
     /// </summary>
     internal class GroupBotData
     {
+        #region Declarations
+
+        private ulong mGuid;
+        private string mSpecName;
+
+        #endregion
+
         #region Properties
 
         /// <summary>
         /// Gets or sets the name of the spec the bot is currently using. If null or empty, no spec is currently set.
         /// </summary>
-        public string SpecName { get; set; }
+        public string SpecName
+        {
+            get { return mSpecName; }
+            set
+            {
+                mSpecName = value;
+                Serialize();
+            }
+        }
 
         /// <summary>
         /// Gets the serializer used to write bot data
@@ -37,9 +52,9 @@ namespace Populus.GroupBot
         /// <summary>
         /// Saves bot data out to a file
         /// </summary>
-        internal void Serialize(ulong guid)
+        internal void Serialize()
         {
-            var filePath = $"bot\\{guid}.bot";
+            var filePath = $"bot\\{mGuid}.bot";
             var serializer = this.Serializer;
             using (StreamWriter sw = new StreamWriter(filePath))
             using (JsonWriter writer = new JsonTextWriter(sw))
@@ -59,11 +74,14 @@ namespace Populus.GroupBot
         {
             var filePath = $"bot\\{guid}.bot";
             if (!Directory.Exists("bot")) Directory.CreateDirectory("bot");
-            if (!File.Exists(filePath)) return new GroupBotData();
+            if (!File.Exists(filePath)) return new GroupBotData() { mGuid = guid };
 
             var data = File.ReadAllText(filePath);
-            if (string.IsNullOrEmpty(data) || string.IsNullOrEmpty(data.Trim())) return new GroupBotData();
-            return JsonConvert.DeserializeObject<GroupBotData>(data);
+            var botData = new GroupBotData();
+            if (!string.IsNullOrEmpty(data) && !string.IsNullOrEmpty(data.Trim()))
+                botData = JsonConvert.DeserializeObject<GroupBotData>(data);
+            botData.mGuid = guid;
+            return botData;
         }
 
         #endregion

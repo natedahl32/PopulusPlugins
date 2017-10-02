@@ -173,24 +173,6 @@ namespace Populus.GroupBot
                 IsOutOfRangeOfLeader = false;
                 mLastKnownFollowPosition = mBotOwner.Position;
             }
-            else
-            {
-                if (!IsOutOfRangeOfLeader)
-                {
-                    // If we have a last known position, move to that, it might take us through a portal
-                    if (mLastKnownFollowPosition != null)
-                    {
-                        mBotOwner.MoveToPosition(mLastKnownFollowPosition);
-                        IsOutOfRangeOfLeader = true;
-                    }
-                    else
-                    {
-                        // Remove the follow target and teleport to the group member
-                        mBotOwner.RemoveFollow();
-                        TeleportToGroupMember(member);
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -217,7 +199,7 @@ namespace Populus.GroupBot
         /// </summary>
         internal void SaveBotData()
         {
-            mGroupBotData.Serialize(mBotOwner.Guid.GetOldGuid());
+            mGroupBotData.Serialize();
         }
 
         /// <summary>

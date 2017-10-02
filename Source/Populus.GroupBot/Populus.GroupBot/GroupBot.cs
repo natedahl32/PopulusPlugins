@@ -28,6 +28,7 @@ namespace Populus.GroupBot
 
         // handlers
         BotEventDelegate<GroupInviteEventArgs> inviteHandler = null;
+        EmptyEventDelegate groupUninvite = null;
         BotEventDelegate<ChatEventArgs> chatHandler = null;
         BotEventDelegate<uint> levelUpHandler = null;
         EmptyEventDelegate loginHandler = null;
@@ -77,6 +78,13 @@ namespace Populus.GroupBot
                 bot.AcceptGroupInvite();
             };
             Bot.GroupInvite += inviteHandler;
+
+            // Remove the follow target when we are uninvited from a group
+            groupUninvite = (bot) =>
+            {
+                bot.RemoveFollow();
+            };
+            Bot.GroupUninvite += groupUninvite;
 
             // Incoming chat handler
             chatHandler = (bot, args) =>
@@ -203,6 +211,7 @@ namespace Populus.GroupBot
             // Remove handlers to avoid memory leaks
             Bot.ChatMessageReceived -= chatHandler;
             Bot.GroupInvite -= inviteHandler;
+            Bot.GroupUninvite -= groupUninvite;
             Bot.LevelUp -= levelUpHandler;
             Bot.LoggedIn -= loginHandler;
             Bot.InitialSpells -= initialSpellsHandler;

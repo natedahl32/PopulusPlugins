@@ -244,7 +244,8 @@ namespace Populus.GroupBot.Combat.Mage
             var itemInInv = BotHandler.BotOwner.GetInventoryItem(spell.CreatesItemId);
             if (itemInInv == null)
             {
-                BotHandler.CombatState.SpellCast(BotHandler.BotOwner, manaGemSpell);
+                if (!BotHandler.CombatState.SpellCast(BotHandler.BotOwner, manaGemSpell))
+                    return BehaviourTreeStatus.Failure;
                 return BehaviourTreeStatus.Success;
             }
 
@@ -263,7 +264,8 @@ namespace Populus.GroupBot.Combat.Mage
             // If we do not have the armor aura and we have the spell and can cast it, succeed
             if (!BotHandler.BotOwner.HasAura(armorSpell) && HasSpellAndCanCast(armorSpell))
             {
-                BotHandler.CombatState.SpellCast(BotHandler.BotOwner, armorSpell);
+                if (!BotHandler.CombatState.SpellCast(BotHandler.BotOwner, armorSpell))
+                    return BehaviourTreeStatus.Failure;
                 return BehaviourTreeStatus.Success;
             }
 
@@ -286,12 +288,16 @@ namespace Populus.GroupBot.Combat.Mage
             var needs = BotHandler.Group.Members.Where(m => !m.HasAura((ushort)ARCANE_INTELLECT) && !m.HasAura((ushort)Spells.ARCANE_BRILLIANCE_1)).FirstOrDefault();
             if (needs == null)
                 return BehaviourTreeStatus.Failure;
+            // If the member is not a mana user, they don't need this buff
+            if (needs.PowerType != Core.Constants.Powers.POWER_MANA)
+                return BehaviourTreeStatus.Failure;
 
             var player = BotHandler.BotOwner.GetPlayerByGuid(needs.Guid);
             if (player == null)
                 return BehaviourTreeStatus.Failure;
 
-            BotHandler.CombatState.SpellCast(player, ARCANE_INTELLECT);
+            if (!BotHandler.CombatState.SpellCast(player, ARCANE_INTELLECT))
+                return BehaviourTreeStatus.Failure;
             return BehaviourTreeStatus.Success;
         }
 

@@ -103,7 +103,8 @@ namespace Populus.GroupBot.Combat
         internal static BehaviourTreeStatus FollowGroupLeader(GroupBotHandler handler)
         {
             if (handler.Group == null) return BehaviourTreeStatus.Failure;
-            if (handler.BotOwner.FollowTarget != null && handler.Group.Leader.Guid == handler.BotOwner.FollowTarget.Guid)
+            if ((handler.BotOwner.FollowTarget != null && handler.Group.Leader.Guid == handler.BotOwner.FollowTarget.Guid) ||
+                handler.BotOwner.FollowTarget == null)
             {
                 // If we are not on the same map, teleport to them
                 if (handler.BotOwner.MapId != handler.Group.Leader.MapId)
@@ -118,10 +119,10 @@ namespace Populus.GroupBot.Combat
                     handler.TeleportToGroupMember(handler.Group.Leader);
                     return BehaviourTreeStatus.Success;
                 }
-
-                return BehaviourTreeStatus.Failure;
             }
-
+            // We are already following the leader
+            if (handler.BotOwner.FollowTarget != null && handler.Group.Leader.Guid == handler.BotOwner.FollowTarget.Guid)
+                return BehaviourTreeStatus.Failure;
 
             handler.BotOwner.SetFollow(handler.Group.Leader.Guid);
             handler.FollowGroupLeader();

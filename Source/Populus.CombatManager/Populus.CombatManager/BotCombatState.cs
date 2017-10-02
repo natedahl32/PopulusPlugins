@@ -134,9 +134,9 @@ namespace Populus.CombatManager
         /// </summary>
         /// <param name="target"></param>
         /// <param name="spellId"></param>
-        public void SpellCast(uint spellId)
+        public bool SpellCast(uint spellId)
         {
-            SpellCast(CurrentTarget, spellId);
+            return SpellCast(CurrentTarget, spellId);
         }
 
         /// <summary>
@@ -145,15 +145,16 @@ namespace Populus.CombatManager
         /// </summary>
         /// <param name="target"></param>
         /// <param name="spellId"></param>
-        public void SpellCast(Unit target, uint spellId)
+        /// <returns>Whether or not the cast was successful</returns>
+        public bool SpellCast(Unit target, uint spellId)
         {
             // If we have a spell we are casting and a spell that is queued up, we can't handle any more spell casts
-            if (mCastingSpellId > 0 && mQueuedSpellId > 0) return;
+            if (mCastingSpellId > 0 && mQueuedSpellId > 0) return false;
 
             // Get the spell
             var spell = SpellTable.Instance.getSpell(spellId);
             if (spell == null)
-                return;
+                return false;
 
             // Always set the target
             mTarget = target;
@@ -165,7 +166,7 @@ namespace Populus.CombatManager
             {
                 // If we are too far away, stop the cast
                 if (dist > MAX_CAST_DISTANCE)
-                    return;
+                    return false;
 
                 // Move to a spot that is within range
                 if (mBotOwner.FollowTarget == null || mBotOwner.FollowTarget.Guid != mTarget.Guid)
@@ -199,6 +200,7 @@ namespace Populus.CombatManager
             }
 
             CastSpell(target, spellId);
+            return true;
         }
 
         /// <summary>

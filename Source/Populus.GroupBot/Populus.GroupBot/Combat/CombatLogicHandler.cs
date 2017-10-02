@@ -412,9 +412,9 @@ namespace Populus.GroupBot.Combat
         private BehaviourTreeStatus MoveToTarget(GroupBotHandler handler)
         {
             if (handler.CombatState.CurrentTarget == null) return BehaviourTreeStatus.Failure;
-
+            
             // Make sure the target is our follow target
-            if (handler.BotOwner.FollowTarget.Guid != handler.CombatState.CurrentTarget.Guid)
+            if (handler.BotOwner.FollowTarget == null || handler.BotOwner.FollowTarget.Guid != handler.CombatState.CurrentTarget.Guid)
             {
                 handler.BotOwner.SetFollow(handler.CombatState.CurrentTarget.Guid);
                 return BehaviourTreeStatus.Running;
@@ -501,7 +501,8 @@ namespace Populus.GroupBot.Combat
             if (!HasSpellAndCanCast(spellId))
                 return BehaviourTreeStatus.Failure;
 
-            BotHandler.CombatState.SpellCast(target, spellId);
+            if (!BotHandler.CombatState.SpellCast(target, spellId))
+                return BehaviourTreeStatus.Failure;
             return BehaviourTreeStatus.Success;
         }
 
@@ -548,7 +549,8 @@ namespace Populus.GroupBot.Combat
             if (BotHandler.BotOwner.HasAura(spellAndAura))
                 return BehaviourTreeStatus.Failure;
 
-            BotHandler.CombatState.SpellCast(BotHandler.BotOwner, spellAndAura);
+            if (!BotHandler.CombatState.SpellCast(BotHandler.BotOwner, spellAndAura))
+                return BehaviourTreeStatus.Failure;
             return BehaviourTreeStatus.Success;
         }
 
@@ -574,7 +576,8 @@ namespace Populus.GroupBot.Combat
             if (needs == null)
                 return BehaviourTreeStatus.Failure;
 
-            BotHandler.CombatState.SpellCast(BotHandler.BotOwner.GetPlayerByGuid(needs.Guid), spellAndAura);
+            if (!BotHandler.CombatState.SpellCast(BotHandler.BotOwner.GetPlayerByGuid(needs.Guid), spellAndAura))
+                return BehaviourTreeStatus.Failure;
             return BehaviourTreeStatus.Success;
         }
 

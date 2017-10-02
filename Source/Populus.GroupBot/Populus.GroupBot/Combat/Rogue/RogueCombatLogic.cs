@@ -150,7 +150,16 @@ namespace Populus.GroupBot.Combat.Rogue
 
         protected override IBehaviourTreeNode InitializeCombatBehaivor()
         {
-            return null;
+            var builder = new BehaviourTreeBuilder();
+            builder.Selector("Combat Behavior")
+                        .Do("Is Dead", t => BotHandler.BotOwner.IsDead ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
+                        .Inverter("If Melee Attack Succeeds, Move On")
+                            .Splice(MeleeAttack(BotHandler))
+                        .End()
+                        //.Condition("Not casting", t => BotHandler.CombatState.IsCasting)
+                        //.Splice(CombatRotationTree())
+                   .End();
+            return builder.Build();
         }
 
         protected override IBehaviourTreeNode InitializeOutOfCombatBehavior()
