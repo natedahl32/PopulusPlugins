@@ -187,6 +187,31 @@ namespace Populus.GroupBot.Combat.Shaman
             return false;
         }
 
+        /// <summary>
+        /// Checks for required shaman skills and if not found, learns them
+        /// </summary>
+        internal override void CheckForSkills()
+        {
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_2H_AXES))
+                BotHandler.BotOwner.ChatSay(".learn 197");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_AXES))
+                BotHandler.BotOwner.ChatSay(".learn 196");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_2H_MACES))
+                BotHandler.BotOwner.ChatSay(".learn 199");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_MACES))
+                BotHandler.BotOwner.ChatSay(".learn 198");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_STAVES))
+                BotHandler.BotOwner.ChatSay(".learn 227");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_DAGGERS))
+                BotHandler.BotOwner.ChatSay(".learn 1180");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_FIST_WEAPONS))
+                BotHandler.BotOwner.ChatSay(".learn 15590");
+            if (BotHandler.BotOwner.Level >= 40 && !BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_MAIL))
+                BotHandler.BotOwner.ChatSay(".learn 8737");
+
+            base.CheckForSkills();
+        }
+
         #endregion
 
         #region Private Methods

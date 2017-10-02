@@ -162,6 +162,31 @@ namespace Populus.GroupBot.Combat.Paladin
             return false;
         }
 
+        /// <summary>
+        /// Checks for required paladin skills and if not found, learns them
+        /// </summary>
+        internal override void CheckForSkills()
+        {
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_2H_AXES))
+                BotHandler.BotOwner.ChatSay(".learn 197");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_AXES))
+                BotHandler.BotOwner.ChatSay(".learn 196");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_2H_SWORDS))
+                BotHandler.BotOwner.ChatSay(".learn 202");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_SWORDS))
+                BotHandler.BotOwner.ChatSay(".learn 201");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_2H_MACES))
+                BotHandler.BotOwner.ChatSay(".learn 199");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_MACES))
+                BotHandler.BotOwner.ChatSay(".learn 198");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_POLEARMS))
+                BotHandler.BotOwner.ChatSay(".learn 200");
+            if (BotHandler.BotOwner.Level >= 40 && !BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_PLATE_MAIL))
+                BotHandler.BotOwner.ChatSay(".learn 750");
+
+            base.CheckForSkills();
+        }
+
         #endregion
 
         #region Private Methods

@@ -143,6 +143,23 @@ namespace Populus.GroupBot.Combat.Mage
             return false;
         }
 
+        /// <summary>
+        /// Checks for required mage skills and if not found, learns them
+        /// </summary>
+        internal override void CheckForSkills()
+        {
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_SWORDS))
+                BotHandler.BotOwner.ChatSay(".learn 201");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_STAVES))
+                BotHandler.BotOwner.ChatSay(".learn 227");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_DAGGERS))
+                BotHandler.BotOwner.ChatSay(".learn 1180");            
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_WANDS))
+                BotHandler.BotOwner.ChatSay(".learn 5009");
+
+            base.CheckForSkills();
+        }
+
         #endregion
 
         #region Private Methods
@@ -284,12 +301,9 @@ namespace Populus.GroupBot.Combat.Mage
             if (!HasSpellAndCanCast(ARCANE_INTELLECT))
                 return BehaviourTreeStatus.Failure;
 
-            // Get the first member in the group that needs the aura
-            var needs = BotHandler.Group.Members.Where(m => !m.HasAura((ushort)ARCANE_INTELLECT) && !m.HasAura((ushort)Spells.ARCANE_BRILLIANCE_1)).FirstOrDefault();
+            // Get the first member in the group that needs the aura (that uses mana)
+            var needs = BotHandler.Group.Members.Where(m => !m.HasAura((ushort)ARCANE_INTELLECT) && !m.HasAura((ushort)Spells.ARCANE_BRILLIANCE_1) && m.PowerType == Core.Constants.Powers.POWER_MANA).FirstOrDefault();
             if (needs == null)
-                return BehaviourTreeStatus.Failure;
-            // If the member is not a mana user, they don't need this buff
-            if (needs.PowerType != Core.Constants.Powers.POWER_MANA)
                 return BehaviourTreeStatus.Failure;
 
             var player = BotHandler.BotOwner.GetPlayerByGuid(needs.Guid);

@@ -182,6 +182,27 @@ namespace Populus.GroupBot.Combat.Druid
             return false;
         }
 
+        /// <summary>
+        /// Checks for required druid skills and if not found, learns them
+        /// </summary>
+        internal override void CheckForSkills()
+        {
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_2H_MACES))
+                BotHandler.BotOwner.ChatSay(".learn 199");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_MACES))
+                BotHandler.BotOwner.ChatSay(".learn 198");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_POLEARMS))
+                BotHandler.BotOwner.ChatSay(".learn 200");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_STAVES))
+                BotHandler.BotOwner.ChatSay(".learn 227");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_DAGGERS))
+                BotHandler.BotOwner.ChatSay(".learn 1180");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_FIST_WEAPONS))
+                BotHandler.BotOwner.ChatSay(".learn 15590");
+
+            base.CheckForSkills();
+        }
+
         #endregion
 
         #region Private Methods

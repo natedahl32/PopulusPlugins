@@ -176,6 +176,47 @@ namespace Populus.GroupBot.Combat.Warrior
             return false;
         }
 
+        /// <summary>
+        /// Checks for required warrior skills and if not found, learns them
+        /// </summary>
+        internal override void CheckForSkills()
+        {
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_2H_AXES))
+                BotHandler.BotOwner.ChatSay(".learn 197");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_AXES))
+                BotHandler.BotOwner.ChatSay(".learn 196");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_2H_SWORDS))
+                BotHandler.BotOwner.ChatSay(".learn 202");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_SWORDS))
+                BotHandler.BotOwner.ChatSay(".learn 201");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_2H_MACES))
+                BotHandler.BotOwner.ChatSay(".learn 199");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_MACES))
+                BotHandler.BotOwner.ChatSay(".learn 198");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_POLEARMS))
+                BotHandler.BotOwner.ChatSay(".learn 200");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_STAVES))
+                BotHandler.BotOwner.ChatSay(".learn 227");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_DAGGERS))
+                BotHandler.BotOwner.ChatSay(".learn 1180");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_FIST_WEAPONS))
+                BotHandler.BotOwner.ChatSay(".learn 15590");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_BOWS))
+                BotHandler.BotOwner.ChatSay(".learn 264");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_CROSSBOWS))
+                BotHandler.BotOwner.ChatSay(".learn 5011");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_GUNS))
+                BotHandler.BotOwner.ChatSay(".learn 266");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_THROWN))
+                BotHandler.BotOwner.ChatSay(".learn 2567");
+            if (BotHandler.BotOwner.Level >= 20 && !BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_DUAL_WIELD))
+                BotHandler.BotOwner.ChatSay(".learn 674");
+            if (BotHandler.BotOwner.Level >= 40 && !BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_PLATE_MAIL))
+                BotHandler.BotOwner.ChatSay(".learn 750");
+
+            base.CheckForSkills();
+        }
+
         #endregion
 
         #region Private Methods

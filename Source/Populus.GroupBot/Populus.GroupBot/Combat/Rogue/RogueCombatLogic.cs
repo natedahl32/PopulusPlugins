@@ -144,6 +144,39 @@ namespace Populus.GroupBot.Combat.Rogue
             return false;
         }
 
+        /// <summary>
+        /// Checks for required rogue skills and if not found, learns them
+        /// </summary>
+        internal override void CheckForSkills()
+        {
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_AXES))
+                BotHandler.BotOwner.ChatSay(".learn 196");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_SWORDS))
+                BotHandler.BotOwner.ChatSay(".learn 201");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_MACES))
+                BotHandler.BotOwner.ChatSay(".learn 198");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_DAGGERS))
+                BotHandler.BotOwner.ChatSay(".learn 1180");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_FIST_WEAPONS))
+                BotHandler.BotOwner.ChatSay(".learn 15590");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_BOWS))
+                BotHandler.BotOwner.ChatSay(".learn 264");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_CROSSBOWS))
+                BotHandler.BotOwner.ChatSay(".learn 5011");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_GUNS))
+                BotHandler.BotOwner.ChatSay(".learn 266");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_THROWN))
+                BotHandler.BotOwner.ChatSay(".learn 2567");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_THROWN))
+                BotHandler.BotOwner.ChatSay(".learn 2567");
+            if (BotHandler.BotOwner.Level >= 10 && !BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_DUAL_WIELD))
+                BotHandler.BotOwner.ChatSay(".learn 674");
+            if (BotHandler.BotOwner.Level >= 20 && !BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_POISONS))
+                BotHandler.BotOwner.ChatSay(".learn 2995");
+
+            base.CheckForSkills();
+        }
+
         #endregion
 
         #region Private Methods
@@ -156,8 +189,8 @@ namespace Populus.GroupBot.Combat.Rogue
                         .Inverter("If Melee Attack Succeeds, Move On")
                             .Splice(MeleeAttack(BotHandler))
                         .End()
-                        //.Condition("Not casting", t => BotHandler.CombatState.IsCasting)
-                        //.Splice(CombatRotationTree())
+                        .Condition("Not casting", t => BotHandler.CombatState.IsCasting)
+                        .Splice(CombatRotationTree())
                    .End();
             return builder.Build();
         }
@@ -173,6 +206,35 @@ namespace Populus.GroupBot.Combat.Rogue
                         .Do("Follow Group Leader", t => OutOfCombatLogic.FollowGroupLeader(BotHandler))
                    .End();
             return builder.Build();
+        }
+
+        /// <summary>
+        /// Creates a behavior tree with the combat rotation for the rogue class
+        /// </summary>
+        /// <returns></returns>
+        protected virtual IBehaviourTreeNode CombatRotationTree()
+        {
+            var builder = new BehaviourTreeBuilder();
+            builder.Selector("Rogue Rotation")
+                        .Do("Eviscerate Finisher", t => Eviscerate(4))
+                        .Do("Sinister Strike", t => CastMeleeSpell(SINISTER_STRIKE))
+                   .End();
+            return builder.Build();
+        }
+
+        /// <summary>
+        /// Casts the Eviscerate finisher when the required combo points are met
+        /// </summary>
+        /// <param name="comboPointsReq"></param>
+        /// <returns></returns>
+        protected BehaviourTreeStatus Eviscerate(int comboPointsReq)
+        {
+            // Must have the required number of combo points
+            if (BotHandler.BotOwner.ComboPoints < comboPointsReq)
+                return BehaviourTreeStatus.Failure;
+
+            // Can cast the spell
+            return CastMeleeSpell(EVISCERATE);
         }
 
         //protected override CombatActionResult DoFirstCombatAction(Unit unit)

@@ -265,6 +265,14 @@ namespace Populus.GroupBot.Combat
         /// <returns></returns>
         public abstract bool Pull(Unit unit);
 
+        /// <summary>
+        /// Checks for required skills for a class
+        /// </summary>
+        internal virtual void CheckForSkills()
+        {
+            // Do nothing in base
+        }
+
         #endregion
 
         #region Private Methods

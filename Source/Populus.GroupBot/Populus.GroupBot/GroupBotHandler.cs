@@ -229,6 +229,9 @@ namespace Populus.GroupBot
         /// </summary>
         internal void LearnLevelSpells(uint newLevel)
         {
+            // Make sure all bots have certain skills
+            mCombatLogic.CheckForSkills();
+
             // Level 1 spells are already learned
             if (newLevel <= 1) return;
 

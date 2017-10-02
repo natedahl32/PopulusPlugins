@@ -149,6 +149,23 @@ namespace Populus.GroupBot.Combat.Priest
             return false;
         }
 
+        /// <summary>
+        /// Checks for required priest skills and if not found, learns them
+        /// </summary>
+        internal override void CheckForSkills()
+        {
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_MACES))
+                BotHandler.BotOwner.ChatSay(".learn 201");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_STAVES))
+                BotHandler.BotOwner.ChatSay(".learn 227");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_DAGGERS))
+                BotHandler.BotOwner.ChatSay(".learn 1180");
+            if (!BotHandler.BotOwner.HasSkill(Core.Constants.SkillType.SKILL_WANDS))
+                BotHandler.BotOwner.ChatSay(".learn 5009");
+
+            base.CheckForSkills();
+        }
+
         //public override CombatActionResult DoOutOfCombatAction()
         //{
         //    // Inner Fire if not on self
