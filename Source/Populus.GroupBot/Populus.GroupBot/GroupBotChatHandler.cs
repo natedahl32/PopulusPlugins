@@ -42,7 +42,11 @@ namespace Populus.GroupBot
         {
             var commandString = chat.MessageTokenized[0].ToLower();
             if (!mChatCommand.ContainsKey(commandString))
+            {
+                mGroupBotHandler.BotOwner.Logger.Log($"Chat Message to {mGroupBotHandler.BotOwner.Name}: {chat.MessageText}");
                 return;
+            }
+                
 
             // Handle chat based on first token
             var command = mChatCommand[commandString];

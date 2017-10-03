@@ -70,6 +70,8 @@ namespace Populus.CombatManager
         /// </summary>
         internal void TriggerGCD(SpellEntry spell)
         {
+            // Spells that don't have a start recovery time do not trigger the GCD
+            if (spell.StartRecoveryTime == 0) return;
             GCDTime = spell.StartRecoveryTime * mBotOwner.CastSpeedMod;
             mGCDStartTime = Time.MM_GetTime();
         }

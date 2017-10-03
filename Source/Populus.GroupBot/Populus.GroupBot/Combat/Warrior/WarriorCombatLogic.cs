@@ -263,6 +263,15 @@ namespace Populus.GroupBot.Combat.Warrior
             base.CheckForSkills();
         }
 
+        public override void CombatAttackUpdate(Bot bot, Core.World.Objects.Events.CombatAttackUpdateArgs eventArgs)
+        {
+            // Reset heroic strike flag on each attack
+            if (bot.Guid == BotHandler.BotOwner.Guid && eventArgs.AttackerGuid == BotHandler.BotOwner.Guid && mHeroicStrikePrepared)
+                mHeroicStrikePrepared = false;
+
+            base.CombatAttackUpdate(bot, eventArgs);
+        }
+
         #endregion
 
         #region Private Methods
@@ -275,7 +284,7 @@ namespace Populus.GroupBot.Combat.Warrior
                         .Inverter("If Melee Attack Succeeds, Move On")
                             .Splice(MeleeAttack(BotHandler))
                         .End()
-                        .Condition("Not casting", t => BotHandler.CombatState.IsCasting)
+                        .Do("Is Casting or GCD", t => (BotHandler.CombatState.IsCasting || BotHandler.CombatState.IsGCDActive) ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
                         .Splice(CombatRotationTree())
                    .End();
             return builder.Build();
@@ -346,13 +355,6 @@ namespace Populus.GroupBot.Combat.Warrior
             mHeroicStrikePrepared = true;
             BotHandler.CombatState.SpellCast(HEROIC_STRIKE);
             return BehaviourTreeStatus.Success;
-        }
-
-        protected virtual void CombatAttackUpdate(Bot bot, Core.World.Objects.Events.CombatAttackUpdateArgs eventArgs)
-        {
-            // Reset heroic strike flag on each attack
-            if (bot.Guid == BotHandler.BotOwner.Guid && eventArgs.AttackerGuid == BotHandler.BotOwner.Guid && mHeroicStrikePrepared)
-                mHeroicStrikePrepared = false;
         }
 
         /// <summary>

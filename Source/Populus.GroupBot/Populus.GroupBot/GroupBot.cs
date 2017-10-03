@@ -168,9 +168,9 @@ namespace Populus.GroupBot
             // Handles attack update event
             attackUpdateHandler = (bot, args) =>
             {
-                //var handler = mBotHandlerCollection.Get(bot.Guid);
-                //if (handler != null)
-                //    handler.CombatHandler.AttackUpdate(args);
+                var handler = mBotHandlerCollection.Get(bot.Guid);
+                if (handler != null)
+                    handler.CombatHandler.CombatAttackUpdate(bot, args);
             };
             Bot.CombatAttackUpdate += attackUpdateHandler;
 

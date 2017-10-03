@@ -41,6 +41,29 @@ namespace Populus.GroupBot.Combat.Warrior
 
         #endregion
 
+        #region Public Methods
+
+        public override void CombatAttackUpdate(Bot bot, Core.World.Objects.Events.CombatAttackUpdateArgs eventArgs)
+        {
+            // check if we are attacking the target
+            if (bot.Guid == BotHandler.BotOwner.Guid && eventArgs.AttackerGuid == BotHandler.BotOwner.Guid && eventArgs.Hit)
+                mHasHitTarget = true;
+
+            // check for revenge procs
+            if (bot.Guid == BotHandler.BotOwner.Guid && eventArgs.AttackerGuid == BotHandler.BotOwner.Guid)
+            {
+                // Procs after block, dodge or parry
+                if (BotHandler.BotOwner.HasSpell((ushort)REVENGE) &&
+                    (eventArgs.Blocked || eventArgs.Dodged || eventArgs.Parried))
+                    mRevengeProcced = true;
+            }
+
+            // process base
+            base.CombatAttackUpdate(bot, eventArgs);
+        }
+
+        #endregion
+
         #region Private Methods
 
         protected override IBehaviourTreeNode CombatRotationTree()
@@ -67,25 +90,6 @@ namespace Populus.GroupBot.Combat.Warrior
                         .Do("Battle Shout", t => GroupBuff(BATTLE_SHOUT))
                    .End();
             return builder.Build();
-        }
-
-        protected override void CombatAttackUpdate(Bot bot, Core.World.Objects.Events.CombatAttackUpdateArgs eventArgs)
-        {
-            // check if we are attacking the target
-            if (bot.Guid == BotHandler.BotOwner.Guid && eventArgs.AttackerGuid == BotHandler.BotOwner.Guid && eventArgs.Hit)
-                mHasHitTarget = true;
-
-            // check for revenge procs
-            if (bot.Guid == BotHandler.BotOwner.Guid && eventArgs.AttackerGuid == BotHandler.BotOwner.Guid)
-            {
-                // Procs after block, dodge or parry
-                if (BotHandler.BotOwner.HasSpell((ushort)REVENGE) && 
-                    (eventArgs.Blocked || eventArgs.Dodged || eventArgs.Parried))
-                    mRevengeProcced = true;
-            }
-
-            // process base
-            base.CombatAttackUpdate(bot, eventArgs);
         }
 
         #endregion

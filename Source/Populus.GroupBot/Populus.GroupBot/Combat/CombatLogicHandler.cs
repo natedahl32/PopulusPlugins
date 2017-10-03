@@ -314,6 +314,26 @@ namespace Populus.GroupBot.Combat
         /// </summary>
         public virtual void ResetCombatState() { }
 
+
+        /// <summary>
+        /// Update combat attacks
+        /// </summary>
+        /// <param name="bot"></param>
+        /// <param name="eventArgs"></param>
+        public virtual void CombatAttackUpdate(Bot bot, Core.World.Objects.Events.CombatAttackUpdateArgs eventArgs)
+        {
+            // If we are in a group, add anything that attacks someone in our group to our aggro list
+            if (BotHandler.Group != null)
+            {
+                if (BotHandler.Group.ContainsMember(eventArgs.VictimGuid))
+                {
+                    var unit = BotHandler.BotOwner.GetUnitByGuid(eventArgs.AttackerGuid);
+                    if (unit != null)
+                        BotHandler.CombatState.AddToAggroList(unit);
+                }
+            }
+        }
+
         #endregion
 
         #region Private Methods

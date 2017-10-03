@@ -20,6 +20,24 @@ namespace Populus.GroupBot.Combat.Warrior
 
         #endregion
 
+        #region Public Methods
+
+        public override void CombatAttackUpdate(Bot bot, Core.World.Objects.Events.CombatAttackUpdateArgs eventArgs)
+        {
+            // check for revenge procs
+            if (bot.Guid == BotHandler.BotOwner.Guid && eventArgs.AttackerGuid == BotHandler.BotOwner.Guid)
+            {
+                // Procs after block, dodge or parry
+                if (BotHandler.BotOwner.HasSpell((ushort)REVENGE) && eventArgs.Dodged)
+                    mOverpowerProcced = true;
+            }
+
+            // process base
+            base.CombatAttackUpdate(bot, eventArgs);
+        }
+
+        #endregion
+
         #region Private Methods
 
         protected override IBehaviourTreeNode OutOfCombatBuffsTree()
@@ -44,20 +62,6 @@ namespace Populus.GroupBot.Combat.Warrior
                         .Do("Overpower", t=> Overpower())
                    .End();
             return builder.Build();
-        }
-
-        protected override void CombatAttackUpdate(Bot bot, Core.World.Objects.Events.CombatAttackUpdateArgs eventArgs)
-        {
-            // check for revenge procs
-            if (bot.Guid == BotHandler.BotOwner.Guid && eventArgs.AttackerGuid == BotHandler.BotOwner.Guid)
-            {
-                // Procs after block, dodge or parry
-                if (BotHandler.BotOwner.HasSpell((ushort)REVENGE) && eventArgs.Dodged)
-                    mOverpowerProcced = true;
-            }
-
-            // process base
-            base.CombatAttackUpdate(bot, eventArgs);
         }
 
         #endregion

@@ -189,7 +189,7 @@ namespace Populus.GroupBot.Combat.Rogue
                         .Inverter("If Melee Attack Succeeds, Move On")
                             .Splice(MeleeAttack(BotHandler))
                         .End()
-                        .Condition("Not casting", t => BotHandler.CombatState.IsCasting)
+                        .Do("Is Casting or GCD", t => (BotHandler.CombatState.IsCasting || BotHandler.CombatState.IsGCDActive) ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
                         .Splice(CombatRotationTree())
                    .End();
             return builder.Build();

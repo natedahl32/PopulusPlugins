@@ -169,7 +169,7 @@ namespace Populus.GroupBot.Combat.Mage
             var builder = new BehaviourTreeBuilder();
             builder.Selector("Combat Behavior")
                         .Do("Is Dead", t => BotHandler.BotOwner.IsDead ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
-                        .Do("Is Casting", t => BotHandler.CombatState.IsCasting ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
+                        .Do("Is Casting or GCD", t => (BotHandler.CombatState.IsCasting || BotHandler.CombatState.IsGCDActive) ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
                         .Do("Cast Frostbolt", t => CastSpell(FROSTBOLT))
                         .Do("Cast Fireball", t => CastSpell(FIREBALL))
                         .Splice(WandAttack(BotHandler))
