@@ -161,6 +161,14 @@ namespace Populus.GroupBot.Combat
             get { return GetWater() > 0 && BotHandler.BotOwner.HasItemInInventory(GetWater()); }
         }
 
+        /// <summary>
+        /// Gets or sets whether or not logic debugging should be turned on or off (true = on, false = off)
+        /// </summary>
+        public bool DebugLogic
+        {
+            get; set;
+        }
+
         #endregion
 
         #region Public Methods
@@ -172,7 +180,10 @@ namespace Populus.GroupBot.Combat
         public void CombatUpdate(float deltaTime)
         {
             if (!mCombatStartedTick.HasValue) mCombatStartedTick = deltaTime;
+            if (DebugLogic) mBotHandler.BotOwner.Logger.Log("--------------------- START DEBUG LOGIC ---------------------------");
+            if (DebugLogic) mBotHandler.BotOwner.Logger.Log("--------------------- COMBAT LOGIC --------------------------------");
             this.mCombatBehavior?.Tick(new TimeData(deltaTime));
+            if (DebugLogic) mBotHandler.BotOwner.Logger.Log("--------------------- END DEBUG LOGIC -----------------------------");
         }
 
         /// <summary>
@@ -182,7 +193,10 @@ namespace Populus.GroupBot.Combat
         public void OutOfCombatUpdate(float deltaTime)
         {
             if (mCombatStartedTick.HasValue) mCombatStartedTick = null;
+            if (DebugLogic) mBotHandler.BotOwner.Logger.Log("--------------------- START DEBUG LOGIC ---------------------------");
+            if (DebugLogic) mBotHandler.BotOwner.Logger.Log("--------------------- OOC LOGIC --------------------------------");
             this.mOutOfCombatBehavior?.Tick(new TimeData(deltaTime));
+            if (DebugLogic) mBotHandler.BotOwner.Logger.Log("--------------------- END DEBUG LOGIC -----------------------------");
         }
 
         /// <summary>
@@ -344,6 +358,9 @@ namespace Populus.GroupBot.Combat
             // Is it on cooldown?
             if (BotHandler.BotOwner.SpellIsOnCooldown(spellId)) return false;
 
+            // Are we on the GCD?
+            if (BotHandler.CombatState.IsGCDActive) return false;
+
             // Have enough power to cast it?
             if (!BotHandler.BotOwner.CanCastSpell(spell)) return false;
 
@@ -396,6 +413,39 @@ namespace Populus.GroupBot.Combat
         /// </summary>
         protected abstract IBehaviourTreeNode InitializeCombatBehaivor();
 
+        /// <summary>
+        /// Prints a debug message returns success
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        protected BehaviourTreeStatus DebugSuccess(string message)
+        {
+            if (DebugLogic) mBotHandler.BotOwner.Logger.Log(message);
+            return BehaviourTreeStatus.Success;
+        }
+
+        /// <summary>
+        /// Prints a debug message returns failure
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        protected BehaviourTreeStatus DebugFailure(string message)
+        {
+            if (DebugLogic) mBotHandler.BotOwner.Logger.Log(message);
+            return BehaviourTreeStatus.Failure;
+        }
+
+        /// <summary>
+        /// Prints a debug message returns running
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        protected BehaviourTreeStatus DebugRunning(string message)
+        {
+            if (DebugLogic) mBotHandler.BotOwner.Logger.Log(message);
+            return BehaviourTreeStatus.Running;
+        }
+
         #endregion
 
         #region Common Behaviors
@@ -417,32 +467,32 @@ namespace Populus.GroupBot.Combat
 
         private BehaviourTreeStatus StartMeleeSwing(GroupBotHandler handler)
         {
-            if (handler.CombatState.CurrentTarget == null) return BehaviourTreeStatus.Failure;
+            if (handler.CombatState.CurrentTarget == null) return DebugFailure("Current target is null, cannot start melee swing");
 
             // If we are not already melee attacking, start
             if (!handler.CombatState.IsAttacking)
                 handler.BotOwner.Attack(handler.CombatState.CurrentTarget.Guid);
 
-            return BehaviourTreeStatus.Success;
+            return DebugSuccess("Starting melee swing");
         }
 
         private BehaviourTreeStatus MoveToTarget(GroupBotHandler handler)
         {
-            if (handler.CombatState.CurrentTarget == null) return BehaviourTreeStatus.Failure;
+            if (handler.CombatState.CurrentTarget == null) return DebugFailure("Current target is null, cannot move towards target");
             
             // Make sure the target is our follow target
             if (handler.BotOwner.FollowTarget == null || handler.BotOwner.FollowTarget.Guid != handler.CombatState.CurrentTarget.Guid)
             {
                 handler.BotOwner.SetFollow(handler.CombatState.CurrentTarget.Guid);
-                return BehaviourTreeStatus.Running;
+                return DebugRunning("Moving to target by settingit as my follow target");
             }
 
             // If we are not close enough to follow target then we are still running
             var distance = MathUtility.CalculateDistance(handler.BotOwner.Position, handler.CombatState.CurrentTarget.Position);
             if (distance > MELEE_RANGE_DISTANCE)
-                return BehaviourTreeStatus.Running;
-            
-            return BehaviourTreeStatus.Success;
+                return DebugRunning($"I am not close enough to my target. I am {distance} yards away. Still moving towards them.");
+
+            return DebugSuccess("I have reached my target!");
         }
 
         /// <summary>
@@ -463,20 +513,22 @@ namespace Populus.GroupBot.Combat
 
         private BehaviourTreeStatus HasWandToAttackWith(GroupBotHandler handler)
         {
-            if (!handler.BotOwner.CanUseWands || !handler.BotOwner.HasWandEquipped)
-                return BehaviourTreeStatus.Failure;
+            if (!handler.BotOwner.CanUseWands)
+                return DebugFailure("I cannot use wands");
+            if (!handler.BotOwner.HasWandEquipped)
+                return DebugFailure("I do not have a wand equipped");
             return BehaviourTreeStatus.Success;
         }
 
         private BehaviourTreeStatus StartWanding(GroupBotHandler handler)
         {
-            if (handler.CombatState.CurrentTarget == null) return BehaviourTreeStatus.Failure;
+            if (handler.CombatState.CurrentTarget == null) return DebugFailure("Current target is null, cannot start attacking with wand");
 
             // If we are not already attacking, start
             if (!handler.CombatState.IsAttacking)
                 handler.CombatState.SpellCast(WAND_SHOOT);
 
-            return BehaviourTreeStatus.Success;
+            return DebugSuccess("I am attacking with my wand");
         }
 
         /// <summary>
@@ -486,10 +538,22 @@ namespace Populus.GroupBot.Combat
         /// <returns></returns>
         protected BehaviourTreeStatus CastMeleeSpell(uint spellId)
         {
+            var spell = SpellTable.Instance.getSpell(spellId);
+            return CastMeleeSpell(spell);
+        }
+
+        /// <summary>
+        /// Behavior that casts a spell that requires melee range
+        /// </summary>
+        /// <param name="spell"></param>
+        /// <returns></returns>
+        protected BehaviourTreeStatus CastMeleeSpell(SpellEntry spell)
+        {
+            if (spell == null) return BehaviourTreeStatus.Failure;
             // If we are not within range
             if (!IsInMeleeRange(BotHandler.CombatState.CurrentTarget))
-                return BehaviourTreeStatus.Failure;
-            return CastSpell(spellId);
+                return DebugFailure($"I am not in melee range to cast spell {spell.SpellName}");
+            return CastSpell(spell);
         }
 
         /// <summary>
@@ -499,12 +563,25 @@ namespace Populus.GroupBot.Combat
         /// <returns></returns>
         protected BehaviourTreeStatus CastSpell(uint spellId)
         {
-            // If we can't cast it, fail
-            if (!HasSpellAndCanCast(spellId))
-                return BehaviourTreeStatus.Failure;
+            var spell = SpellTable.Instance.getSpell(spellId);
+            return CastSpell(spell);
+        }
 
-            BotHandler.CombatState.SpellCast(spellId);
-            return BehaviourTreeStatus.Success;
+        /// <summary>
+        /// Behavior that casts a spell on current target
+        /// </summary>
+        /// <param name="spell"></param>
+        /// <returns></returns>
+        protected BehaviourTreeStatus CastSpell(SpellEntry spell)
+        {
+            if (spell == null) return BehaviourTreeStatus.Failure;
+            // If we can't cast it, fail
+            if (!HasSpellAndCanCast(spell.SpellId))
+                return DebugFailure($"I cannot cast spell {spell.SpellName}");
+
+            if (!BotHandler.CombatState.SpellCast(spell.SpellId))
+                return DebugFailure($"I was not able to cast spell {spell.SpellName}");
+            return DebugSuccess($"I cast spell {spell.SpellName}");
         }
 
         /// <summary>
@@ -514,13 +591,25 @@ namespace Populus.GroupBot.Combat
         /// <returns></returns>
         protected BehaviourTreeStatus CastSpell(uint spellId, Unit target)
         {
-            // If we can't cast it, fail
-            if (!HasSpellAndCanCast(spellId))
-                return BehaviourTreeStatus.Failure;
+            var spell = SpellTable.Instance.getSpell(spellId);
+            return CastSpell(spell, target);
+        }
 
-            if (!BotHandler.CombatState.SpellCast(target, spellId))
-                return BehaviourTreeStatus.Failure;
-            return BehaviourTreeStatus.Success;
+        /// <summary>
+        /// Behavior that casts a spell on a target
+        /// </summary>
+        /// <param name="spell"></param>
+        /// <returns></returns>
+        protected BehaviourTreeStatus CastSpell(SpellEntry spell, Unit target)
+        {
+            if (spell == null) return BehaviourTreeStatus.Failure;
+            // If we can't cast it, fail
+            if (!HasSpellAndCanCast(spell.SpellId))
+                return DebugFailure($"I cannot cast spell {spell.SpellName}");
+
+            if (!BotHandler.CombatState.SpellCast(target, spell.SpellId))
+                return DebugFailure($"I was not able to cast spell {spell.SpellName}");
+            return DebugSuccess($"I cast spell {spell.SpellName}");
         }
 
         /// <summary>
@@ -541,15 +630,28 @@ namespace Populus.GroupBot.Combat
         /// <returns></returns>
         protected BehaviourTreeStatus CastDOT(uint spellId, float aboveHealth)
         {
+            var spell = SpellTable.Instance.getSpell(spellId);
+            return CastDOT(spell, aboveHealth);
+        }
+
+        /// <summary>
+        /// Behavior that casts a DOT spell on current target if it is not already present and if
+        /// the targets health is above a certain percentage
+        /// </summary>
+        /// <param name="spell"></param>
+        /// <returns></returns>
+        protected BehaviourTreeStatus CastDOT(SpellEntry spell, float aboveHealth)
+        {
+            if (spell == null) return BehaviourTreeStatus.Failure;
             // Make sure health percentage is at or above threshold for the dot spell
             if (BotHandler.CombatState.CurrentTarget.HealthPercentage < aboveHealth)
-                return BehaviourTreeStatus.Failure;
+                return DebugFailure($"I cannot cast DoT {spell.SpellName} because current health is below threshold of {aboveHealth}");
 
             // Make sure the target does not already have the dot aura
-            if (BotHandler.CombatState.CurrentTarget.HasAura(spellId))
-                return BehaviourTreeStatus.Failure;
+            if (BotHandler.CombatState.CurrentTarget.HasAura(spell.SpellId))
+                return DebugFailure($"My target already has the dot aura {spell.SpellName}");
 
-            return CastSpell(spellId);
+            return CastSpell(spell);
         }
 
         /// <summary>
@@ -559,16 +661,28 @@ namespace Populus.GroupBot.Combat
         /// <returns></returns>
         protected BehaviourTreeStatus SelfBuff(uint spellAndAura)
         {
-            // If does not have spell or cannot cast, fail
-            if (!HasSpellAndCanCast(spellAndAura))
-                return BehaviourTreeStatus.Failure;
-            // If already has the aura, fail
-            if (BotHandler.BotOwner.HasAura(spellAndAura))
-                return BehaviourTreeStatus.Failure;
+            var spell = SpellTable.Instance.getSpell(spellAndAura);
+            return SelfBuff(spell);
+        }
 
-            if (!BotHandler.CombatState.SpellCast(BotHandler.BotOwner, spellAndAura))
-                return BehaviourTreeStatus.Failure;
-            return BehaviourTreeStatus.Success;
+        /// <summary>
+        /// Checks that a buff can be cast and is not already on the bot
+        /// </summary>
+        /// <param name="spellAndAura">Spell and aura to check</param>
+        /// <returns></returns>
+        protected BehaviourTreeStatus SelfBuff(SpellEntry spell)
+        {
+            if (spell == null) return BehaviourTreeStatus.Failure;
+            // If does not have spell or cannot cast, fail
+            if (!HasSpellAndCanCast(spell.SpellId))
+                return DebugFailure($"I cannot cast spell {spell.SpellName}");
+            // If already has the aura, fail
+            if (BotHandler.BotOwner.HasAura(spell.SpellId))
+                return DebugFailure($"I cannot buff spell {spell.SpellName} because I already have that buff/aura");
+
+            if (!BotHandler.CombatState.SpellCast(BotHandler.BotOwner, spell.SpellId))
+                return DebugFailure($"I was not able to cast spell {spell.SpellName}");
+            return DebugSuccess($"I buffed myself with spell {spell.SpellName}");
         }
 
         /// <summary>
@@ -578,24 +692,36 @@ namespace Populus.GroupBot.Combat
         /// <returns></returns>
         protected BehaviourTreeStatus GroupBuff(uint spellAndAura)
         {
+            var spell = SpellTable.Instance.getSpell(spellAndAura);
+            return GroupBuff(spell);
+        }
+
+        /// <summary>
+        /// Checks that a buff can be cast and someone in the group needs it
+        /// </summary>
+        /// <param name="spell">Spell and aura to check</param>
+        /// <returns></returns>
+        protected BehaviourTreeStatus GroupBuff(SpellEntry spell)
+        {
+            if (spell == null) return BehaviourTreeStatus.Failure;
             // If we are not in a group, self buff instead
-            if (BotHandler.Group == null) return SelfBuff(spellAndAura);
+            if (BotHandler.Group == null) return SelfBuff(spell);
 
             // If does not have spell or cannot cast, fail
-            if (!HasSpellAndCanCast(spellAndAura))
-                return BehaviourTreeStatus.Failure;
+            if (!HasSpellAndCanCast(spell.SpellId))
+                return DebugFailure($"I cannot cast spell {spell.SpellName}");
             // If everyone in the group already has the aura
-            if (!BotHandler.Group.Members.Any(m => !m.HasAura((ushort)spellAndAura)))
-                return BehaviourTreeStatus.Failure;
+            if (!BotHandler.Group.Members.Any(m => !m.HasAura((ushort)spell.SpellId)))
+                return DebugFailure($"Everyone in group already has buff for spell {spell.SpellName}");
 
             // Get the first member in the group that needs the aura
-            var needs = BotHandler.Group.Members.Where(m => !m.HasAura((ushort)spellAndAura)).FirstOrDefault();
+            var needs = BotHandler.Group.Members.Where(m => !m.HasAura((ushort)spell.SpellId)).FirstOrDefault();
             if (needs == null)
-                return BehaviourTreeStatus.Failure;
+                return DebugFailure($"Could not found group member that needs buff for spell {spell.SpellName}");
 
-            if (!BotHandler.CombatState.SpellCast(BotHandler.BotOwner.GetPlayerByGuid(needs.Guid), spellAndAura))
-                return BehaviourTreeStatus.Failure;
-            return BehaviourTreeStatus.Success;
+            if (!BotHandler.CombatState.SpellCast(BotHandler.BotOwner.GetPlayerByGuid(needs.Guid), spell.SpellId))
+                return DebugFailure($"I was not able to cast spell {spell.SpellName}");
+            return DebugSuccess($"I buffed {needs.Name} with buff for spell {spell.SpellName}");
         }
 
         #endregion

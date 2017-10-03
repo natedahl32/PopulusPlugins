@@ -60,6 +60,7 @@
     <Compile Include="Chat\ChatCommand.cs" />
     <Compile Include="Chat\ChatCommandKeyAttribute.cs" />
     <Compile Include="Chat\ChatEventArgExtensions.cs" />
+    <Compile Include="Chat\DebugCommand.cs" />
     <Compile Include="Chat\FollowCommand.cs" />
     <Compile Include="Chat\GroupCommand.cs" />
     <Compile Include="Chat\GroupRoleCommand.cs" />

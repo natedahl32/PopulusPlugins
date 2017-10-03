@@ -222,7 +222,7 @@ namespace Populus.GroupBot.Combat.Warlock
             var builder = new BehaviourTreeBuilder();
             builder.Selector("Combat Behavior")
                         .Do("Is Dead", t => BotHandler.BotOwner.IsDead ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
-                        .Do("Is Casting", t => BotHandler.CombatState.IsCasting ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
+                        .Do("Is Casting or GCD", t => (BotHandler.CombatState.IsCasting || BotHandler.CombatState.IsGCDActive) ? BehaviourTreeStatus.Success : BehaviourTreeStatus.Failure)
                         .Do("Lifetap", t => Lifetap(75, 40))
                         .Do("Cast Curse of Agony", t => CastDOT(CURSE_OF_AGONY))
                         .Do("Cast Corruption", t => CastDOT(CORRUPTION))

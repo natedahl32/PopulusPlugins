@@ -91,7 +91,7 @@ namespace Populus.CombatManager
                 {
                     var state = mBotCombatCollection.Get(bot.Guid);
                     if (state != null)
-                        state.SpellCastComplete(args.SpellId);
+                        state.SpellCastInterrupted(args.SpellId);
                 }
             };
             Bot.SpellInterrupted += spellInterruptedHandler;

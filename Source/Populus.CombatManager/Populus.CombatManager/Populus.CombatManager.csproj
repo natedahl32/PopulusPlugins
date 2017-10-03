@@ -53,6 +53,7 @@
     <Compile Include="AggroList.cs" />
     <Compile Include="BotCombatState.cs" />
     <Compile Include="CombatManager.cs" />
+    <Compile Include="GlobalCooldown.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

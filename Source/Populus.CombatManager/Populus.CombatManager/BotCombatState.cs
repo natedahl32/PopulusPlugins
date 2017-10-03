@@ -21,6 +21,7 @@ namespace Populus.CombatManager
 
         private readonly Bot mBotOwner;
         private readonly AggroList mAggroList = new AggroList();
+        private readonly GlobalCooldown mGlobalCooldown;
         private Unit mTarget;
 
         // Id of the spell/ability that is currently being used (only set if the ability has a cast time)
@@ -37,11 +38,17 @@ namespace Populus.CombatManager
         {
             if (botOwner == null) throw new ArgumentNullException("botOwner");
             this.mBotOwner = botOwner;
+            this.mGlobalCooldown = new GlobalCooldown(botOwner);
         }
 
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets the bot owner that owns this combat state
+        /// </summary>
+        internal Bot BotOwner { get { return mBotOwner; } }
 
         /// <summary>
         /// Whether or not the bot is in combat
@@ -74,11 +81,27 @@ namespace Populus.CombatManager
         }
 
         /// <summary>
+        /// Gets the id of the spell currently being cast
+        /// </summary>
+        public uint CastingSpell
+        {
+            get { return mCastingSpellId; }
+        }
+
+        /// <summary>
         /// Gets whether or not the bot is currently attacking
         /// </summary>
         public bool IsAttacking
         {
             get { return mIsAttacking; }
+        }
+
+        /// <summary>
+        /// Gets whether or not the GCD is currently active
+        /// </summary>
+        public bool IsGCDActive
+        {
+            get { return mGlobalCooldown.IsGCDActive; }
         }
 
         #endregion
@@ -186,6 +209,7 @@ namespace Populus.CombatManager
         {
             if (!IsCasting) return;
             mBotOwner.CancelCast(mCastingSpellId);
+            mBotOwner.Logger.Log($"Casting of spell {mCastingSpellId} was cancelled");
             mCastingSpellId = 0;
         }
 
@@ -286,6 +310,21 @@ namespace Populus.CombatManager
         }
 
         /// <summary>
+        /// Notification when a spell cast is interrupted
+        /// </summary>
+        /// <param name="spellId"></param>
+        internal void SpellCastInterrupted(uint spellId)
+        {
+            // If the current spell cast is interrupted
+            if (mCastingSpellId == spellId)
+            {
+                mCastingSpellId = 0;
+                // Also reset the GCD
+                mGlobalCooldown.ResetGCD();
+            }
+        }
+
+        /// <summary>
         /// Turns on the attacking flag
         /// </summary>
         internal void StartAttack()
@@ -330,6 +369,10 @@ namespace Populus.CombatManager
         /// <param name="spellId"></param>
         private void CastSpell(Unit target, uint spellId)
         {
+            var spell = SpellTable.Instance.getSpell(spellId);
+            if (spell == null)
+                return;
+
             // Face the target before we cast
             if (target.Guid != mBotOwner.Guid)
                 mBotOwner.FaceTarget(target.Guid);
@@ -337,10 +380,11 @@ namespace Populus.CombatManager
             // Cast the spell
             mBotOwner.CastSpellAbility(target.Guid, spellId);
 
+            // Trigger the GCD
+            mGlobalCooldown.TriggerGCD(spell);
+
             // Log what we are casting
-            var spell = SpellTable.Instance.getSpell(spellId);
-            if (spell != null)
-                mBotOwner.Logger.Log($"Casting spell {spell.SpellName}");
+            mBotOwner.Logger.Log($"Casting spell {spell.SpellName}");
         }
 
         #endregion

@@ -13,6 +13,8 @@ using Populus.Core.Constants;
 using Populus.GroupBot.States;
 using Stateless;
 using Populus.GroupBot.Triggers;
+using System.Text;
+using Populus.Core.DBC;
 
 namespace Populus.GroupBot
 {
@@ -31,6 +33,7 @@ namespace Populus.GroupBot
 
         private Coordinate mLastKnownFollowPosition;
         private bool mCanFollow = true;
+        private bool mDebug;
 
         private State mCurrentState = Idle.Instance;
         private readonly StateMachine<State, StateTriggers> mStateMachine;
@@ -55,6 +58,7 @@ namespace Populus.GroupBot
 
             mStateMachine = new StateMachine<States.State, StateTriggers>(() => mCurrentState, s => mCurrentState = s);
             BuildStateMachine();
+            Debug = false;
         }
 
         #endregion
@@ -117,6 +121,20 @@ namespace Populus.GroupBot
         /// </summary>
         public Coordinate TeleportingTo { get; private set; }
 
+        /// <summary>
+        /// Gets or sets wehther or not debugging is turned on
+        /// </summary>
+        public bool Debug
+        {
+            get { return mDebug; }
+            set
+            {
+                mDebug = value;
+                if (mCombatLogic != null)
+                    mCombatLogic.DebugLogic = mDebug;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -127,6 +145,10 @@ namespace Populus.GroupBot
         /// <param name="deltaTime"></param>
         public void Update(float deltaTime)
         {
+            // If we are debugging, write out the state of the bot
+            if (Debug)
+                WriteStateToLog();
+
             // Update the current state
             mCurrentState.Update(this, deltaTime);
         }
@@ -339,6 +361,27 @@ namespace Populus.GroupBot
         private void LearnSpell(uint spellId)
         {
             mBotOwner.ChatSay($".learn {spellId}");
+        }
+
+        /// <summary>
+        /// Writes the current state of the bot to the log file
+        /// </summary>
+        private void WriteStateToLog()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"Bot Name: {mBotOwner.Name}");
+            sb.AppendLine($"Bot Level: {mBotOwner.Level}");
+            sb.AppendLine($"Is Dead: {mBotOwner.IsDead}");
+            sb.AppendLine($"Is In Combat: {mCombatState.IsInCombat}");
+            sb.AppendLine($"Is Casting: {mCombatState.IsCasting}");
+            if (mCombatState.IsCasting)
+            {
+                var spell = SpellTable.Instance.getSpell(mCombatState.CastingSpell);
+                if (spell != null)
+                    sb.AppendLine($"Casting Spell: {spell.SpellName}");
+            }
+            sb.AppendLine($"Current State: {mCurrentState.GetType().Name}");
+            mBotOwner.Logger.Log(sb.ToString());
         }
 
         #endregion
