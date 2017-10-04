@@ -89,9 +89,5 @@ namespace Populus.CombatManager
         }
 
         #endregion
-
-        #region Private Methods
-
-        #endregion
     }
 }

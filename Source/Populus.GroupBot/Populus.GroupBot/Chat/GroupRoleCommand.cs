@@ -57,9 +57,20 @@ namespace Populus.GroupBot.Chat
                 return;
             }
 
-            var role = chat.MessageTokenized[2];
+            // Get role to set
+            var role = chat.MessageTokenized.Length == 3 ? 
+                chat.MessageTokenized[2] :
+                chat.MessageTokenized[3];
+            // Get member to set for
+            var memberName = chat.MessageTokenized.Length == 3 ?
+                string.Empty :
+                chat.MessageTokenized[2];
+
             if (botHandler.Group == null) return;
-            var member = botHandler.Group.GetMember(botHandler.BotOwner.Guid);
+            // If name was supplied, set that members role
+            var member = string.IsNullOrEmpty(memberName) ? 
+                botHandler.Group.GetMember(botHandler.BotOwner.Guid) :
+                botHandler.Group.GetMember(memberName);
             if (member == null)
                 return;
 

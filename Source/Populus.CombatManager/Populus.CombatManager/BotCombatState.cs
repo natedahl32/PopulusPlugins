@@ -104,6 +104,14 @@ namespace Populus.CombatManager
             get { return mGlobalCooldown.IsGCDActive; }
         }
 
+        /// <summary>
+        /// Gets the aggro list for this bot
+        /// </summary>
+        public AggroList AggroList
+        {
+            get { return mAggroList; }
+        }
+
         #endregion
 
         #region Public Methods
@@ -116,6 +124,8 @@ namespace Populus.CombatManager
         {
             if (target == null) return;
             mTarget = target;
+            // Clear the attacking flag when we manually set a target
+            StopAttack();
         }
 
         /// <summary>
@@ -281,7 +291,7 @@ namespace Populus.CombatManager
 
             // If our current target is dead, remove it
             if (CurrentTarget != null && CurrentTarget.IsDead)
-                mTarget = null;
+                ClearTarget();
 
             // TODO: If these are resurrection spells, we don't want to stop
             // If we are currently casting and our target is dead, stop casting
@@ -418,6 +428,16 @@ namespace Populus.CombatManager
 
             // Log what we are casting
             mBotOwner.Logger.Log($"Casting spell {spell.SpellName}");
+        }
+
+        /// <summary>
+        /// Clears the current target
+        /// </summary>
+        private void ClearTarget()
+        {
+            mTarget = null;
+            // Clear the attacking flag when we clear a target
+            StopAttack();
         }
 
         #endregion

@@ -104,6 +104,22 @@ namespace Populus.GroupManager
             get { return mGroupType; }
         }
 
+        /// <summary>
+        /// Gets all group members that are in the TANK role
+        /// </summary>
+        public IEnumerable<GroupMember> Tanks
+        {
+            get { return Members.Where(m => m.Role == GroupMember.ROLE_TANK); }
+        }
+
+        /// <summary>
+        /// Gets all group members that are in the HEALER role
+        /// </summary>
+        public IEnumerable<GroupMember> Healers
+        {
+            get { return Members.Where(m => m.Role == GroupMember.ROLE_HEALER); }
+        }
+
         #endregion
 
         #region Public Methods
@@ -125,7 +141,17 @@ namespace Populus.GroupManager
         /// <returns></returns>
         public GroupMember GetMember(WoWGuid guid)
         {
-            return mGroupMembers.ToList().Where(m => m.Guid.GetOldGuid() == guid.GetOldGuid()).SingleOrDefault();
+            return mGroupMembers.ToList().SingleOrDefault(m => m.Guid.GetOldGuid() == guid.GetOldGuid());
+        }
+
+        /// <summary>
+        /// Gets a member of the group by their name
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public GroupMember GetMember(string name)
+        {
+            return mGroupMembers.ToList().SingleOrDefault(m => m.Name == name);
         }
 
         /// <summary>

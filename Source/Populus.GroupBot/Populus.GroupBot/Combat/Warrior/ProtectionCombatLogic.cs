@@ -1,6 +1,7 @@
 ﻿using FluentBehaviourTree;
 using Populus.Core.Shared;
 using Populus.Core.World.Objects;
+using System.Linq;
 
 namespace Populus.GroupBot.Combat.Warrior
 {
@@ -112,16 +113,33 @@ namespace Populus.GroupBot.Combat.Warrior
         /// <returns></returns>
         private BehaviourTreeStatus Taunt()
         {
-            // TODO: Check if any target is hitting the healer. If they are, taunt off regardless of what else has happened.
+            // Check if any target is hitting the healer. If they are, taunt off regardless of what else has happened.
+            if (BotHandler.Group != null)
+            {
+                foreach (var aggro in BotHandler.CombatState.AggroList.AggroUnits)
+                {
+                    // If the aggro unit is currently targeting a healer, taunt them off
+                    var member = BotHandler.Group.GetMember(aggro.TargetGuid);
+                    if (member != null && member.IsHealer)
+                    {
+                        // Tanks can change targets to get aggro
+                        BotHandler.CombatState.SetTarget(aggro);
+                        return CastSpell(TAUNT);
+                    }
+                }
+            }
+
+            // TODO: Fix the below logic so we don't taunt at the start of combat right away
+            return BehaviourTreeStatus.Failure;
 
             // If our target is targeting us, we are good
-            if (BotHandler.CombatState.CurrentTarget.TargetGuid == BotHandler.BotOwner.Guid)
-                return BehaviourTreeStatus.Failure;
-            // If we haven't even hit the target yet, don't taunt
-            if (!mHasHitTarget)
-                return BehaviourTreeStatus.Failure;
+            //if (BotHandler.CombatState.CurrentTarget.TargetGuid == BotHandler.BotOwner.Guid)
+            //    return BehaviourTreeStatus.Failure;
+            //// If we haven't even hit the target yet, don't taunt
+            //if (!mHasHitTarget)
+            //    return BehaviourTreeStatus.Failure;
 
-            return CastSpell(TAUNT);
+            //return CastSpell(TAUNT);
         }
 
         /// <summary>

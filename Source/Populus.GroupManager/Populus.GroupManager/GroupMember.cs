@@ -16,9 +16,9 @@ namespace Populus.GroupManager
         #region Declarations
 
         // Role constants
-        public const string ROLE_TANK = "Tank";
-        public const string ROLE_HEALER = "Healer";
-        public const string ROLE_ASSIST = "Assist";
+        public const string ROLE_TANK = "TANK";
+        public const string ROLE_HEALER = "HEALER";
+        public const string ROLE_ASSIST = "ASSIST";
 
         // Contains pet data for this group member
         private GroupMember mPet;
@@ -167,6 +167,22 @@ namespace Populus.GroupManager
         /// Gets the position of the group member
         /// </summary>
         public Coordinate Position { get; private set; }
+
+        /// <summary>
+        /// Gets whether or not this group member is in a healer role
+        /// </summary>
+        public bool IsHealer
+        {
+            get { return Role == ROLE_HEALER; }
+        }
+
+        /// <summary>
+        /// Gets whether or not this group member is in a tank role
+        /// </summary>
+        public bool IsTank
+        {
+            get { return Role == ROLE_TANK; }
+        }
 
         /// <summary>
         /// Gets the role this group member is in
