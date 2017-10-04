@@ -24,11 +24,11 @@ namespace Populus.GroupBot.Combat.Warrior
 
         public override void CombatAttackUpdate(Bot bot, Core.World.Objects.Events.CombatAttackUpdateArgs eventArgs)
         {
-            // check for revenge procs
+            // check for overpower procs
             if (bot.Guid == BotHandler.BotOwner.Guid && eventArgs.AttackerGuid == BotHandler.BotOwner.Guid)
             {
-                // Procs after block, dodge or parry
-                if (BotHandler.BotOwner.HasSpell((ushort)REVENGE) && eventArgs.Dodged)
+                // Procs after dodge
+                if (BotHandler.BotOwner.HasSpell((ushort)OVERPOWER) && eventArgs.Dodged)
                     mOverpowerProcced = true;
             }
 

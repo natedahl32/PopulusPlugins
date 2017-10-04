@@ -37,11 +37,8 @@ namespace Populus.GroupBot.Combat.Warrior
             mHasHitTarget = false;
             mHeroicStrikePrepared = false;
             mRevengeProcced = false;
+            base.ResetCombatState();
         }
-
-        #endregion
-
-        #region Public Methods
 
         public override void CombatAttackUpdate(Bot bot, Core.World.Objects.Events.CombatAttackUpdateArgs eventArgs)
         {
