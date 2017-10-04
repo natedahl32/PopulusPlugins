@@ -136,7 +136,8 @@ namespace Populus.CombatManager
         {
             WoWGuid target = null;
             if (mMarkedTargets.TryGetValue(icon, out target))
-                return mBotOwner.GetUnitByGuid(target);
+                if (target != null)
+                    return mBotOwner.GetUnitByGuid(target);
             // Unable to get, return null
             return null;
         }
@@ -278,6 +279,10 @@ namespace Populus.CombatManager
             // Remove any dead units from aggro, or units that are no longer in our objects or too far away
             mAggroList.RemoveUnits(mBotOwner);
 
+            // If our current target is dead, remove it
+            if (CurrentTarget != null && CurrentTarget.IsDead)
+                mTarget = null;
+
             // TODO: If these are resurrection spells, we don't want to stop
             // If we are currently casting and our target is dead, stop casting
             if (IsCasting && (CurrentTarget == null || CurrentTarget.IsDead))
@@ -377,14 +382,16 @@ namespace Populus.CombatManager
         private Unit GetTargetByRaidMarker()
         {
             var target = GetPrimaryDpsTarget();
-            if (target == null)
+            if (target == null || target.IsDead || target.IsFriendlyTo(BotOwner) || !target.IsNPC)
                 target = GetMarkedUnit(RaidTargetMarkers.CROSS);
-            if (target == null)
+            if (target == null || target.IsDead || target.IsFriendlyTo(BotOwner) || !target.IsNPC)
                 target = GetMarkedUnit(RaidTargetMarkers.STAR);
-            if (target == null)
+            if (target == null || target.IsDead || target.IsFriendlyTo(BotOwner) || !target.IsNPC)
                 target = GetMarkedUnit(RaidTargetMarkers.CIRCLE);
-            if (target == null)
+            if (target == null || target.IsDead || target.IsFriendlyTo(BotOwner) || !target.IsNPC)
                 target = GetMarkedUnit(RaidTargetMarkers.SQUARE);
+            if (target == null || target.IsDead || target.IsFriendlyTo(BotOwner) || !target.IsNPC)
+                return null;
             return target;
         }
 
