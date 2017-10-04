@@ -340,6 +340,8 @@ namespace Populus.GroupBot
                     // Remove follow target for range when combat starts
                     if (!CombatHandler.IsMelee)
                         BotOwner.RemoveFollow();
+                    // When combat starts add all marked NPCs to the aggro list
+                    CombatState.AddMarkedTargetsToAggroList();
                 })
                 .Permit(StateTriggers.Idle, Idle.Instance)
                 .Permit(StateTriggers.Died, Dead.Instance);

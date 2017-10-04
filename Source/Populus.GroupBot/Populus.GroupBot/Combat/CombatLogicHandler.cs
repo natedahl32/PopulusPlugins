@@ -314,7 +314,6 @@ namespace Populus.GroupBot.Combat
         /// </summary>
         public virtual void ResetCombatState() { }
 
-
         /// <summary>
         /// Update combat attacks
         /// </summary>

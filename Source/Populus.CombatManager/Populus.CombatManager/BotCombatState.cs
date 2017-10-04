@@ -237,6 +237,21 @@ namespace Populus.CombatManager
             StopAttack();
         }
 
+        /// <summary>
+        /// Adds all marked NPC targets that are alive to the aggro list
+        /// </summary>
+        public void AddMarkedTargetsToAggroList()
+        {
+            AddMarkedTargetToAggroList(RaidTargetMarkers.SKULL);
+            AddMarkedTargetToAggroList(RaidTargetMarkers.CROSS);
+            AddMarkedTargetToAggroList(RaidTargetMarkers.STAR);
+            AddMarkedTargetToAggroList(RaidTargetMarkers.CIRCLE);
+            AddMarkedTargetToAggroList(RaidTargetMarkers.SQUARE);
+            AddMarkedTargetToAggroList(RaidTargetMarkers.DIAMOND);
+            AddMarkedTargetToAggroList(RaidTargetMarkers.MOON);
+            AddMarkedTargetToAggroList(RaidTargetMarkers.TRIANGLE);
+        }
+
         #endregion
 
         #region Internal Methods
@@ -343,6 +358,17 @@ namespace Populus.CombatManager
         #endregion
 
         #region Private Methods
+
+        /// <summary>
+        /// Adds a unit that is marked with a raid target to the aggro list
+        /// </summary>
+        /// <param name="marker"></param>
+        private void AddMarkedTargetToAggroList(RaidTargetMarkers marker)
+        {
+            var unit = GetMarkedUnit(marker);
+            if (unit != null && !unit.IsDead && unit.IsNPC && !unit.IsFriendlyTo(BotOwner))
+                AddToAggroList(unit);
+        }
 
         /// <summary>
         /// Selects the next target based on raid markers
