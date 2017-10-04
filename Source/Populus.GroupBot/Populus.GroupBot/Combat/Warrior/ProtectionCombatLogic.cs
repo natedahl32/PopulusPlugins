@@ -69,13 +69,13 @@ namespace Populus.GroupBot.Combat.Warrior
             var builder = new BehaviourTreeBuilder();
             builder.Selector("Protection Warrior Rotation")
                         .Do("Defensive Stance", t => SelfBuff(DEFENSIVE_STANCE))
+                        .Do("Bloodrage", t => Bloodrage())
+                        .Do("Battle Shout", t => GroupBuff(BATTLE_SHOUT))   // Might not have the rage to do until combat and a good threat generator
                         .Do("Mocking Blow", t => MockingBlow())
                         .Do("Taunt", t => Taunt())
-                        .Do("Bloodrage", t => Bloodrage())
                         .Do("Revenge", t => Revenge())
                         .Do("Sunder Armors", t => SunderArmors(3))
                         .Do("Shield Block", t => SelfBuff(SHIELD_BLOCK))
-                        .Do("Battle Shout", t => GroupBuff(BATTLE_SHOUT))   // Might not have the rage to do until combat
                    .End();
             return builder.Build();
         }
