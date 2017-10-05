@@ -3,6 +3,7 @@ using Populus.Core.Constants;
 using Populus.Core.World.Objects;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 namespace Populus.GroupBot.Combat.Warrior
 {
@@ -95,6 +96,14 @@ namespace Populus.GroupBot.Combat.Warrior
         public override bool IsMelee
         {
             get { return true; }
+        }
+
+        /// <summary>
+        /// Gets whether or not this class is a caster
+        /// </summary>
+        public override bool IsCaster
+        {
+            get { return false; }
         }
 
         /// <summary>

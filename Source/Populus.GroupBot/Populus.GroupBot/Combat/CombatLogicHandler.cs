@@ -121,6 +121,19 @@ namespace Populus.GroupBot.Combat
         public abstract bool IsMelee { get; }
 
         /// <summary>
+        /// Gets whether or not this class is primarily a range class (does not specify a caster, ie. hunter)
+        /// </summary>
+        public bool IsRange
+        {
+            get { return !IsMelee; }
+        }
+
+        /// <summary>
+        /// Gets whether or not this class is a caster
+        /// </summary>
+        public abstract bool IsCaster { get; }
+
+        /// <summary>
         /// Gets whether or not combat logic for the bot is a Tank
         /// </summary>
         public virtual bool IsTank { get { return false; } }

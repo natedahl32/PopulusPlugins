@@ -95,6 +95,14 @@ namespace Populus.GroupBot.Combat.Hunter
         }
 
         /// <summary>
+        /// Gets whether or not this class is a caster
+        /// </summary>
+        public override bool IsCaster
+        {
+            get { return false; }
+        }
+
+        /// <summary>
         /// Gets all hunter spells and abilities available by level
         /// </summary>
         protected override Dictionary<int, List<uint>> SpellsByLevel => mSpellsByLevel;

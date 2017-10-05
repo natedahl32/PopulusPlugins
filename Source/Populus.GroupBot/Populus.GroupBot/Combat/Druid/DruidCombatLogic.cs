@@ -102,6 +102,14 @@ namespace Populus.GroupBot.Combat.Druid
         }
 
         /// <summary>
+        /// Gets whether or not this class is a caster
+        /// </summary>
+        public override bool IsCaster
+        {
+            get { return false; }
+        }
+
+        /// <summary>
         /// Gets all druid spells and abilities available by level
         /// </summary>
         protected override Dictionary<int, List<uint>> SpellsByLevel => mSpellsByLevel;

@@ -1,6 +1,7 @@
 ﻿using FluentBehaviourTree;
 using Populus.Core.World.Objects;
 using System.Collections.Generic;
+using System;
 
 namespace Populus.GroupBot.Combat.Shaman
 {
@@ -97,6 +98,14 @@ namespace Populus.GroupBot.Combat.Shaman
         /// Gets whether or not this class is primarily a melee class
         /// </summary>
         public override bool IsMelee
+        {
+            get { return true; }
+        }
+
+        /// <summary>
+        /// Gets whether or not this class is a caster
+        /// </summary>
+        public override bool IsCaster
         {
             get { return true; }
         }

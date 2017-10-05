@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Populus.Core.World.Objects;
 using FluentBehaviourTree;
+using System;
 
 namespace Populus.GroupBot.Combat.Warlock
 {
@@ -109,6 +110,14 @@ namespace Populus.GroupBot.Combat.Warlock
         public override bool IsMelee
         {
             get { return false; }
+        }
+
+        /// <summary>
+        /// Gets whether or not this class is a caster
+        /// </summary>
+        public override bool IsCaster
+        {
+            get { return true; }
         }
 
         /// <summary>

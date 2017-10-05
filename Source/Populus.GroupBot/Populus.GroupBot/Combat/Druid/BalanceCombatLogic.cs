@@ -21,6 +21,14 @@
             get { return false; }
         }
 
+        /// <summary>
+        /// Gets whether or not this class is a caster
+        /// </summary>
+        public override bool IsCaster
+        {
+            get { return true; }
+        }
+
         #endregion
     }
 }
