@@ -278,9 +278,15 @@ namespace Populus.GroupBot.Combat.Warlock
         /// <returns></returns>
         protected BehaviourTreeStatus DemonSkinArmor()
         {
-            if (SelfBuff(DEMON_ARMOR) == BehaviourTreeStatus.Success)
-                return BehaviourTreeStatus.Success;
-
+            // Try Demon Armor first
+            if (DEMON_ARMOR > 0)
+            {
+                if (SelfBuff(DEMON_ARMOR) == BehaviourTreeStatus.Success)
+                    return BehaviourTreeStatus.Success;
+                return BehaviourTreeStatus.Failure;
+            }
+            
+            // Don't have Demon Armor, use Demon Skin instead
             return SelfBuff(DEMON_SKIN);
         }
 

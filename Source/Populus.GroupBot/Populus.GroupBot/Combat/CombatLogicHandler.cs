@@ -19,6 +19,7 @@ using Populus.Core.World.Spells;
 using System.Linq;
 using Populus.Core.World.Objects.Events;
 using FluentBehaviourTree;
+using Populus.Core.Shared;
 
 namespace Populus.GroupBot.Combat
 {
@@ -48,7 +49,7 @@ namespace Populus.GroupBot.Combat
         private Unit mAttackingUnit = null;
         private bool mIsFirstCombatActionDone = false;
 
-        private float? mCombatStartedTick;
+        private uint? mCombatStartedTick;
 
         // Behavior trees
         private IBehaviourTreeNode mOutOfCombatBehavior;
@@ -182,6 +183,28 @@ namespace Populus.GroupBot.Combat
             get; set;
         }
 
+        /// <summary>
+        /// Gets the number of seconds the bot will wait before attacking
+        /// </summary>
+        public int WaitSecondsForAttack
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Total time (in MS) that the bot has been in combat
+        /// </summary>
+        public uint TimeInCombat
+        {
+            get
+            {
+                if (!mCombatStartedTick.HasValue)
+                    return 0;
+                return Time.MM_GetTime() - mCombatStartedTick.Value;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -192,7 +215,10 @@ namespace Populus.GroupBot.Combat
         /// <param name="deltaTime"></param>
         public void CombatUpdate(float deltaTime)
         {
-            if (!mCombatStartedTick.HasValue) mCombatStartedTick = deltaTime;
+            if (!mCombatStartedTick.HasValue) mCombatStartedTick = Time.MM_GetTime();
+            // Wait a certain amount of time before starting to attack. Tanks don't wait ever though, need to build that threat
+            if (WaitSecondsForAttack > 0 && TimeInCombat < (WaitSecondsForAttack * 1000) && !IsTank)
+                return;
             if (DebugLogic) mBotHandler.BotOwner.Logger.Log("--------------------- START DEBUG LOGIC ---------------------------");
             if (DebugLogic) mBotHandler.BotOwner.Logger.Log("--------------------- COMBAT LOGIC --------------------------------");
             this.mCombatBehavior?.Tick(new TimeData(deltaTime));
@@ -206,6 +232,7 @@ namespace Populus.GroupBot.Combat
         public void OutOfCombatUpdate(float deltaTime)
         {
             if (mCombatStartedTick.HasValue) mCombatStartedTick = null;
+            WaitSecondsForAttack = 0;
             if (DebugLogic) mBotHandler.BotOwner.Logger.Log("--------------------- START DEBUG LOGIC ---------------------------");
             if (DebugLogic) mBotHandler.BotOwner.Logger.Log("--------------------- OOC LOGIC --------------------------------");
             this.mOutOfCombatBehavior?.Tick(new TimeData(deltaTime));
@@ -217,8 +244,10 @@ namespace Populus.GroupBot.Combat
         /// to determine how to attack.
         /// </summary>
         /// <param name="unit"></param>
-        public void Attack(Unit unit)
+        /// <param name="waitSeconds">Optionally, wait X seconds before attacking</param>
+        public void Attack(Unit unit, int waitSeconds = 0)
         {
+            WaitSecondsForAttack = waitSeconds;
             // Add this unit to the aggro list and set it as the current target. This will start combat
             // if it's not already started. And also immediately start attacking the unit.
             BotHandler.StopFollow();
@@ -325,7 +354,10 @@ namespace Populus.GroupBot.Combat
         /// <summary>
         /// Called when combat is over so any combat state can be reset
         /// </summary>
-        public virtual void ResetCombatState() { }
+        public virtual void ResetCombatState()
+        {
+            WaitSecondsForAttack = 0;
+        }
 
         /// <summary>
         /// Update combat attacks

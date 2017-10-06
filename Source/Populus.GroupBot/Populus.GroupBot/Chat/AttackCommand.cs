@@ -63,8 +63,16 @@ namespace Populus.GroupBot.Chat
                 return;
             }
 
+            // Get the seconds to wait before attacking
+            int waitSeconds = 0;
+            if (chat.MessageTokenized.Length >= 2)
+            {
+                var waitToken = chat.MessageTokenized[1];
+                int.TryParse(waitToken, out waitSeconds);
+            }
+
             // Attack!
-            botHandler.CombatHandler.Attack(target);
+            botHandler.CombatHandler.Attack(target, waitSeconds);
         }
 
         /// <summary>
